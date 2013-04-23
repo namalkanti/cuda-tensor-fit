@@ -30,11 +30,15 @@ def replacer(string):
     pt = re.compile(r"(\d\.\d+)\*pow\(\d{2}, (-\d{0,2})\)")
     while re.search(pt, string):
         arr = list(map(float, re.search(pt, string).groups()))
-        string = re.sub(pt, str(arr[0] * 10**arr[1]), string, count=1) 
+        string = re.sub(pt, "{0:.25f}".format(arr[0] * 10**arr[1]), string, count=1) 
     return string 
 
 def main():
-    pass
+    with open("data.h", mode = "r") as f:
+        with open("new_data.h", mode = "w") as w:
+            for line in f:
+                w.write(replacer(line))
+    return
 
 if __name__ == "__main__":
     import doctest
