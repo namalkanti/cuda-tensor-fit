@@ -34,8 +34,8 @@ def replacer(string):
     return string 
 
 def main():
-    with open("data.h", mode = "r") as f:
-        with open("new_data.h", mode = "w") as w:
+    with open("fit_unit_test.c", mode = "r") as f:
+        with open("fit_unit_test2.c", mode = "w") as w:
             for line in f:
                 w.write(replacer(line))
     return
