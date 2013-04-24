@@ -4,6 +4,7 @@
 #include <CUnit/Basic.h>
 #include <math.h>
 #include "data.h"
+#include "fit_tensor.h"
 
 //Initalization stub for compare test suite
 int init_compare(void){
@@ -63,6 +64,52 @@ void test_compare_tensors(void){
 
 }
 
+//Init stub for opt tests
+int init_opt(void){
+    return 0;
+}
+
+//Clean stuf for tests
+int clean_opt(void){
+    return 0;
+}
+
+//Test for cutoff and log function
+void test_cutoff_log(void){
+    double min_value = M_E;
+    double test1[] = {0, 2, 3, 4, 1, 23, 3, 5, 6, 43, 5};
+    size_t len1 = sizeof(test1)/sizeof(test1[0]);
+    double result1[] = {1.0,
+     1.0,
+     1.0986122886681098,
+     1.3862943611198906,
+     1.0,
+     3.1354942159291497,
+     1.0986122886681098,
+     1.6094379124341003,
+     1.791759469228055,
+     3.7612001156935624,
+     1.6094379124341003};
+    double test2[] = {1, 5, 2, 1, 4, 1.3, 4.5, 1.2, 3, 41, 9};
+    size_t len2 = sizeof(test2)/sizeof(test2[0]);
+    double result2[] = {1.0,
+     1.6094379124341003,
+     1.0,
+     1.0,
+     1.3862943611198906,
+     1.0,
+     1.5040773967762742,
+     1.0,
+     1.0986122886681098,
+     3.713572066704308,
+     2.1972245773362196};
+    cutoff_log(test1, min_value, len1);
+    cutoff_log(test2, min_value, len2);
+    CU_ASSERT(arr_compare(test1, result1, len1, .0000001) == true);
+    CU_ASSERT(arr_compare(test2, result2, len2, .00000001) == true);
+}
+
+//Main test function
 int main(){
     CU_pSuite compare_suite = NULL;
     CU_pSuite opt_suite = NULL;
@@ -83,6 +130,16 @@ int main(){
         return CU_get_error();
     }
 
+    opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
+    if (NULL == opt_suite){
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if (NULL == CU_add_test(opt_suite, "Cutoff and logarithm test", test_cutoff_log)){
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();
