@@ -94,4 +94,10 @@ bool compare_tensors(tensor* a, tensor* b, double err){
     return true; 
 }
 
+//Function to free matrix data
+void free_matrix(matrix* mat){
+    free(mat->data);
+    free(mat);
+}
+
 

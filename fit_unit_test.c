@@ -2,17 +2,15 @@
 #include <stdlib.h>
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include <math.h>
-#include "data.h"
 #include "fit_tensor.h"
 
-//Initalization stub for compare test suite
-int init_compare(void){
+//Initalization stub for utility test suite
+int init_utility(void){
     return 0;
 }
 
-//Cleanup stub for compare test suite
-int clean_compare(void){
+//Cleanup stub for utility test suite
+int clean_utility(void){
     return 0;
 }
 
@@ -109,23 +107,60 @@ void test_cutoff_log(void){
     CU_ASSERT(arr_compare(test2, result2, len2, .00000001) == true);
 }
 
+//Test for weight generation function
+void test_weights(void){
+}
+
+//Test function for exponentation
+void test_exp_array(void){
+    double test1[] = {0, 0, 0, 0};
+    double results1[] = {1, 1, 1, 1};
+    size_t size1 = sizeof(test1)/sizeof(test1[0]);
+    double test2[] = {1, 2, 3, 4, 14, 15, 15, 3, 12, 13};
+    double results2[] = {2.718281828459045, 7.38905609893065, 20.085536923187668, 54.598150033144236, 1202604.2841647768, 3269017.3724721107, 3269017.3724721107, 20.085536923187668, 162754.79141900392, 442413.3920089205};
+    size_t size2 = sizeof(test2)/sizeof(test2[0]);
+    double* return1 = exp_array(test1, size1);
+    double* return2 = exp_array(test2, size2);
+    CU_ASSERT(arr_compare(results1, return1, size1, .0000001) == true);
+    CU_ASSERT(arr_compare(results2, return2, size2, .0000001) == true);
+    free(return1);
+    free(return2);
+}
+
+//Test function to form lower triangular tensor
+void test_tensor_lower_triangular(void){
+    double test1[] = {0, 1, 2, 3, 4, 5};
+    double test2[] = {6, 7, 8, 9, 10, 11}; 
+    double expected_data1[] = {0, 1, 3, 1, 2, 4, 3, 4, 5};
+    double expected_data2[] = {6, 7, 9, 7, 8, 10, 9, 10, 11};
+    matrix expected1 = {expected_data1, 3, 3};
+    matrix expected2 = {expected_data2, 3, 3};
+    matrix* return1 = tensor_lower_triangular(test1);
+    matrix* return2 = tensor_lower_triangular(test2);
+    CU_ASSERT(mat_compare(&expected1, return1, .00001) == true);
+    CU_ASSERT(mat_compare(&expected1, return2, .000001) == false);
+    CU_ASSERT(mat_compare(&expected2, return2, .000001) == true);
+    free_matrix(return1);
+    free_matrix(return2);
+}
+
 //Main test function
 int main(){
-    CU_pSuite compare_suite = NULL;
+    CU_pSuite utility_suite = NULL;
     CU_pSuite opt_suite = NULL;
 
     if (CUE_SUCCESS != CU_initialize_registry())
         return CU_get_error();
 
-    compare_suite = CU_add_suite("Compare Suite", init_compare, clean_compare);
-    if (NULL == compare_suite){
+    utility_suite = CU_add_suite("utility Suite", init_utility, clean_utility);
+    if (NULL == utility_suite){
         CU_cleanup_registry();
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(compare_suite, "Array comparison test", test_compare_array)) || 
-            (NULL == CU_add_test(compare_suite, "Matrix comparison test", test_compare_matrix)) ||
-            (NULL == CU_add_test(compare_suite, "Tensor comparison test", test_compare_tensors))){
+    if ((NULL == CU_add_test(utility_suite, "Array comparison test", test_compare_array)) || 
+            (NULL == CU_add_test(utility_suite, "Matrix comparison test", test_compare_matrix)) ||
+            (NULL == CU_add_test(utility_suite, "Tensor comparison test", test_compare_tensors))){
         CU_cleanup_registry();
         return CU_get_error();
     }
@@ -136,7 +171,9 @@ int main(){
         return CU_get_error();
     }
 
-    if (NULL == CU_add_test(opt_suite, "Cutoff and logarithm test", test_cutoff_log)){
+    if ((NULL == CU_add_test(opt_suite, "Cutoff and logarithm test", test_cutoff_log)) ||
+            (NULL == CU_add_test(opt_suite, "Array exp test", test_exp_array)) ||
+            (NULL == CU_add_test(opt_suite, "Tensor lower triangular test", test_tensor_lower_triangular))){
         CU_cleanup_registry();
         return CU_get_error();
     }
