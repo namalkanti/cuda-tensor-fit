@@ -113,11 +113,11 @@ matrix* to_matrix(gsl_matrix* gsl_mat){
 
 //Function to take two matrices, dot them, and return the result
 matrix* matrix_dot(matrix* A, matrix* B){
-    double* C_data = (double*) malloc(sizeof(double) * A->rows * B->columns); 
-    matrix* C = (matrix*) malloc(sizeof(matrix));
+    double* C_data = malloc(sizeof(double) * A->rows * B->columns); 
+    matrix* C = malloc(sizeof(matrix));
     C->rows = A->rows;
     C->columns = B->columns;
-    //cblas_dgemm();
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A->rows, B->columns, A->columns, 1.0, A->data, A->columns, B->data, B->columns, 0.0, C_data, C->columns);
     C->data = C_data;
     return C;
 }

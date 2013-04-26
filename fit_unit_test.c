@@ -101,16 +101,6 @@ void test_gsl_matrix_convert(void){
     gsl_matrix_free(gsl3);
 }
 
-//Init stub for opt tests
-int init_opt(void){
-    return 0;
-}
-
-//Clean stuf for tests
-int clean_opt(void){
-    return 0;
-}
-
 //Test for cutoff and log function
 void test_cutoff_log(void){
     double min_value = M_E;
@@ -215,15 +205,51 @@ void test_matrix_scale(void){
     free_matrix(return3t);
 }
 
+void test_matrix_dot(void){
+    double test1_data[] = {1, 2, 3, 4};
+    double test2_data[] = {5, 6, 7, 8, 9, 10};
+    matrix test1 = {test1_data, 2, 2};
+    matrix test2 = {test2_data, 2, 3};
+    matrix test2b = {test2_data, 3, 2};
+    double result12_data[] ={ 21, 24, 27, 47, 54, 61};
+    matrix result12 = {result12_data, 2, 3};
+    double result21_data[] = {23, 34, 31, 46, 39, 58};
+    matrix result21 = {result21_data, 3, 2};
+    double result11_data[] = { 7, 10, 15, 22};
+    matrix result11 = {result11_data, 2, 2};
+    matrix* return1 = matrix_dot(&test1, &test1); 
+    matrix* return2 = matrix_dot(&test1, &test2); 
+    matrix* return3 = matrix_dot(&test2b, &test1); 
+    CU_ASSERT(mat_compare(&result11, return1, .000001) == true);
+    CU_ASSERT(mat_compare(&result12, return2, .000001) == true);
+    CU_ASSERT(mat_compare(&result21, return3, .000001) == true);
+    CU_ASSERT(mat_compare(&result21, return2, .000001) == false);
+    free_matrix(return1);
+    free_matrix(return2);
+    free_matrix(return3);
+}
+
+//Init stub for opt tests
+int init_opt(void){
+    return 0;
+}
+
+//Clean stuf for tests
+int clean_opt(void){
+    return 0;
+}
+
+
 //Main test function
 int main(){
     CU_pSuite utility_suite = NULL;
     CU_pSuite opt_suite = NULL;
+    CU_pSuite cuda_suite = NULL;
 
     if (CUE_SUCCESS != CU_initialize_registry())
         return CU_get_error();
 
-    utility_suite = CU_add_suite("utility Suite", init_utility, clean_utility);
+    utility_suite = CU_add_suite("Utility Suite", init_utility, clean_utility);
     if (NULL == utility_suite){
         CU_cleanup_registry();
         return CU_get_error();
@@ -231,25 +257,28 @@ int main(){
 
     if ((NULL == CU_add_test(utility_suite, "Array comparison test", test_compare_array)) || 
             (NULL == CU_add_test(utility_suite, "Matrix comparison test", test_compare_matrix)) ||
-            (NULL == CU_add_test(utility_suite, "Tensor comparison test", test_compare_tensors))){
+            (NULL == CU_add_test(utility_suite, "Tensor comparison test", test_compare_tensors)) ||
+            (NULL == CU_add_test(utility_suite, "Cutoff and logarithm test", test_cutoff_log)) ||
+            (NULL == CU_add_test(utility_suite, "Array exp test", test_exp_array)) ||
+            (NULL == CU_add_test(utility_suite, "Tensor lower triangular test", test_tensor_lower_triangular)) ||
+            (NULL == CU_add_test(utility_suite, "Matrix scale test", test_matrix_scale)) ||
+            (NULL == CU_add_test(utility_suite, "GSL conversion functions", test_gsl_matrix_convert)) ||
+            (NULL == CU_add_test(utility_suite, "Matrix dot test", test_matrix_dot))){
         CU_cleanup_registry();
         return CU_get_error();
     }
 
-    opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
+    /*opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
     if (NULL == opt_suite){
         CU_cleanup_registry();
         return CU_get_error();
-    }
+    }*/
 
-    if ((NULL == CU_add_test(opt_suite, "Cutoff and logarithm test", test_cutoff_log)) ||
-            (NULL == CU_add_test(opt_suite, "Array exp test", test_exp_array)) ||
-            (NULL == CU_add_test(opt_suite, "Tensor lower triangular test", test_tensor_lower_triangular)) ||
-            (NULL == CU_add_test(opt_suite, "Matrix scale test", test_matrix_scale)) ||
-            (NULL == CU_add_test(opt_suite, "GSL conversion functions", test_gsl_matrix_convert))){
+    /*if (){
         CU_cleanup_registry();
         return CU_get_error();
-    }
+    }*/
+
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
     CU_cleanup_registry();
