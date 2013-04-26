@@ -154,8 +154,8 @@ void test_matrix_scale(void){
     matrix test_mat3 = {test2_data, 2, 6};
     matrix test_mat3t = {test2_data, 6, 2};
     double result1_data[] = {0, 7, 16, 27, 40, 55};
-    matrix result_mat1 = {result1_data, 6, 1};
-    matrix result_mat2 = {result1_data, 1, 6};
+    matrix result_mat1 = {result1_data, 1, 6};
+    matrix result_mat2 = {result1_data, 6, 1};
     double result2_data[] = {0, 13, 28, 45, 64, 85, 0, 1, 4, 9, 16, 25};
     matrix result_mat3 = {result2_data, 2, 6};
     double result2t_data[] = {0, 0, 14, 15, 32, 34, 0, 3, 8, 12, 20, 25};

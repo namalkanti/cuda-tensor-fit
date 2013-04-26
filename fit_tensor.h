@@ -62,12 +62,14 @@ matrix* matrix_scale(matrix* input_matrix, double* vec, int trans){
                     output[ i * columns + j] = input_matrix->data[i * columns + j] * vec[j];
                 }
             }
+            break;
         case 1:
             for(i = 0; i < input_matrix->rows; i++){
                 for(j = 0; j < columns; j++){
                     output[i * columns + j] = vec[i] * input_matrix->data[i * columns + j];
                 }
             }
+            break;
     }
     matrix* output_mat = (matrix*) malloc(sizeof(matrix));
     output_mat->data = output;
