@@ -62,6 +62,45 @@ void test_compare_tensors(void){
 
 }
 
+//Test to convert to a gsl matrix and back
+void test_gsl_matrix_convert(void){
+    double test1_data[] = {3, 4, 5, 6, 2, 4, 54, 6, 7, 34, 534, 3};
+    matrix test1 = {test1_data, 2, 6};
+    matrix test1b = {test1_data, 6, 2};
+    double test2_data[] = {7, 6, 4, 87, 3, 756, 34, 76, 83, 45, 34, 22, 65, 76};
+    matrix test2 = {test2_data, 2, 7};
+    matrix test2b = {test2_data, 7, 2};
+    double test3_data[] = {23, 3, 5, 6, 2, 3, 3, 4, 5};
+    matrix test3 = {test3_data, 3, 3};
+    gsl_matrix* gsl1 = to_gsl(&test1);
+    gsl_matrix* gsl1b = to_gsl(&test1b);
+    gsl_matrix* gsl2 = to_gsl(&test2);
+    gsl_matrix* gsl2b = to_gsl(&test2b);
+    gsl_matrix* gsl3 = to_gsl(&test3);
+    matrix* return1 = to_matrix(gsl1);
+    matrix* return1b = to_matrix(gsl1b);
+    matrix* return2 = to_matrix(gsl2);
+    matrix* return2b = to_matrix(gsl2b);
+    matrix* return3 = to_matrix(gsl3);
+    CU_ASSERT(mat_compare(&test1, return1, .000001) == true);
+    CU_ASSERT(mat_compare(&test1b, return1b, .00001) == true);
+    CU_ASSERT(mat_compare(&test2, return2, .000001) == true);
+    CU_ASSERT(mat_compare(&test2b, return2b, .000001) == true);
+    CU_ASSERT(mat_compare(&test3, return3, .0000001) == true);
+    CU_ASSERT(mat_compare(&test1, return2, .000000001) == false);
+    CU_ASSERT(mat_compare(&test1, return3, .000000001) == false);
+    free_matrix(return1);
+    free_matrix(return1b);
+    free_matrix(return2);
+    free_matrix(return2b);
+    free_matrix(return3);
+    gsl_matrix_free(gsl1);
+    gsl_matrix_free(gsl1b);
+    gsl_matrix_free(gsl2);
+    gsl_matrix_free(gsl2b);
+    gsl_matrix_free(gsl3);
+}
+
 //Init stub for opt tests
 int init_opt(void){
     return 0;
@@ -206,7 +245,8 @@ int main(){
     if ((NULL == CU_add_test(opt_suite, "Cutoff and logarithm test", test_cutoff_log)) ||
             (NULL == CU_add_test(opt_suite, "Array exp test", test_exp_array)) ||
             (NULL == CU_add_test(opt_suite, "Tensor lower triangular test", test_tensor_lower_triangular)) ||
-            (NULL == CU_add_test(opt_suite, "Matrix scale test", test_matrix_scale))){
+            (NULL == CU_add_test(opt_suite, "Matrix scale test", test_matrix_scale)) ||
+            (NULL == CU_add_test(opt_suite, "GSL conversion functions", test_gsl_matrix_convert))){
         CU_cleanup_registry();
         return CU_get_error();
     }

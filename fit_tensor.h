@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_cblas.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_eigen.h>
 #include "data.h"
 
 //Emulates numpy's maximum function and log function combined for efficiency.
@@ -76,4 +80,33 @@ matrix* matrix_scale(matrix* input_matrix, double* vec, int trans){
     output_mat->rows = input_matrix->rows;
     output_mat->columns = input_matrix->columns;
     return output_mat;
+}
+
+//Returns gsl matrix for interfacing with gsl library for BLAS and LAPACK
+//Meant to be used a helper function
+gsl_matrix* to_gsl(matrix* mat){
+    gsl_matrix* output = gsl_matrix_alloc(mat->rows, mat->columns);
+    int i, j;
+    for(i = 0; i < mat->rows; i++){
+        for( j = 0; j < mat->columns; j++){
+            gsl_matrix_set(output, i, j, mat->data[i * mat->columns + j]);
+        }
+    }
+    return output;
+}
+
+//Returns matrix from gsl matrix.
+matrix* to_matrix(gsl_matrix* gsl_mat){
+    int i, j;
+    double* output_data = (double*) malloc(sizeof(double) * ((int)gsl_mat->size1) * ((int)gsl_mat->size2));
+    matrix* output = malloc(sizeof(matrix));
+    output->rows = (int) gsl_mat-> size1;
+    output->columns = (int) gsl_mat-> size2;
+    for(i = 0; i < output->rows; i++){
+        for( j = 0; j < output->columns; j++){
+            output_data[i * output->columns + j] = gsl_matrix_get(gsl_mat, i, j);
+        }
+    }
+    output->data = output_data;
+    return output;
 }
