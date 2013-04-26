@@ -144,6 +144,38 @@ void test_tensor_lower_triangular(void){
     free_matrix(return2);
 }
 
+//Test function to scale matrices
+void test_matrix_scale(void){
+    double test_vector[] = {0, 1, 2, 3, 4, 5};
+    double test1_data[] = {6, 7, 8, 9, 10, 11};
+    double test2_data[] = {12, 13, 14, 15, 16, 17, 0 , 1, 2, 3, 4, 5};
+    matrix test_mat1 = {test1_data, 1, 6};
+    matrix test_mat2 = {test1_data, 6, 1};
+    matrix test_mat3 = {test2_data, 2, 6};
+    matrix test_mat3t = {test2_data, 6, 2};
+    double result1_data[] = {0, 7, 16, 27, 40, 55};
+    matrix result_mat1 = {result1_data, 6, 1};
+    matrix result_mat2 = {result1_data, 1, 6};
+    double result2_data[] = {0, 13, 28, 45, 64, 85, 0, 1, 4, 9, 16, 25};
+    matrix result_mat3 = {result2_data, 2, 6};
+    double result2t_data[] = {0, 0, 14, 15, 32, 34, 0, 3, 8, 12, 20, 25};
+    matrix result_mat3t = {result2t_data, 6, 2};
+    matrix* return1 = matrix_scale(&test_mat1, test_vector, 0);
+    matrix* return2 = matrix_scale(&test_mat2, test_vector, 1);
+    matrix* return3 = matrix_scale(&test_mat3, test_vector, 0);
+    matrix* return3t = matrix_scale(&test_mat3t, test_vector, 1);
+    CU_ASSERT(mat_compare(&result_mat1, return1, .000001) == true);
+    CU_ASSERT(mat_compare(&result_mat2, return2, .000001) == true);
+    CU_ASSERT(mat_compare(&result_mat3, return3, .000001) == true);
+    CU_ASSERT(mat_compare(&result_mat3t, return3t, .000001) == true);
+    CU_ASSERT(mat_compare(&result_mat1, return2, .000001) == false);
+    CU_ASSERT(mat_compare(&result_mat3, return2, .000001) == false);
+    free_matrix(return1);
+    free_matrix(return2);
+    free_matrix(return3);
+    free_matrix(return3t);
+}
+
 //Main test function
 int main(){
     CU_pSuite utility_suite = NULL;
@@ -173,7 +205,8 @@ int main(){
 
     if ((NULL == CU_add_test(opt_suite, "Cutoff and logarithm test", test_cutoff_log)) ||
             (NULL == CU_add_test(opt_suite, "Array exp test", test_exp_array)) ||
-            (NULL == CU_add_test(opt_suite, "Tensor lower triangular test", test_tensor_lower_triangular))){
+            (NULL == CU_add_test(opt_suite, "Tensor lower triangular test", test_tensor_lower_triangular)) ||
+            (NULL == CU_add_test(opt_suite, "Matrix scale test", test_matrix_scale))){
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -46,3 +46,32 @@ matrix* tensor_lower_triangular(double* input){
     output_mat->columns = 3;
     return output_mat;
 }
+
+//Takes in a matrix and and an array
+//Multiplies each matrix row element by it's corresponding array element and repeats for all rows if transpose flag is 0
+//If transpose flag is 1 will multiply by each column instead
+matrix* matrix_scale(matrix* input_matrix, double* vec, int trans){
+    double* output = (double*) malloc(sizeof(double) * (input_matrix->rows * input_matrix->columns));
+    int i, j;
+    int columns = input_matrix->columns;
+    switch(trans)
+    {
+        case 0:
+            for(i = 0; i < input_matrix->rows; i++){
+                for(j = 0; j < columns; j++){
+                    output[ i * columns + j] = input_matrix->data[i * columns + j] * vec[j];
+                }
+            }
+        case 1:
+            for(i = 0; i < input_matrix->rows; i++){
+                for(j = 0; j < columns; j++){
+                    output[i * columns + j] = vec[i] * input_matrix->data[i * columns + j];
+                }
+            }
+    }
+    matrix* output_mat = (matrix*) malloc(sizeof(matrix));
+    output_mat->data = output;
+    output_mat->rows = input_matrix->rows;
+    output_mat->columns = input_matrix->columns;
+    return output_mat;
+}
