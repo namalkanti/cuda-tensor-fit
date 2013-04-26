@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include "fit_tensor.h"
+#include "fit_tensor_opt.h"
 
 //Initalization stub for utility test suite
 int init_utility(void){
