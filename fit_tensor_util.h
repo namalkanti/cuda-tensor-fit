@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_cblas.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_eigen.h>
@@ -120,4 +121,33 @@ matrix* matrix_dot(matrix* A, matrix* B){
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A->rows, B->columns, A->columns, 1.0, A->data, A->columns, B->data, B->columns, 0.0, C_data, C->columns);
     C->data = C_data;
     return C;
+}
+
+//Function to extract eigenvalues and eigenvectors from tensor
+tensor* decompose_tensor(matrix* tensor_matrix, const double min_diffusitivity){
+    gsl_vector* evals = gsl_vector_alloc(3);
+    gsl_matrix* evecs = gsl_matrix_alloc(3, 3);
+    gsl_eigen_symmv_workspace* w = gsl_eigen_symmv_alloc(4);
+    gsl_matrix* A = to_gsl(tensor_matrix);
+    gsl_eigen_symmv(A, evals, evecs, w);
+    gsl_eigen_symmv_sort(evals, evecs, GSL_EIGEN_SORT_VAL_DESC);
+    tensor* tensor_output = malloc(sizeof(tensor));    
+    double* vals = malloc(sizeof(double) * 3);
+    matrix* vecs = to_matrix(evecs);
+    int i;
+    double val;
+    for (i = 0; i < 3; i++){
+        val = gsl_vector_get(evals, i);
+        if (val < min_diffusitivity){
+            val = min_diffusitivity;
+        }
+        vals[i] = val;
+    }
+    tensor_output->vals = vals;
+    tensor_output->vecs = vecs;
+    gsl_eigen_symmv_free(w);
+    gsl_vector_free(evals);
+    gsl_matrix_free(evecs);
+    gsl_matrix_free(A);
+    return tensor_output;
 }

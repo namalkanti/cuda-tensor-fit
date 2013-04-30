@@ -34,11 +34,40 @@ void test_compare_matrix(void){
     double mat1_data[] = {0, 0, 0, 0};
     matrix mat1 = {mat1_data, 2, 2};
     double mat2_data[] = {0, 0, 0, 0};
-    matrix mat3 = {mat2_data, 2, 2};
+    matrix mat2 = {mat2_data, 2, 2};
     double mat3_data[] = {0, 0, 0, 0};
-    matrix mat2 = {mat3_data, 1, 4};
-    CU_ASSERT(mat_compare(&mat1, &mat3, .00001) == true);
-    CU_ASSERT(mat_compare(&mat1, &mat2, .00001) == false);
+    matrix mat3 = {mat3_data, 1, 4};
+    double mat4_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    matrix mat4 = {mat4_data, 3, 3};
+    double mat5_data[] = {3, 2, 6, 4, 4, 3, 88, 8, 9};
+    matrix mat5 = {mat5_data, 3, 3};
+    double mat6_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    matrix mat6 = {mat6_data, 3, 3};
+    CU_ASSERT(mat_compare(&mat1, &mat3, .00001) == false);
+    CU_ASSERT(mat_compare(&mat1, &mat2, .00001) == true);
+    CU_ASSERT(mat_compare(&mat4, &mat5, .00001) == false);
+    CU_ASSERT(mat_compare(&mat4, &mat6, .00001) == true);
+}
+
+//Tests columnar eigen compare function
+void test_columnar_eig_compare(void){
+    double mat1_data[] = {0, -1, 2, 3, -4, 5, 6, -7, 8};
+    matrix mat1 = {mat1_data, 3, 3};
+    double mat2_data[] = {0, -1, 2, 3, -4, 5, 6, -7, 8};
+    matrix mat2 = {mat2_data, 3, 3};
+    double mat3_data[] = {0, -1, -2, 3, -4, 5, 6, -7, 8};
+    matrix mat3 = {mat3_data, 3, 3};
+    double mat4_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    matrix mat4 = {mat4_data, 3, 3};
+    double mat5_data[] = {3, 2, 6, 4, 4, 3, 88, 8, 9};
+    matrix mat5 = {mat5_data, 3, 3};
+    double mat6_data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    matrix mat6 = {mat6_data, 3, 3};
+    CU_ASSERT(columnar_eig_compare(&mat1, &mat2, .00001) == true);
+    CU_ASSERT(columnar_eig_compare(&mat1, &mat3, .00001) == false);
+    CU_ASSERT(columnar_eig_compare(&mat1, &mat4, .00001) == true);
+    CU_ASSERT(columnar_eig_compare(&mat4, &mat5, .00001) == false);
+    CU_ASSERT(columnar_eig_compare(&mat4, &mat6, .00001) == true);
 }
 
 //Tests for compare tensor functions
@@ -136,10 +165,6 @@ void test_cutoff_log(void){
     CU_ASSERT(arr_compare(test2, result2, len2, .00000001) == true);
 }
 
-//Test for weight generation function
-void test_weights(void){
-}
-
 //Test function for exponentation
 void test_exp_array(void){
     double test1[] = {0, 0, 0, 0};
@@ -205,6 +230,7 @@ void test_matrix_scale(void){
     free_matrix(return3t);
 }
 
+//Testing function for dot wrapper
 void test_matrix_dot(void){
     double test1_data[] = {1, 2, 3, 4};
     double test2_data[] = {5, 6, 7, 8, 9, 10};
@@ -227,6 +253,34 @@ void test_matrix_dot(void){
     free_matrix(return1);
     free_matrix(return2);
     free_matrix(return3);
+}
+
+//Testing function for tensor decomposition
+void test_decompose_tensor(void){
+    const double min_diffusitivity = 0;
+    double test1_data[] = {0, 1, 3, 1, 2, 4, 3, 4, 5};
+    double test2_data[] = {5, 6, 8, 6, 7, 9, 8, 9, 10};
+    matrix test1 = {test1_data, 3, 3};
+    matrix test2 = {test2_data, 3, 3};
+    double vals1[] = {8.82572109571665, 0, 0};
+    double vecs1_data[] = {-0.32779753,  0.60627778,  0.72455229,
+                             -0.51295123, -0.75825246,  0.40241053,
+                             -0.79336613,  0.23975081, -0.55954422};
+    matrix vecs1 = {vecs1_data, 3, 3};
+    tensor tensor1 = {vals1, &vecs1};
+    double vals2[] = {23.12613876, 0, 0};
+    double vecs2_data[] = {-0.48266957,  0.6524927,   0.58419463,
+                             -0.55684965, -0.74348717,  0.37033133,
+                             -0.6759797,   0.14656091, -0.72219896};
+    matrix vecs2 = {vecs2_data, 3, 3};
+    tensor tensor2 = {vals2, &vecs2};
+    tensor* return1 = decompose_tensor(&test1, min_diffusitivity);
+    tensor* return2 = decompose_tensor(&test2, min_diffusitivity);
+    CU_ASSERT(compare_tensors(&tensor1, return1, .00001) == true);
+    CU_ASSERT(compare_tensors(&tensor2, return2, .00001) == true);
+    CU_ASSERT(compare_tensors(&tensor1, return2, .00001) == false);
+    free_tensor(return1);
+    free_tensor(return2);
 }
 
 //Init stub for opt tests
@@ -257,13 +311,15 @@ int main(){
 
     if ((NULL == CU_add_test(utility_suite, "Array comparison test", test_compare_array)) || 
             (NULL == CU_add_test(utility_suite, "Matrix comparison test", test_compare_matrix)) ||
+            (NULL == CU_add_test(utility_suite, "Columnar Eig Compare test", test_columnar_eig_compare)) ||
             (NULL == CU_add_test(utility_suite, "Tensor comparison test", test_compare_tensors)) ||
             (NULL == CU_add_test(utility_suite, "Cutoff and logarithm test", test_cutoff_log)) ||
             (NULL == CU_add_test(utility_suite, "Array exp test", test_exp_array)) ||
             (NULL == CU_add_test(utility_suite, "Tensor lower triangular test", test_tensor_lower_triangular)) ||
             (NULL == CU_add_test(utility_suite, "Matrix scale test", test_matrix_scale)) ||
             (NULL == CU_add_test(utility_suite, "GSL conversion functions", test_gsl_matrix_convert)) ||
-            (NULL == CU_add_test(utility_suite, "Matrix dot test", test_matrix_dot))){
+            (NULL == CU_add_test(utility_suite, "Matrix dot test", test_matrix_dot)) ||
+            (NULL == CU_add_test(utility_suite, "Decompose tensor test", test_decompose_tensor))){
         CU_cleanup_registry();
         return CU_get_error();
     }

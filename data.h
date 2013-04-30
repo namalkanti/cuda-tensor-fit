@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#define MARGIN .0000001
 
 //Struct for matrices
 //Matrices are always row major in C
@@ -85,10 +86,49 @@ bool mat_compare(matrix* mat1, matrix* mat2, double err){
     return true;
 }
 
+//Helper function to negate an entire array
+//Same issues as previous, brute force constrained to size, refactor
+void negate(double* arr){
+    int i;
+    for(i = 0;i < 3; i++){
+        arr[i] = arr[i] * -1;
+    }
+}
+
+//Special comparison function to compare columnar eigenvalues and eigenvectors
+//Regular comparison won't work since you can multiply the entire vector by negative and still have be valid
+//But most comparison functions will reject it
+//Brute force method, only works for 3 by 3 matrices
+//Quick and dirty fix, should refactor later
+bool columnar_eig_compare(matrix* mat1, matrix* mat2, double err){
+    double vec1a[] = {mat1->data[0], mat1->data[3], mat1->data[6]};
+    double vec1an[] = {mat1->data[0], mat1->data[3], mat1->data[6]};
+    negate(vec1an);
+    double vec2a[] = {mat1->data[1], mat1->data[4], mat1->data[7]};
+    double vec2an[] = {mat1->data[1], mat1->data[4], mat1->data[7]};
+    negate(vec2an);
+    double vec3a[] = {mat1->data[2], mat1->data[5], mat1->data[8]};
+    double vec3an[] = {mat1->data[2], mat1->data[5], mat1->data[8]};
+    negate(vec3an);
+    double vec1b[] = {mat2->data[0], mat2->data[3], mat2->data[6]};
+    double vec2b[] = {mat2->data[1], mat2->data[4], mat2->data[7]};
+    double vec3b[] = {mat2->data[2], mat2->data[5], mat2->data[8]};
+    if (!(arr_compare(vec1a, vec1b, 3, err) || arr_compare(vec1an, vec1b, 3, err))){
+        return false;
+    }
+    if (!(arr_compare(vec2a, vec2b, 3, err) || arr_compare(vec2an, vec2b, 3, err))){
+        return false;
+    }
+    if (!(arr_compare(vec3a, vec3b, 3, err) || arr_compare(vec3an, vec3b, 3, err))){
+        return false;
+    }
+    return true;
+}
+
 bool compare_tensors(tensor* a, tensor* b, double err){
     if (!arr_compare(a->vals, b->vals, 3, err))
         return false;
-    if (!mat_compare(a->vecs, b->vecs, err)){
+    if (!columnar_eig_compare(a->vecs, b->vecs, err)){
         return false;
     }
     return true; 
@@ -98,6 +138,13 @@ bool compare_tensors(tensor* a, tensor* b, double err){
 void free_matrix(matrix* mat){
     free(mat->data);
     free(mat);
+}
+
+//Function to free tensor
+void free_tensor(tensor* tens){
+    free(tens->vals);
+    free_matrix(tens->vecs);
+    free(tens);
 }
 
 
