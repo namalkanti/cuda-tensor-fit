@@ -140,6 +140,25 @@ void free_matrix(matrix* mat){
     free(mat);
 }
 
+//Function to clone matrix
+//Don't forget to free!
+matrix* clone_matrix(matrix* mat){
+    int elements = mat->rows * mat->columns;
+    double* clone_data = malloc(sizeof(double) * elements);
+    int i;
+    for (i = 0; i < elements; i++){
+        clone_data[i] = mat->data[i];
+    }
+    matrix* clone = malloc(sizeof(matrix));
+    clone->data = clone_data;
+    clone->rows= mat->rows;
+    clone->columns = mat->columns;
+    if (!mat_compare(mat, clone, MARGIN)){
+        return NULL;
+    }
+    return clone;
+}
+
 //Function to free tensor
 void free_tensor(tensor* tens){
     free(tens->vals);

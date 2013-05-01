@@ -70,6 +70,22 @@ void test_columnar_eig_compare(void){
     CU_ASSERT(columnar_eig_compare(&mat4, &mat6, .00001) == true);
 }
 
+//Tests clone matrix function
+void test_clone_matrix(void){
+    double mat1_data[] = {0, -1, 2, 3, -4, 5, 6, -7, 8};
+    matrix mat1 = {mat1_data, 3, 3};
+    double mat2_data[] = {0, -1, 2, 3, -4, 5, 6, -7, 8};
+    matrix mat2 = {mat2_data, 3, 3};
+    matrix* mat3 = clone_matrix(&mat1);
+    matrix* mat4 = clone_matrix(&mat2);
+    mat3->data[4] = mat3->data[4] * 40 + 3;
+    mat4->data[4] = mat4->data[4] * 40 + 3;
+    CU_ASSERT(mat_compare(&mat1, mat3, MARGIN) == false);
+    CU_ASSERT(mat_compare(&mat2, mat4, MARGIN) == false);
+    free_matrix(mat3);
+    free_matrix(mat4);
+}
+
 //Tests for compare tensor functions
 void test_compare_tensors(void){
     double sig4a[] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 0, 1, 2, 0, 0, 1, 0, 2, 0, 0, 0, 0, 1, 1};
@@ -283,6 +299,10 @@ void test_decompose_tensor(void){
     free_tensor(return2);
 }
 
+//Testing function for inverter
+void test_inverter(void){
+}
+
 //Init stub for opt tests
 int init_opt(void){
     return 0;
@@ -313,6 +333,7 @@ int main(){
             (NULL == CU_add_test(utility_suite, "Matrix comparison test", test_compare_matrix)) ||
             (NULL == CU_add_test(utility_suite, "Columnar Eig Compare test", test_columnar_eig_compare)) ||
             (NULL == CU_add_test(utility_suite, "Tensor comparison test", test_compare_tensors)) ||
+            (NULL == CU_add_test(utility_suite, "Clone matrix test", test_clone_matrix)) ||
             (NULL == CU_add_test(utility_suite, "Cutoff and logarithm test", test_cutoff_log)) ||
             (NULL == CU_add_test(utility_suite, "Array exp test", test_exp_array)) ||
             (NULL == CU_add_test(utility_suite, "Tensor lower triangular test", test_tensor_lower_triangular)) ||

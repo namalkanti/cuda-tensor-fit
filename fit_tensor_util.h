@@ -8,9 +8,9 @@
 #include <gsl/gsl_eigen.h>
 #include "data.h"
 
-//Emulates numpy's maximum function and log function combined for efficiency.
-//Iterates through array and if value is less than min signal, replaces with minimum value.
-//Also takes logarithm of every value.
+//emulates numpy's maximum function and log function combined for efficiency.
+//iterates through array and if value is less than min signal, replaces with minimum value.
+//also takes logarithm of every value.
 void cutoff_log(double* signal, double min_signal, size_t n){
     int i;
     for (i = 0; i < n; i++){
@@ -21,8 +21,8 @@ void cutoff_log(double* signal, double min_signal, size_t n){
     }
 }
 
-//Raises every e to the power of every element in the input array and outputs new array
-//Pointer returned is allocated on heap, free memory when done using it
+//raises every e to the power of every element in the input array and outputs new array
+//pointer returned is allocated on heap, free memory when done using it
 double* exp_array(double* input, size_t n){
     double* output = (double*) malloc(sizeof(double) * n);
     int i;
@@ -32,8 +32,8 @@ double* exp_array(double* input, size_t n){
     return output;
 }
 
-//Function takes input array and matches each index to a certain position in a 3 x 3 matrix
-//Only uses first six elements of input array. Will fail if less than six are provided.
+//function takes input array and matches each index to a certain position in a 3 x 3 matrix
+//only uses first six elements of input array. will fail if less than six are provided.
 matrix* tensor_lower_triangular(double* input){
     double* output = (double*) malloc(sizeof(double) * 9);
     output[0] = input[0];
@@ -52,9 +52,9 @@ matrix* tensor_lower_triangular(double* input){
     return output_mat;
 }
 
-//Takes in a matrix and and an array
-//Multiplies each matrix row element by it's corresponding array element and repeats for all rows if transpose flag is 0
-//If transpose flag is 1 will multiply by each column instead
+//takes in a matrix and and an array
+//multiplies each matrix row element by it's corresponding array element and repeats for all rows if transpose flag is 0
+//if transpose flag is 1 will multiply by each column instead
 matrix* matrix_scale(matrix* input_matrix, double* vec, int trans){
     double* output = (double*) malloc(sizeof(double) * (input_matrix->rows * input_matrix->columns));
     int i, j;
@@ -83,8 +83,8 @@ matrix* matrix_scale(matrix* input_matrix, double* vec, int trans){
     return output_mat;
 }
 
-//Returns gsl matrix for interfacing with gsl library for BLAS and LAPACK
-//Meant to be used a helper function
+//returns gsl matrix for interfacing with gsl library for blas and lapack
+//meant to be used a helper function
 gsl_matrix* to_gsl(matrix* mat){
     gsl_matrix* output = gsl_matrix_alloc(mat->rows, mat->columns);
     int i, j;
@@ -96,7 +96,7 @@ gsl_matrix* to_gsl(matrix* mat){
     return output;
 }
 
-//Returns matrix from gsl matrix.
+//returns matrix from gsl matrix.
 matrix* to_matrix(gsl_matrix* gsl_mat){
     int i, j;
     double* output_data = (double*) malloc(sizeof(double) * ((int)gsl_mat->size1) * ((int)gsl_mat->size2));
@@ -112,24 +112,24 @@ matrix* to_matrix(gsl_matrix* gsl_mat){
     return output;
 }
 
-//Function to take two matrices, dot them, and return the result
-matrix* matrix_dot(matrix* A, matrix* B){
-    double* C_data = malloc(sizeof(double) * A->rows * B->columns); 
-    matrix* C = malloc(sizeof(matrix));
-    C->rows = A->rows;
-    C->columns = B->columns;
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, A->rows, B->columns, A->columns, 1.0, A->data, A->columns, B->data, B->columns, 0.0, C_data, C->columns);
-    C->data = C_data;
-    return C;
+//function to take two matrices, dot them, and return the result
+matrix* matrix_dot(matrix* a, matrix* b){
+    double* c_data = malloc(sizeof(double) * a->rows * b->columns); 
+    matrix* c = malloc(sizeof(matrix));
+    c->rows = a->rows;
+    c->columns = b->columns;
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, a->rows, b->columns, a->columns, 1.0, a->data, a->columns, b->data, b->columns, 0.0, c_data, c->columns);
+    c->data = c_data;
+    return c;
 }
 
-//Function to extract eigenvalues and eigenvectors from tensor
+//function to extract eigenvalues and eigenvectors from tensor
 tensor* decompose_tensor(matrix* tensor_matrix, const double min_diffusitivity){
     gsl_vector* evals = gsl_vector_alloc(3);
     gsl_matrix* evecs = gsl_matrix_alloc(3, 3);
     gsl_eigen_symmv_workspace* w = gsl_eigen_symmv_alloc(4);
-    gsl_matrix* A = to_gsl(tensor_matrix);
-    gsl_eigen_symmv(A, evals, evecs, w);
+    gsl_matrix* a = to_gsl(tensor_matrix);
+    gsl_eigen_symmv(a, evals, evecs, w);
     gsl_eigen_symmv_sort(evals, evecs, GSL_EIGEN_SORT_VAL_DESC);
     tensor* tensor_output = malloc(sizeof(tensor));    
     double* vals = malloc(sizeof(double) * 3);
@@ -148,6 +148,7 @@ tensor* decompose_tensor(matrix* tensor_matrix, const double min_diffusitivity){
     gsl_eigen_symmv_free(w);
     gsl_vector_free(evals);
     gsl_matrix_free(evecs);
-    gsl_matrix_free(A);
+    gsl_matrix_free(a);
     return tensor_output;
 }
+
