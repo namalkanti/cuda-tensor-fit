@@ -299,8 +299,24 @@ void test_decompose_tensor(void){
     free_tensor(return2);
 }
 
-//Testing function for inverter
-void test_inverter(void){
+//Testing function for fitter
+void test_fitter(void){
+    double design1_data[] = {1, 2, 3, 4};
+    matrix design1 = {design1_data, 2, 2};
+    double weight1[] = {2, 1};
+    double sig1[] = {5, 6};
+    double result1[] = {-4, 4.5};
+    double design2_data[] = {1, 2, 3, 4, 5, 6};
+    matrix design2 = {design2_data, 3, 2};
+    double weight2[] = {3, 2, 1};
+    double sig2[] = {1, 2, 2};
+    double result2[] = {-0.34210526, 0.69736842};
+    double* return1 = fitter(&design1, weight1, sig1, 2);
+    double* return2 = fitter(&design2, weight2, sig2, 3);
+    CU_ASSERT(arr_compare(result1, return1, 2, .0001) == true);
+    CU_ASSERT(arr_compare(result2, return2, 2, .0001) == true);
+    free(return1);
+    free(return2);
 }
 
 //Init stub for opt tests
@@ -340,7 +356,8 @@ int main(){
             (NULL == CU_add_test(utility_suite, "Matrix scale test", test_matrix_scale)) ||
             (NULL == CU_add_test(utility_suite, "GSL conversion functions", test_gsl_matrix_convert)) ||
             (NULL == CU_add_test(utility_suite, "Matrix dot test", test_matrix_dot)) ||
-            (NULL == CU_add_test(utility_suite, "Decompose tensor test", test_decompose_tensor))){
+            (NULL == CU_add_test(utility_suite, "Decompose tensor test", test_decompose_tensor)) ||
+            (NULL == CU_add_test(utility_suite, "Fitting test", test_fitter))){
         CU_cleanup_registry();
         return CU_get_error();
     }

@@ -152,3 +152,31 @@ tensor* decompose_tensor(matrix* tensor_matrix, const double min_diffusitivity){
     return tensor_output;
 }
 
+//Fits matrix using svd method
+double* fitter(matrix* design, double* weights, double* signal, size_t sig_size){
+    gsl_vector* signal_gsl = gsl_vector_alloc(sig_size);
+    int i;
+    for (i = 0; i < sig_size; i++){
+        gsl_vector_set(signal_gsl, i, signal[i] * weights[i]);
+    }
+    matrix* weighted_design = matrix_scale(design, weights, 1);
+    gsl_matrix* weighted_design_gsl = to_gsl(weighted_design);
+    gsl_matrix* V = gsl_matrix_alloc(design->columns, design->columns);
+    gsl_vector* S = gsl_vector_alloc(design->columns);
+    gsl_vector* work = gsl_vector_alloc(design->columns);
+    gsl_linalg_SV_decomp(weighted_design_gsl, V, S, work);
+    gsl_vector* output_gsl = gsl_vector_alloc(design->columns);
+    gsl_linalg_SV_solve(weighted_design_gsl, V, S, signal_gsl, output_gsl);
+    double* output = malloc(sizeof(double) * design->columns);
+    for(i=0;i<design->columns;i++){
+        output[i] = gsl_vector_get(output_gsl, i);
+    }
+    gsl_vector_free(signal_gsl);
+    gsl_matrix_free(weighted_design_gsl);
+    gsl_matrix_free(V);
+    gsl_vector_free(S);
+    gsl_vector_free(work);
+    gsl_vector_free(output_gsl);
+    free_matrix(weighted_design);
+    return output;
+}
