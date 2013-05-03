@@ -1,16 +1,34 @@
 #Makefile to run and test fit tensor functions
 
-run-mp:tests-mp
-	valgrind --tool=memcheck --leak-check=yes --track-origins=yes ./fit_tensor_tests
+headers = data.h fit_tensor_util.h fit_tensor_opt.h
+
+compile_tests = gcc -I/usr/lib/sagemath/local/include -o fit_tensor_tests fit_unit_test.c -lcunit -lm -lgsl -lgslcblas 
+
+memcheck = valgrind --tool=memcheck --leak-check=yes --track-origins=yes ./fit_tensor_tests
+
+leaks-mp: tests-mp
+	${memcheck}
+
+leaks: tests
+	${memcheck}
+
+run-mp: tests-mp
+	./fit_tensor_tests
 
 run: tests
-	valgrind --tool=memcheck --leak-check=yes --track-origins=yes ./fit_tensor_tests
+	./fit_tensor_tests
 
-tests-mp:
-	gcc -g -I/usr/lib/sagemath/local/include -fopenmp -o fit_tensor_tests fit_unit_test.c -lcunit -lm -lgsl -lgslcblas
+debug-mp: ${headers}
+	${compile_tests} -fopenmp -g
+	
+debug: ${headers}
+	${compile_tests} -g
 
-tests:  
-	gcc -g -I/usr/lib/sagemath/local/include -o fit_tensor_tests fit_unit_test.c -lcunit -lm -lgsl -lgslcblas
+tests-mp: ${headers}
+	${compile_tests} -fopenmp 
 
-clean:
+tests: ${headers} 
+	${compile_tests}
+
+clean: 
 	rm fit_tensor_tests
