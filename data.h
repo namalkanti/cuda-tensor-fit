@@ -37,13 +37,13 @@ matrix design_sample = {design_data, 56, 7};
 //Sample test data
 double sig1[] = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 double val1[] = {0.0000000004999999999999999, 0.0000000004999999999999999, 0.0000000004999999999999999};
-double vec1_data[] = {0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0};
+double vec1_data[] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
 matrix vec1 = {vec1_data, 3, 3};
 tensor tensor1 = {val1, &vec1};
 
 double sig2[] = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 double val2[] = {0.0000000004999999999999999, 0.0000000004999999999999999, 0.0000000004999999999999999};
-double vec2_data[] = {0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0};
+double vec2_data[] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
 matrix vec2 = {vec2_data, 3, 3};
 tensor tensor2 = {val2, &vec2};
 
@@ -67,6 +67,9 @@ tensor tensor5 = {val5, &vec5};
 
 tensor *tensors[] = {&tensor1, &tensor2, &tensor3, &tensor4, &tensor5};
 
+double min_signal_sample = 1;
+double min_diffusitivity_sample = .0000000005;
+
 bool arr_compare(double* arr1, double* arr2, size_t n, double err){
     int i;
     for(i = 0; i < n; i++){
@@ -74,6 +77,27 @@ bool arr_compare(double* arr1, double* arr2, size_t n, double err){
                 return false;
     }
     return true;
+}
+
+double* array_combine(double* arr1, size_t len1, double* arr2, size_t len2){
+    double* result = malloc(sizeof(double) * len1 * len2);
+    int i;
+    for(i = 0; i < len1; i++){
+        result[i] = arr1[i];
+    }
+    for(i = len1; i < (len1 + len2); i++){
+        result[i] = arr2[i - len1];
+    }
+    return result;
+}
+
+double* array_clone(double* arr1, size_t n){
+    double* result = malloc(sizeof(double) * n);
+    int i;
+    for(i = 0; i < n; i++){
+        result[i] = arr1[i];
+    }
+    return result;
 }
 
 bool mat_compare(matrix* mat1, matrix* mat2, double err){

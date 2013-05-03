@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
-#include "fit_tensor_util.h"
+#include "fit_tensor_opt.h"
 
 //Initalization stub for utility test suite
 int init_utility(void){
@@ -27,6 +27,25 @@ void test_compare_array(void){
    CU_ASSERT(arr_compare(test5, test6, 5, .00001) == true);
    CU_ASSERT(arr_compare(test1, test6, 5, .00001) == false);
    CU_ASSERT(arr_compare(test3, test5, 5, .00001) == false);
+}
+
+//Tests array combine function
+void test_array_combine(void){
+    double test1[] = {1, 2, 3, 4};
+    double test2[] = {5, 6, 7, 8};
+    double result[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    double* return1 = array_combine(test1, 4, test2, 4);
+    CU_ASSERT(arr_compare(result, return1, 8, MARGIN) == true);
+    free(return1);
+}
+
+//Tests array clone function
+void test_array_clone(void){
+    double test1[] = {1, 2, 3, 4};
+    double* return1 = array_clone(test1, 4);
+    return1[0] = 3;
+    CU_ASSERT(arr_compare(test1, return1, 4, MARGIN) == false);
+    free(return1);
 }
 
 //Tests matrix comparison function
@@ -329,6 +348,54 @@ int clean_opt(void){
     return 0;
 }
 
+//Test function of signal fit function
+void test_signal_fit(void){
+    double* csig1 = array_clone(sig1, 56);
+    double* csig2 = array_clone(sig2, 56);
+    double* csig3 = array_clone(sig3, 56);
+    double* csig4 = array_clone(sig4, 56);
+    double* csig5 = array_clone(sig5, 56);
+    tensor* output1 = signal_fit(&ols_sample, &design_sample, csig1, min_signal_sample, min_diffusitivity_sample, 56);
+    CU_ASSERT(compare_tensors(&tensor1, output1, MARGIN) == true);
+    tensor* output2 = signal_fit(&ols_sample, &design_sample, csig2, min_signal_sample, min_diffusitivity_sample, 56);
+    CU_ASSERT(compare_tensors(&tensor2, output2, MARGIN) == true);
+    tensor* output3 = signal_fit(&ols_sample, &design_sample, csig3, min_signal_sample, min_diffusitivity_sample, 56);
+    CU_ASSERT(compare_tensors(&tensor3, output3, MARGIN) == true);
+    tensor* output4 = signal_fit(&ols_sample, &design_sample, csig4, min_signal_sample, min_diffusitivity_sample, 56);
+    CU_ASSERT(compare_tensors(&tensor4, output4, MARGIN) == true);
+    tensor* output5 = signal_fit(&ols_sample, &design_sample, csig5, min_signal_sample, min_diffusitivity_sample, 56);
+    CU_ASSERT(compare_tensors(&tensor5, output5, MARGIN) == true);
+    free_tensor(output1);
+    free_tensor(output2);
+    free_tensor(output3);
+    free_tensor(output4);
+    free_tensor(output5);
+    free(csig1);
+    free(csig2);
+    free(csig3);
+    free(csig4);
+    free(csig5);
+}
+
+//Test function for fit_complete_signal
+void test_fit_complete_signal(void){
+    double* sig12 = array_combine(sig1, 56, sig2, 56);
+    double* sig123 = array_combine(sig12, 112, sig3, 56);
+    free(sig12);
+    double* sig1234 = array_combine(sig123, 168, sig4, 56);
+    free(sig123);
+    double* sig12345 = array_combine(sig1234, 224, sig5, 56);
+    free(sig1234);
+    matrix signal = {sig12345, 5, 56};
+    tensor* tensor_array[5];
+    fit_complete_signal(&ols_sample, &design_sample, &signal, min_signal_sample, min_diffusitivity_sample, tensor_array);
+    int i;
+    for (i = 0; i < 5; i++){
+        CU_ASSERT(compare_tensors(tensor_array[i], tensors[i], MARGIN) == true);
+        free_tensor(tensor_array[i]);
+    }
+    free(sig12345);
+}
 
 //Main test function
 int main(){
@@ -346,6 +413,8 @@ int main(){
     }
 
     if ((NULL == CU_add_test(utility_suite, "Array comparison test", test_compare_array)) || 
+            (NULL == CU_add_test(utility_suite, "Array combine test", test_array_combine)) ||
+            (NULL == CU_add_test(utility_suite, "Array clone test", test_array_clone)) || 
             (NULL == CU_add_test(utility_suite, "Matrix comparison test", test_compare_matrix)) ||
             (NULL == CU_add_test(utility_suite, "Columnar Eig Compare test", test_columnar_eig_compare)) ||
             (NULL == CU_add_test(utility_suite, "Tensor comparison test", test_compare_tensors)) ||
@@ -362,11 +431,16 @@ int main(){
         return CU_get_error();
     }
 
-    /*opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
+    opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
     if (NULL == opt_suite){
         CU_cleanup_registry();
         return CU_get_error();
-    }*/
+    }
+    if ((NULL == CU_add_test(opt_suite, "Signal fitting test", test_signal_fit)) ||
+            (NULL == CU_add_test(opt_suite, "Complete signal fitting test", test_fit_complete_signal))){
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     /*if (){
         CU_cleanup_registry();
