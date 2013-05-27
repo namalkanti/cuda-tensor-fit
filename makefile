@@ -1,34 +1,38 @@
 #Makefile to run and test fit tensor functions
 
-headers = data.h fit_tensor_util.h fit_tensor_opt.h
+CFLAGS = -g 
 
-compile_tests = gcc -I/usr/lib/sagemath/local/include -o fit_tensor_tests fit_unit_test.c -lcunit -lm -lgsl -lgslcblas 
+memcheck = valgrind --tool=memcheck --leak-check=yes --track-origins=yes 
 
-memcheck = valgrind --tool=memcheck --leak-check=yes --track-origins=yes ./fit_tensor_tests
+leaks: test
+	${memcheck} ./main_test
 
-leaks-mp: tests-mp
-	${memcheck}
+run-cuda: cuda-test
+	./cuda_test
 
-leaks: tests
-	${memcheck}
+run-opt:opt-test
+	./opt_test
 
-run-mp: tests-mp
-	./fit_tensor_tests
+run: test
+	./main_test
 
-run: tests
-	./fit_tensor_tests
+cuda-test: fit_tensor_cuda.o
+	gcc ${CFLAGS} -o cuda_test cuda_test.c fit_tensor_util.o fit_tensor_cuda.o -lgsl -lgslcblas -lm -lcunit
 
-debug-mp: ${headers}
-	${compile_tests} -fopenmp -g
-	
-debug: ${headers}
-	${compile_tests} -g
+opt-test: fit_tensor_util.o
+	gcc ${CFLAGS} -o opt_test opt_test.c fit_tensor_util.o -lgsl -lgslcblas -lm -lcunit
 
-tests-mp: ${headers}
-	${compile_tests} -fopenmp 
+test: fit_tensor.o
+	gcc ${CFLAGS} -o main_test fit_unit_test.c fit_tensor.o fit_tensor_util.o -lgsl -lgslcblas -lm -lcunit
 
-tests: ${headers} 
-	${compile_tests}
+fit_tensor_cuda.o: fit_tensor_util.o
+	nvcc -c fit_tensor_cuda.cu
+
+fit_tensor.o: fit_tensor_opt.c fit_tensor_util.o
+	gcc ${CFLAGS} -o fit_tensor.o -c fit_tensor_opt.c
+
+fit_tensor_util.o: fit_tensor_util.c
+	gcc ${CFLAGS} -o fit_tensor_util.o -c fit_tensor_util.c
 
 clean: 
-	rm fit_tensor_tests
+	rm *.o

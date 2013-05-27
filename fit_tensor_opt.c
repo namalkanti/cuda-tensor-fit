@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#include "fit_tensor_util.h"
+#include "fit_tensor.h"
 
 //Function to fit each individual signal row
 tensor* signal_fit(matrix* ols_fit, matrix* design_matrix, double* sig, double min_signal, double min_diffusivity, size_t signal_length){
