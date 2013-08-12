@@ -17,7 +17,7 @@ run: test
 	./main_test
 
 cuda-test: fit_tensor_cuda.o
-	gcc ${CFLAGS} -o cuda_test cuda_test.c fit_tensor_util.o fit_tensor_cuda.o -lgsl -lgslcblas -lm -lcunit
+	g++ ${CFLAGS} -o cuda_test cuda_test.c fit_tensor_util.o fit_tensor_cuda.o -lgsl -lgslcblas -lm -lcunit -locelot
 
 opt-test: fit_tensor_util.o
 	gcc ${CFLAGS} -o opt_test opt_test.c fit_tensor_util.o -lgsl -lgslcblas -lm -lcunit

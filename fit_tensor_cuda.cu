@@ -13,13 +13,13 @@ double* cuda_double_copy(double* arr, size_t len){
 
 //clones double array and copies to host 
 double* cuda_double_return(double* carr, size_t len){
-    double* arr = (double*) malloc(sizeof(double) * len);
+    double* arr = (double *) malloc(sizeof(double) * len);
     cudaMemcpy(arr, carr, sizeof(double) * len, cudaMemcpyDeviceToHost);
     return arr;
 }
 
 //allocates space for a double array on the device
-void cudal_double_alloc(double* ptr, int len){
+void cuda_double_alloc(double* ptr, int len){
     cudaMalloc(&ptr, len);
 }
 
@@ -29,7 +29,7 @@ void free_cuda(double* ptr){
 }
 
 //kernel to take entire array and run cutoff log function
-__global__ void cutoff_log_kernel(double* input, double* output, double min_signal, size_t len){
+__global__ void cutoff_log_kernel(double* input, double* output, double min_signal){
     int tid = blockIdx.x;
     if (input[tid] < min_signal){
         output[tid] = log(min_signal);
@@ -39,10 +39,21 @@ __global__ void cutoff_log_kernel(double* input, double* output, double min_sign
     }
 }
 
+//Function to launch cutoff log kernel
+void cutoff_log_cuda(double* input, double* output, double min_signal, int block_grid_rows){
+  cutoff_log_kernel<<<block_grid_rows, 1>>>(input, output, min_signal);
+}
+
 //kernel to take entire array and exp it
-__global__ void exp_kernel(double* input, double* output, size_t len){
+__global__ void exp_kernel(double* input, double* output){
     int tid = blockIdx.x;
     output[tid] = pow(M_E, input[tid]);
+}
+
+
+//Kernel catapult
+void exp_cuda(double* input, double* output, int block_grid_rows){
+  exp_kernel<<<block_grid_rows, 1>>>(input, output);
 }
 
 //function that take in a complete signal matrix and fits it, cuda version

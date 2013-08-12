@@ -23,11 +23,11 @@ typedef struct {
 //emulates numpy's maximum function and log function combined for efficiency.
 //iterates through array and if value is less than min signal, replaces with minimum value.
 //also takes logarithm of every value.
-void cutoff_log(double* signal, double min_signal, size_t n);
+void cutoff_log(double* signal, double min_signal, int n);
 
 //raises every e to the power of every element in the input array and outputs new array
 //pointer returned is allocated on heap, free memory when done using it
-double* exp_array(double* input, size_t n);
+double* exp_array(double* input, int n);
 
 //function takes input array and matches each index to a certain position in a 3 x 3 matrix
 //only uses first six elements of input array. will fail if less than six are provided.
@@ -52,16 +52,16 @@ matrix* matrix_dot(matrix* a, matrix* b);
 tensor* decompose_tensor(matrix* tensor_matrix, const double min_diffusitivity);
 
 //Fits matrix using svd method
-double* fitter(matrix* design, double* weights, double* signal, size_t sig_size);
+double* fitter(matrix* design, double* weights, double* signal, int sig_size);
 
 //Function to compare two arrays
-bool arr_compare(double* arr1, double* arr2, size_t n, double err);
+bool arr_compare(double* arr1, double* arr2, int n, double err);
 
 //Function to combine two arrays
-double* array_combine(double* arr1, size_t len1, double* arr2, size_t len2);
+double* array_combine(double* arr1, int len1, double* arr2, int len2);
 
 //Function to clone an array
-double* array_clone(double* arr1, size_t n);
+double* array_clone(double* arr1, int n);
 
 //Function to compare two matrices
 bool mat_compare(matrix* mat1, matrix* mat2, double err);

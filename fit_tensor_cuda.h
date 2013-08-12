@@ -9,13 +9,13 @@ double* cuda_double_copy(double* arr, size_t len);
 double* cuda_double_return(double* carr, size_t len);
 
 //allocates space for a double array on the device
-void cudal_double_alloc(double* ptr, int len);
+void cuda_double_alloc(double* ptr, int len);
 
 //frees double device memory
 void free_cuda(double* ptr);
 
 //kernel to take entire array and run cutoff log function
-__global__ void cutoff_log_kernel(double* input, double* output, double min_signal, size_t len);
+void cutoff_log_cuda(double* input, double* output, double min_signal, int block_grid_rows);
 
 //kernel to take entire array and exp it
-__global__ void exp_kernel(double* input, double* output, size_t len);
+void exp_cuda(double* input, double* output, int block_grid_rows);

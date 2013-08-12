@@ -69,7 +69,7 @@ int clean_cuda(void){
 void test_cutoff_log(void){
     double min_value = M_E;
     double test1[] = {0, 2, 3, 4, 1, 23, 3, 5, 6, 43, 5};
-    size_t len1 = sizeof(test1)/sizeof(test1[0]);
+    int len1 = sizeof(test1)/sizeof(test1[0]);
     double result1[] = {1.0,
      1.0,
      1.0986122886681098,
@@ -82,7 +82,7 @@ void test_cutoff_log(void){
      3.7612001156935624,
      1.6094379124341003};
     double test2[] = {1, 5, 2, 1, 4, 1.3, 4.5, 1.2, 3, 41, 9};
-    size_t len2 = sizeof(test2)/sizeof(test2[0]);
+    int len2 = sizeof(test2)/sizeof(test2[0]);
     double result2[] = {1.0,
      1.6094379124341003,
      1.0,
@@ -96,11 +96,12 @@ void test_cutoff_log(void){
      2.1972245773362196};
     double* icarr = cuda_double_copy(test1, len1);
     double* icarr2 = cuda_double_copy(test2, len2);
-    double* ocarr, ocarr2;
+    double* ocarr; 
+    double* ocarr2;
     cuda_double_alloc(ocarr, sizeof(double) * len1);
     cuda_double_alloc(ocarr2, sizeof(double) * len2);
-    cutoff_log<<len1, 1>>(icarr, ocarr, min_value, len1);
-    cutoff_log<<len2, 1>>(icarr2, ocarr2, min_value, len2);
+    cutoff_log_cuda(icarr, ocarr, min_value, len1);
+    cutoff_log_cuda(icarr2, ocarr2, min_value, len2);
     double* return1 = cuda_double_return(ocarr, len1);
     double* return2 = cuda_double_return(ocarr2, len2);
     CU_ASSERT(arr_compare(return1, result1, len1, MARGIN) == true);
@@ -117,14 +118,14 @@ void test_cutoff_log(void){
 void test_exp_array(void){
     double test1[] = {0, 0, 0, 0};
     double results1[] = {1, 1, 1, 1};
-    size_t size1 = sizeof(test1)/sizeof(test1[0]);
+    int size1 = sizeof(test1)/sizeof(test1[0]);
     double test2[] = {1, 2, 3, 4, 14, 15, 15, 3, 12, 13};
     double results2[] = {2.718281828459045, 7.38905609893065, 20.085536923187668, 54.598150033144236, 1202604.2841647768, 3269017.3724721107, 3269017.3724721107, 20.085536923187668, 162754.79141900392, 442413.3920089205};
-    size_t size2 = sizeof(test2)/sizeof(test2[0]);
+    int size2 = sizeof(test2)/sizeof(test2[0]);
     double* carr1 = cuda_double_copy(test1, size1);
     double* carr2 = cuda_double_copy(test2,size2);
-    exp_kernel<<size1, 1>>(test1, carr1, size1);
-    exp_kernel<<size2, 1>>(test2, carr2, size2);
+    exp_cuda(test1, carr1, size1);
+    exp_cuda(test2, carr2, size2);
     double* return1 = cuda_double_return(carr1, size1);
     double* return2 = cuda_double_return(carr2, size2);
     CU_ASSERT(arr_compare(results1, return1, size1, .0000001) == true);
@@ -159,12 +160,16 @@ int main(){
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(cuda_suite, "Array comparison test", test_compare_array))){
+    if ((NULL == CU_add_test(cuda_suite, "Cut off log  test", test_cutoff_log))){
         CU_cleanup_registry();
         return CU_get_error();
     }
 
-    opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
+    if ((NULL == CU_add_test(cuda_suite, "Exp  test", test_exp_array))){
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    /*opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
     if (NULL == opt_suite){
         CU_cleanup_registry();
         return CU_get_error();
@@ -172,7 +177,7 @@ int main(){
     if ((NULL == CU_add_test(opt_suite, "Complete Signal Fitting Test", test_fit_complete_signal))){
         CU_cleanup_registry();
         return CU_get_error();
-    }
+    }*/
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
