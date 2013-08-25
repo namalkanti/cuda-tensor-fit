@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "fit_tensor.h"
 
 //clones double array and copies to gpu
-double* cuda_double_copy(double* arr, size_t len);
+double* cuda_double_copy(double* arr, int len);
 
 //clones double array and copies to host 
-double* cuda_double_return(double* carr, size_t len);
+double* cuda_double_return(double* carr, int len);
 
 //allocates space for a double array on the device
 void cuda_double_alloc(double* ptr, int len);

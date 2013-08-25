@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "fit_tensor.h"
+#include "cuda_util.h"
 
 //clones double array and copies to gpu
-double* cuda_double_copy(double* arr, size_t len){
+double* cuda_double_copy(double* arr, int len){
     double* carr;
     cudaMalloc(&carr, sizeof(double) * len);
     cudaMemcpy(carr, arr, sizeof(double) * len, cudaMemcpyHostToDevice);
@@ -12,7 +12,7 @@ double* cuda_double_copy(double* arr, size_t len){
 }
 
 //clones double array and copies to host 
-double* cuda_double_return(double* carr, size_t len){
+double* cuda_double_return(double* carr, int len){
     double* arr = (double *) malloc(sizeof(double) * len);
     cudaMemcpy(arr, carr, sizeof(double) * len, cudaMemcpyDeviceToHost);
     return arr;
@@ -56,7 +56,3 @@ void exp_cuda(double* input, double* output, int block_grid_rows){
   exp_kernel<<<block_grid_rows, 1>>>(input, output);
 }
 
-//function that take in a complete signal matrix and fits it, cuda version
-void fit_complete_signal(matrix* ols_fit, matrix* design_matrix, matrix* signal, double min_signal, double min_diffusivity, tensor** tensor_output){
-    return;
-}

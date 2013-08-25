@@ -11,7 +11,7 @@
 //emulates numpy's maximum function and log function combined for efficiency.
 //iterates through array and if value is less than min signal, replaces with minimum value.
 //also takes logarithm of every value.
-void cutoff_log(double* signal, double min_signal, size_t n){
+void cutoff_log(double* signal, double min_signal, int n){
     int i;
     for (i = 0; i < n; i++){
         if (signal[i] < min_signal){
@@ -23,7 +23,7 @@ void cutoff_log(double* signal, double min_signal, size_t n){
 
 //raises every e to the power of every element in the input array and outputs new array
 //pointer returned is allocated on heap, free memory when done using it
-double* exp_array(double* input, size_t n){
+double* exp_array(double* input, int n){
     double* output = (double*) malloc(sizeof(double) * n);
     int i;
     for(i = 0; i < n; i++){
@@ -154,32 +154,7 @@ tensor* decompose_tensor(matrix* tensor_matrix, const double min_diffusitivity){
 
 //Fits matrix using transpose and inverse method
 //Originally used svd method
-double* fitter(matrix* design, double* weights, double* signal, size_t sig_size){
-    /*gsl_vector* signal_gsl = gsl_vector_alloc(sig_size);
-    int i;
-    for (i = 0; i < sig_size; i++){
-        gsl_vector_set(signal_gsl, i, signal[i] * weights[i]);
-    }
-    matrix* weighted_design = matrix_scale(design, weights, 1);
-    gsl_matrix* weighted_design_gsl = to_gsl(weighted_design);
-    gsl_matrix* V = gsl_matrix_alloc(design->columns, design->columns);
-    gsl_vector* S = gsl_vector_alloc(design->columns);
-    gsl_vector* work = gsl_vector_alloc(design->columns);
-    gsl_linalg_SV_decomp(weighted_design_gsl, V, S, work);
-    gsl_vector* output_gsl = gsl_vector_alloc(design->columns);
-    gsl_linalg_SV_solve(weighted_design_gsl, V, S, signal_gsl, output_gsl);
-    double* output = malloc(sizeof(double) * design->columns);
-    for(i=0;i<design->columns;i++){
-        output[i] = gsl_vector_get(output_gsl, i);
-    }
-    gsl_vector_free(signal_gsl);
-    gsl_matrix_free(weighted_design_gsl);
-    gsl_matrix_free(V);
-    gsl_vector_free(S);
-    gsl_vector_free(work);
-    gsl_vector_free(output_gsl);
-    free_matrix(weighted_design);
-    return output;*/
+double* fitter(matrix* design, double* weights, double* signal, int sig_size){
     gsl_vector* signal_gsl = gsl_vector_alloc(sig_size);
     double* signal_clone = array_clone(signal, sig_size);
     matrix signal_mat = {signal_clone, sig_size, 1};
@@ -219,7 +194,7 @@ double* fitter(matrix* design, double* weights, double* signal, size_t sig_size)
     return output;
 }
 
-bool arr_compare(double* arr1, double* arr2, size_t n, double err){
+bool arr_compare(double* arr1, double* arr2, int n, double err){
     int i;
     for(i = 0; i < n; i++){
         if(fabs(arr1[i] - arr2[i]) > err)
@@ -228,7 +203,7 @@ bool arr_compare(double* arr1, double* arr2, size_t n, double err){
     return true;
 }
 
-double* array_combine(double* arr1, size_t len1, double* arr2, size_t len2){
+double* array_combine(double* arr1, int len1, double* arr2, int len2){
     double* result = malloc(sizeof(double) * len1 * len2);
     int i;
     for(i = 0; i < len1; i++){
@@ -240,7 +215,7 @@ double* array_combine(double* arr1, size_t len1, double* arr2, size_t len2){
     return result;
 }
 
-double* array_clone(double* arr1, size_t n){
+double* array_clone(double* arr1, int n){
     double* result = malloc(sizeof(double) * n);
     int i;
     for(i = 0; i < n; i++){
