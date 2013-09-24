@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 extern "C" {
 #include "cuda_util.h"
 }
@@ -38,10 +37,10 @@ void free_cuda_memory(float* pointer){
 __global__ void cutoff_log_kernel(float* input, float* output, float min_signal){
     int thread_id = blockIdx.x;
     if (input[thread_id] < min_signal){
-        output[thread_id] = log(min_signal);
+        output[thread_id] = logf(min_signal);
     }
     else{
-        output[thread_id] = log(input[thread_id]);
+        output[thread_id] = logf(input[thread_id]);
     }
 }
 
@@ -54,7 +53,7 @@ void cutoff_log_cuda(float* input, float* output, float min_signal, int block_gr
 //kernel to take entire array and exp it
 __global__ void exp_kernel(float* cuda_array){
     int thread_id = blockIdx.x;
-    output[cuda_array] = pow(M_E, cuda_array[thread_id]);
+    cuda_array[thread_id] = expf(cuda_array[thread_id]);
 }
 
 extern "C"

@@ -203,6 +203,11 @@ bool arr_compare(double* arr1, double* arr2, int n, double err){
     return true;
 }
 
+bool float_array_compare(float* array1, float* array2, int array_length, float margin){
+    bool is_equal = arr_compare((double*) array1, (double*) array2, array_length, (double) margin);
+    return is_equal;
+}	
+
 double* array_combine(double* arr1, int len1, double* arr2, int len2){
     double* result = malloc(sizeof(double) * len1 * len2);
     int i;

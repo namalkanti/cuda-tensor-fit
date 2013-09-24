@@ -41,6 +41,8 @@ double* fitter(matrix* design, double* weights, double* signal, int sig_size);
 //Function to compare two arrays
 bool arr_compare(double* arr1, double* arr2, int n, double err);
 
+bool float_array_compare(float* array1, float* array2, int array_length, float margin);
+
 //Function to combine two arrays
 double* array_combine(double* arr1, int len1, double* arr2, int len2);
 

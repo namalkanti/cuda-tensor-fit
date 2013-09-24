@@ -105,8 +105,8 @@ void test_cutoff_log(void){
     cutoff_log_cuda(input_cuda_array2, output_cuda_array2, min_value, len2);
     float* return1 = cuda_float_return_from_gpu(output_cuda_array, len1);
     float* return2 = cuda_float_return_from_gpu(output_cuda_array2, len2);
-    CU_ASSERT(arr_compare(return1, result1, len1, MARGIN) == true);
-    CU_ASSERT(arr_compare(return2, result2, len2, MARGIN) == true);
+    CU_ASSERT(float_array_compare(return1, result1, len1, MARGIN) == true);
+    CU_ASSERT(float_array_compare(return2, result2, len2, MARGIN) == true);
     free_cuda_memory(input_cuda_array);
     free_cuda_memory(input_cuda_array2);
     free_cuda_memory(output_cuda_array);
@@ -132,14 +132,14 @@ void test_exp_array(void){
         162754.79141900392, 
         442413.3920089205};
     int size2 = sizeof(test2)/sizeof(test2[0]);
-    float* cuda_input_array1 = cuda_float_copy(test1, size1);
-    float* cuda_input_array2 = cuda_float_copy(test2,size2);
+    float* cuda_input_array1 = cuda_float_copy_to_gpu(test1, size1);
+    float* cuda_input_array2 = cuda_float_copy_to_gpu(test2,size2);
     exp_cuda(cuda_input_array1, size1);
     exp_cuda(cuda_input_array2, size2);
     float* return1 = cuda_float_return_from_gpu(cuda_input_array1, size1);
     float* return2 = cuda_float_return_from_gpu(cuda_input_array2, size2);
-    CU_ASSERT(arr_compare(results1, return1, size1, MARGIN) == true);
-    CU_ASSERT(arr_compare(results2, return2, size2, MARGIN) == true);
+    CU_ASSERT(float_array_compare(results1, return1, size1, MARGIN) == true);
+    CU_ASSERT(float_array_compare(results2, return2, size2, MARGIN) == true);
     free(return1);
     free(return2);
     free_cuda_memory(cuda_input_array1);
