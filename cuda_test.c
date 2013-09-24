@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
+#include "fit_tensor_util.h"
 #include "cuda_util.h"
 
 //OLS matrix
