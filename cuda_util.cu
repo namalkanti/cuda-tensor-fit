@@ -2,6 +2,7 @@
 #include <stdlib.h>
 extern "C" {
 #include "cuda_util.h"
+#include "fit_tensor_util.h"
 }
 
 extern "C"
