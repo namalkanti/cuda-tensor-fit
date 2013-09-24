@@ -1,2 +1,5 @@
 main_test
 opt_test
+*.swp
+*.o
+*_test*
