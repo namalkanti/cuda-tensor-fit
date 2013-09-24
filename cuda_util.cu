@@ -6,60 +6,60 @@ extern "C" {
 }
 
 extern "C"
-//clones double array and copies to gpu
-double* cuda_double_copy(double* arr, int len){
-    double* carr;
-    cudaMalloc(&carr, sizeof(double) * len);
-    cudaMemcpy(carr, arr, sizeof(double) * len, cudaMemcpyHostToDevice);
-    return carr;
+//clones float array and copies to gpu
+float* cuda_float_copy_to_gpu(float* local_array, int array_length){
+    float* cuda_array;
+    cudaMalloc(&cuda_array, sizeof(float) * array_length);
+    cudaMemcpy(cuda_array, local_array, sizeof(float) * array_length, cudaMemcpyHostToDevice);
+    return cuda_array;
 }
 
 extern "C"
-//clones double array and copies to host 
-double* cuda_double_return(double* carr, int len){
-    double* arr = (double *) malloc(sizeof(double) * len);
-    cudaMemcpy(arr, carr, sizeof(double) * len, cudaMemcpyDeviceToHost);
-    return arr;
+//clones float array and copies to host 
+float* cuda_float_return_from_gpu(float* cuda_array, int array_length){
+    float* result_array = (float *) malloc(sizeof(float) * array_length);
+    cudaMemcpy(result_array, cuda_array, sizeof(float) * array_length, cudaMemcpyDeviceToHost);
+    return result_array;
 }
 
 extern "C"
-//allocates space for a double array on the device
-void cuda_double_alloc(double* ptr, int len){
-    cudaMalloc(&ptr, len);
+//allocates space for a float array on the device
+void cuda_float_allocate(float* pointer, int pointer_length){
+    cudaMalloc(&pointer, pointer_length);
 }
 
 extern "C"
-//frees double device memory
-void free_cuda(double* ptr){
-    cudaFree(ptr);
+//frees float device memory
+void free_cuda_memory(float* pointer){
+    cudaFree(pointer);
 }
 
 //kernel to take entire array and run cutoff log function
-__global__ void cutoff_log_kernel(double* input, double* output, double min_signal){
-    int tid = blockIdx.x;
-    if (input[tid] < min_signal){
-        output[tid] = log(min_signal);
+__global__ void cutoff_log_kernel(float* input, float* output, float min_signal){
+    int thread_id = blockIdx.x;
+    if (input[thread_id] < min_signal){
+        output[thread_id] = log(min_signal);
     }
     else{
-        output[tid] = log(input[tid]);
+        output[thread_id] = log(input[thread_id]);
     }
 }
 
 extern "C"
 //Function to launch cutoff log kernel
-void cutoff_log_cuda(double* input, double* output, double min_signal, int block_grid_rows){
+void cutoff_log_cuda(float* input, float* output, float min_signal, int block_grid_rows){
   cutoff_log_kernel<<<block_grid_rows, 1>>>(input, output, min_signal);
 }
 
 //kernel to take entire array and exp it
-__global__ void exp_kernel(double* input, double* output){
-    int tid = blockIdx.x;
-    output[tid] = pow(M_E, input[tid]);
+__global__ void exp_kernel(float* input, float* output){
+    int thread_id = blockIdx.x;
+    output[thread_id] = pow(M_E, input[thread_id]);
 }
 
 extern "C"
 //Kernel catapult
-void exp_cuda(double* input, double* output, int block_grid_rows){
+void exp_cuda(float* input, float* output, int block_grid_rows){
   exp_kernel<<<block_grid_rows, 1>>>(input, output);
 }
 
