@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//clones double array and copies to gpu
-double* cuda_double_copy(double* arr, int len);
+//clones float array and copies to gpu
+float* cuda_float_copy_to_gpu(float* local_array, int array_length);
 
-//clones double array and copies to host 
-double* cuda_double_return(double* carr, int len);
+//clones float array and copies to host 
+float* cuda_float_return_from_gpu(float* cuda_array, int array_length);
 
-//allocates space for a double array on the device
-void cuda_double_alloc(double* ptr, int len);
+//allocates space for a float array on the device
+void cuda_float_allocate(float* pointer, int pointer_length);
 
-//frees double device memory
-void free_cuda(double* ptr);
+//frees float device memory
+void free_cuda_memory(float* pointer);
 
 //kernel to take entire array and run cutoff log function
-void cutoff_log_cuda(double* input, double* output, double min_signal, int block_grid_rows);
+void cutoff_log_cuda(float* input, float* output, float min_signal, int block_grid_rows);
 
 //kernel to take entire array and exp it
-void exp_cuda(double* input, double* output, int block_grid_rows);
+void exp_cuda(float* cuda_array, int block_grid_rows);

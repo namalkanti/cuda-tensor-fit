@@ -52,14 +52,14 @@ void cutoff_log_cuda(float* input, float* output, float min_signal, int block_gr
 }
 
 //kernel to take entire array and exp it
-__global__ void exp_kernel(float* input, float* output){
+__global__ void exp_kernel(float* cuda_array){
     int thread_id = blockIdx.x;
-    output[thread_id] = pow(M_E, input[thread_id]);
+    output[cuda_array] = pow(M_E, cuda_array[thread_id]);
 }
 
 extern "C"
 //Kernel catapult
-void exp_cuda(float* input, float* output, int block_grid_rows){
-  exp_kernel<<<block_grid_rows, 1>>>(input, output);
+void exp_cuda(float* cuda_array, int block_grid_rows){
+  exp_kernel<<<block_grid_rows, 1>>>(cuda_array);
 }
 
