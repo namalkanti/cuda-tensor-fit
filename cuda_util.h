@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define WARP_SIZE 32
+
 //clones float array and copies to gpu
 float* cuda_float_copy_to_gpu(float* local_array, int array_length);
 
