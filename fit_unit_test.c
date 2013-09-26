@@ -398,6 +398,8 @@ void test_array_padding(void) {
     CU_ASSERT((padded_array->current_length == 10) == true)
     float* returned_array = get_array_from_padded_array(padded_array);
     CU_ASSERT(float_array_compare(test_array, returned_array, 6, MARGIN) == true);
+    free_padded_array(padded_array);
+    free(returned_array);
 }
 
 //Init stub for opt tests
