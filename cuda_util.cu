@@ -49,10 +49,10 @@ extern "C"
 //Function to launch cutoff log kernel
 float* cutoff_log_cuda(float* input, float min_signal, int array_length){
     padded_float_array* padded_array = pad_array(input, array_length, WARP_SIZE)
-    float* device_array = cuda_float_copy(padded_array->values, padded_array->current_length);
+    float* device_array = cuda_float_copy_to_gpu(padded_array->values, padded_array->current_length);
     int blocks_in_grid = padded_array->current_length / WARP_SIZE;
     cutoff_log_kernel<<<blocks_in_grid, WARP_SIZE>>>(device_array, min_signal);
-    padded_array->values = cuda_float_return(device_array, padded_array->current_length);
+    padded_array->values = cuda_float_return_from_gpu(device_array, padded_array->current_length);
     float* result_array = get_array_from_padded_array(padded_array);
     free_cuda_memory(device_array);
     free_padded_array(padded_array);
@@ -69,11 +69,11 @@ extern "C"
 //Kernel catapult
 void exp_cuda(float* input, int array_length){
     padded_float_array* padded_array = pad_array(input, array_length, WARP_SIZE);
-    float* device_array = cuda_float_copy(padded_array->values, padded_array->current_length);
+    float* device_array = cuda_float_copy_to_gpu(padded_array->values, padded_array->current_length);
     int blocks_in_grid = padded_array->current_length/ WARP_SIZE;
     exp_kernel<<<blocks_in_grid, WARP_SIZE>>>(device_array);
-    padded_array->values = cuda_float_return(device_array, padded_array->current_length);
-    float* input = get_array_from_padded_array(padded_array);
+    padded_array->values = cuda_float_return_from_gpu(device_array, padded_array->current_length);
+    input = get_array_from_padded_array(padded_array);
     free_cuda_memory(device_array);
     free_padded_array(padded_array);
 }
