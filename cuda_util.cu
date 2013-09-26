@@ -48,7 +48,7 @@ __global__ void cutoff_log_kernel(float* device_array, float min_signal){
 extern "C"
 //Function to launch cutoff log kernel
 float* cutoff_log_cuda(float* input, float min_signal, int array_length){
-    padded_float_array* padded_array = pad_array(input, array_length, WARP_SIZE)
+    padded_float_array* padded_array = pad_array(input, array_length, WARP_SIZE);
     float* device_array = cuda_float_copy_to_gpu(padded_array->values, padded_array->current_length);
     int blocks_in_grid = padded_array->current_length / WARP_SIZE;
     cutoff_log_kernel<<<blocks_in_grid, WARP_SIZE>>>(device_array, min_signal);
