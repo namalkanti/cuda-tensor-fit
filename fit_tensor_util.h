@@ -41,6 +41,7 @@ double* fitter(matrix* design, double* weights, double* signal, int sig_size);
 //Function to compare two arrays
 bool arr_compare(double* arr1, double* arr2, int n, double err);
 
+//Function to compare two floating point arrays
 bool float_array_compare(float* array1, float* array2, int array_length, float margin);
 
 //Function to combine two arrays
@@ -77,8 +78,11 @@ matrix* clone_matrix(matrix* mat);
 void free_tensor(tensor* tens);
 
 //Function to pad array of floats to multiple and return
-float* pad_array(float* array, int array_length,  int multiple); 
+padded_float_array* pad_array(float* array, int array_length,  int multiple); 
 
 //Function to remove array of floats from padded array
-float* get_array_from_padded_array(float* padded_array, int original_length);
+float* get_array_from_padded_array(padded_float_array* padded_array);
+
+//Function to free memory from padded array
+void free_padded_array(padded_float_array* pointer);
 

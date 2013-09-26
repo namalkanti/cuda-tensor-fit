@@ -204,8 +204,12 @@ bool arr_compare(double* arr1, double* arr2, int n, double err){
 }
 
 bool float_array_compare(float* array1, float* array2, int array_length, float margin){
-    bool is_equal = arr_compare((double*) array1, (double*) array2, array_length, (double) margin);
-    return is_equal;
+    int i;
+    for(i = 0; i < array_length; i++){
+        if(fabs(array1[i] - array2[i]) > margin)
+                return false;
+    }
+    return true;
 }	
 
 double* array_combine(double* arr1, int len1, double* arr2, int len2){
@@ -320,9 +324,37 @@ void free_tensor(tensor* tens){
 
 }
 //Function to pad array of floats to multiple and return
-float* pad_array(float* array, int array_length,  int multiple) {
+padded_float_array* pad_array(float* array, int array_length,  int multiple) {
+    padded_float_array* padded_array = malloc(sizeof(padded_float_array));
+    padded_array->original_length = array_length;
+    int pad_length = multiple - (array_length % multiple);
+    int new_length = array_length + pad_length;
+    padded_array->current_length = new_length;
+    float* padded_values = malloc(sizeof(float) * new_length);
+    int i; 
+    for(i = 0;i < array_length;i++){
+        padded_values[i] = array[i];
+    }
+    for(i;i < new_length;i++){
+        padded_values[i] = 0;
+    }
+    padded_array->values = padded_values;
+    return padded_array;
 }
 
 //Function to remove array of floats from padded array
-float* get_array_from_padded_array(float* padded_array, int original_length) {
+float* get_array_from_padded_array(padded_float_array* padded_array) {
+    int original_length = padded_array->original_length;
+    int i;
+    float* extracted_array = malloc(sizeof(float) * original_length);
+    for(i = 0; i < original_length; i++){
+        extracted_array[i] = padded_array->values[i];
+    }
+    return extracted_array;
+}
+
+//Function to free memory from padded array
+void free_padded_array(padded_float_array* pointer){
+    free(pointer->values);
+    free(pointer);
 }

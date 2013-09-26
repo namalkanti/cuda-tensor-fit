@@ -15,4 +15,11 @@ typedef struct {
     matrix* vecs;
 }tensor;
 
+//Struct for padded arrays to be deployed for kernels.
+typedef struct {
+    float* values;
+    int original_length;
+    int current_length;
+}padded_float_array;
+
 
