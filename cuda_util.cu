@@ -62,9 +62,9 @@ float* cutoff_log_cuda(float* input, float min_signal, int array_length){
 //kernel to take entire array and exp it
 __global__ void exp_kernel(float* cuda_array){
     int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
-    puts("Index:%d Value:%s", thread_id, cuda_array[thread_id]);
+    printf("Index:%d Value:%s", thread_id, cuda_array[thread_id]);
     cuda_array[thread_id] = expf(cuda_array[thread_id]);
-    puts("Index:%d Value:%s", thread_id, cuda_array[thread_id]);
+    printf("Index:%d Value:%s", thread_id, cuda_array[thread_id]);
 }
 
 extern "C"
