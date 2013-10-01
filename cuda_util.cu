@@ -67,7 +67,7 @@ __global__ void exp_kernel(float* cuda_array){
 
 extern "C"
 //Kernel catapult
-void exp_cuda(float* input, int array_length){
+float* exp_cuda(float* input, int array_length){
     padded_float_array* padded_array = pad_array(input, array_length, WARP_SIZE);
     float* device_array = cuda_float_copy_to_gpu(padded_array->values, padded_array->current_length);
     int blocks_in_grid = padded_array->current_length/ WARP_SIZE;

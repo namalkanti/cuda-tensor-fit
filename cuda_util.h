@@ -19,4 +19,4 @@ void free_cuda_memory(float* pointer);
 float* cutoff_log_cuda(float* input, float min_signal, int array_length);
 
 //kernel to take entire array and exp it
-void exp_cuda(float* input, int array_length);
+float* exp_cuda(float* input, int array_length);
