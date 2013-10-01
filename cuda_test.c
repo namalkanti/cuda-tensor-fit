@@ -122,8 +122,8 @@ void test_exp_array(void){
     int size2 = sizeof(test2)/sizeof(test2[0]);
     float* return1 = exp_cuda(test1, size1);
     float* return2 = exp_cuda(test2, size2);
-    CU_ASSERT(float_array_compare(results1, return1, size1, MARGIN) == true);
-    CU_ASSERT(float_array_compare(results2, return2, size2, MARGIN) == true);
+    CU_ASSERT(float_array_compare(results1, return1, size1, 1) == true);
+    CU_ASSERT(float_array_compare(results2, return2, size2, 1) == true);
 }
 
 //Initalization stub for utility test suite
