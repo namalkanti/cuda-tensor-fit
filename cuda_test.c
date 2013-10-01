@@ -120,10 +120,10 @@ void test_exp_array(void){
         162754.79141900392, 
         442413.3920089205};
     int size2 = sizeof(test2)/sizeof(test2[0]);
-    exp_cuda(test1, size1);
-    exp_cuda(test2, size2);
-    CU_ASSERT(float_array_compare(results1, test1, size1, MARGIN) == true);
-    CU_ASSERT(float_array_compare(results2, test2, size2, MARGIN) == true);
+    float return1[] = exp_cuda(test1, size1);
+    float return2[] = exp_cuda(test2, size2);
+    CU_ASSERT(float_array_compare(results1, return1, size1, MARGIN) == true);
+    CU_ASSERT(float_array_compare(results2, return2, size2, MARGIN) == true);
 }
 
 //Initalization stub for utility test suite

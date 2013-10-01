@@ -74,12 +74,8 @@ void exp_cuda(float* input, int array_length){
     exp_kernel<<<blocks_in_grid, WARP_SIZE>>>(device_array);
     padded_array->values = cuda_float_return_from_gpu(device_array, padded_array->current_length);
     output_array = get_array_from_padded_array(padded_array);
-    int i;
-    for(i = 0; i < array_length; i++){
-        input[i] = output_array[i];
-    }
     free_cuda_memory(device_array);
     free_padded_array(padded_array);
-    free(output_array);
+    return output_array;
 }
 
