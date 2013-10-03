@@ -22,4 +22,11 @@ typedef struct {
     int current_length;
 }padded_float_array;
 
+//Struct for padding matrix.
+typedef struct {
+    matrix* matrix;
+    int original_m;
+    int original_n;
+}padded_matrix;
+
 

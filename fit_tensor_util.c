@@ -358,3 +358,8 @@ void free_padded_array(padded_float_array* pointer){
     free(pointer->values);
     free(pointer);
 }
+
+//Function to pad matrix and return padded output
+padded_matrix* pad_matric(matrix* matrix_to_pad) {
+    padded_matrix* padded_output = malloc(sizeof(padded_matrix));
+
