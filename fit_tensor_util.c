@@ -394,7 +394,7 @@ padded_matrix* pad_matrix(matrix* matrix_to_pad, int m_multiple, int n_multiple)
     int new_m = matrix_to_pad->rows + additional_rows;
     int new_n = matrix_to_pad->columns + additional_columns;
     double* padded_matrix_values = malloc(sizeof(double) * new_m * new_n);
-    pad_rows(matrix_to_pad.data, padded_matrix_values, matrix_to_pad.rows, new_n, matrix_to_pad->rows);
+    pad_rows(matrix_to_pad->data, padded_matrix_values, matrix_to_pad->rows, new_n, matrix_to_pad->rows);
     pad_columns(padded_matrix_values, matrix_to_pad->rows * matrix_to_pad->columns, new_m * new_n);
     new_matrix->data = padded_matrix_values;
     new_matrix->rows = new_m;

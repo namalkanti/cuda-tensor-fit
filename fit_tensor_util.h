@@ -78,13 +78,13 @@ matrix* clone_matrix(matrix* mat);
 void free_tensor(tensor* tens);
 
 //Function to pad array of floats to multiple and return
-padded_float_array* pad_array(double* array, int array_length,  int multiple); 
+padded_float_array* pad_array(float* array, int array_length,  int multiple); 
 
-//Function to remove array of floats from padded array
-float* get_array_from_padded_array(padded_float_array* padded_array);
+//Function to remove array of doubles from padded array
+double* get_array_from_padded_array(padded_double_array* padded_array);
 
 //Function to free memory from padded array
-void free_padded_array(padded_float_array* pointer);
+void free_padded_array(padded_double_array* pointer);
 
 //Function to pad matrix and return padded output
 padded_matrix* pad_matrix(matrix* matrix_to_pad, int m_multiple, int n_multiple);
