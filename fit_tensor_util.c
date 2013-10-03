@@ -359,7 +359,54 @@ void free_padded_array(padded_float_array* pointer){
     free(pointer);
 }
 
-//Function to pad matrix and return padded output
-padded_matrix* pad_matric(matrix* matrix_to_pad) {
-    padded_matrix* padded_output = malloc(sizeof(padded_matrix));
+//Pads columns of matrices. Should be called after pad_rows
+void static pad_columns(float* matrix_values, int old_value_length, int_new_value_length) {
+    int i = old_value_length;
+    for(i;i < new_value_length; i++){
+        matrix_values[i] = 0;
+    }
+}
 
+//Pads rows of matrices. Should be called before pad_columns
+void static pad_rows(float* old_matrix_values, float* new_matrix_values, int original_columns, 
+        int new_columns, int original_rows) {
+    int i;
+    for(i = 0;i < original_rows; i++){
+        int j;
+        int index;
+        for(j = 0; j < original_columns;j++){
+            index = i * original_columns +j;
+            new_matrix_values[index] = old_matrix_values[index];
+        }
+        for(j;j < new_columns;j++){
+            index = i * original_columns +j;
+            new_matrix_values[index] = 0;
+        }
+    }
+}
+
+//Function to pad matrix and return padded output, MATRIX MUST BE ROW ORDER
+padded_matrix* pad_matrix(matrix* matrix_to_pad, int m_multiple, int n_multiple) {
+    padded_matrix* padded_output = malloc(sizeof(padded_matrix));
+    matrix* new_matrix = malloc(sizeof(matrix));
+    int additional_rows = m_multiple - (matrix_to_pad->rows % m_multiple);
+    int additional_columns = n_multiple - (matrix_to_pad->columns % n_multiple);
+    int new_m = matrix_to_pad->rows + additional_rows;
+    int new_n = matrix_to_pad->columns + additional_columns;
+    float* padded_matrix_values = malloc(sizeof(float) * new_m * new_n);
+    pad_rows();
+    pad_columns();
+    new_matrix->data = padded_matrix_values;
+    new_matrix->rows = new_m;
+    new_matrix->columns = new_n;
+    padded_output->matrix = new_matrix;
+    padded_output->original_m = matrix_to_pad->rows;
+    padded_output->original_n = matrix_to_pad->columns;
+    return padded_output;
+}
+
+//Frees matrix pointer
+void free_padded_matrix(padded_matrix* matrix_pointer){
+    free_matrix(matrix_pointer->matrix);
+    free(matrix_pointer);
+}

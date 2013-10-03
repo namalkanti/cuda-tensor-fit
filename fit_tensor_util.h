@@ -87,4 +87,8 @@ float* get_array_from_padded_array(padded_float_array* padded_array);
 void free_padded_array(padded_float_array* pointer);
 
 //Function to pad matrix and return padded output
-padded_matrix* pad_matrix(matrix* matrix_to_pad);
+padded_matrix* pad_matrix(matrix* matrix_to_pad, int m_multiple, int n_multiple);
+
+//Frees memory after use.
+void free_padded_matrix(padded_matrix* matrix_pointer);
+
