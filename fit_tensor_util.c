@@ -360,7 +360,7 @@ void free_padded_array(padded_float_array* pointer){
 }
 
 //Pads columns of matrices. Should be called after pad_rows
-void static pad_columns(float* matrix_values, int old_value_length, int_new_value_length) {
+void static pad_columns(double* matrix_values, int old_value_length, int new_value_length) {
     int i = old_value_length;
     for(i;i < new_value_length; i++){
         matrix_values[i] = 0;
@@ -368,7 +368,7 @@ void static pad_columns(float* matrix_values, int old_value_length, int_new_valu
 }
 
 //Pads rows of matrices. Should be called before pad_columns
-void static pad_rows(float* old_matrix_values, float* new_matrix_values, int original_columns, 
+void static pad_rows(double* old_matrix_values, double* new_matrix_values, int original_columns, 
         int new_columns, int original_rows) {
     int i;
     for(i = 0;i < original_rows; i++){
@@ -393,9 +393,9 @@ padded_matrix* pad_matrix(matrix* matrix_to_pad, int m_multiple, int n_multiple)
     int additional_columns = n_multiple - (matrix_to_pad->columns % n_multiple);
     int new_m = matrix_to_pad->rows + additional_rows;
     int new_n = matrix_to_pad->columns + additional_columns;
-    float* padded_matrix_values = malloc(sizeof(float) * new_m * new_n);
-    pad_rows();
-    pad_columns();
+    double* padded_matrix_values = malloc(sizeof(double) * new_m * new_n);
+    pad_rows(matrix_to_pad.data, padded_matrix_values, matrix_to_pad.rows, new_n, matrix_to_pad->rows);
+    pad_columns(padded_matrix_values, matrix_to_pad->rows * matrix_to_pad->columns, new_m * new_n);
     new_matrix->data = padded_matrix_values;
     new_matrix->rows = new_m;
     new_matrix->columns = new_n;
