@@ -409,7 +409,6 @@ void test_matrix_padding(void) {
     comparable_design_matrix->rows = design_sample.rows;
     comparable_design_matrix->columns = design_sample.columns;
     CU_ASSERT(true == mat_compare(&design_sample, comparable_design_matrix, MARGIN));
-    free_padded_matrix(padded_design_matrix);
 }
 
 //Init stub for opt tests
