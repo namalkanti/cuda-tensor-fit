@@ -404,11 +404,11 @@ void test_array_padding(void) {
 
 //Tests matrix padding
 void test_matrix_padding(void) {
-    padded_matrix* padded_design_matrix(&design_sample, 64, 1);
-    matrix* comparable_design_matrix = padded_design_matrix.matrix;
+    padded_matrix* padded_design_matrix = pad_matrix(&design_sample, 64, 1);
+    matrix* comparable_design_matrix = padded_design_matrix->matrix;
     comparable_design_matrix->rows = design_sample->rows;
     comparable_design_matrix->columns = design_sample->columns;
-    CU_ASSERT(true == mat_compare(design_sample, comparable_design_matrix, MARGIN));
+    CU_ASSERT(true == mat_compare(&design_sample, comparable_design_matrix, MARGIN));
     free_padded_matrix(padded_design_matrix);
 }
 
