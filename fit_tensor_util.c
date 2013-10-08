@@ -368,7 +368,7 @@ void static pad_columns(double* matrix_values, int old_value_length, int new_val
 }
 
 //Pads rows of matrices. Should be called before pad_columns
-void static pad_rows(double* old_matrix_values, double* new_matrix_values, int original_columns, 
+.oid static pad_rows(double* old_matrix_values, double* new_matrix_values, int original_columns, 
         int new_columns, int original_rows) {
     int i;
     for(i = 0;i < original_rows; i++){
