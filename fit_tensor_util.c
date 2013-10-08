@@ -378,7 +378,6 @@ void static pad_rows(double* old_matrix_values, double* new_matrix_values, int o
         for(j = 0; j < original_columns;j++){
             index = i * original_columns +j;
             printf("i is %d, j is %d and the index is %d", i, j, index);
-            puts[index]
             new_matrix_values[index] = old_matrix_values[index];
         }
         for(j;j < new_columns;j++){
