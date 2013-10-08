@@ -213,7 +213,7 @@ bool float_array_compare(float* array1, float* array2, int array_length, float m
 }	
 
 double* array_combine(double* arr1, int len1, double* arr2, int len2){
-    double* result = malloc(sizeof(double) * len1 * len2);
+    double* result = malloc(sizeof(double) * (len1 + len2));
     int i;
     for(i = 0; i < len1; i++){
         result[i] = arr1[i];
