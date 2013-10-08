@@ -370,14 +370,14 @@ void static pad_columns(double* matrix_values, int old_value_length, int new_val
 //Pads rows of matrices. Should be called before pad_columns
 void static pad_rows(double* old_matrix_values, double* new_matrix_values, int original_columns, 
         int new_columns, int original_rows) {
-    printf("The matrix is being padded from %d x %d to ? x %d", original_rows, original_columns, new_columns);
+    printf("The matrix is being padded from %d x %d to ? x %d\n", original_rows, original_columns, new_columns);
     int i;
     for(i = 0;i < original_rows; i++){
         int j;
         int index;
         for(j = 0; j < original_columns;j++){
             index = i * original_columns +j;
-            printf("i is %d, j is %d and the index is %d", i, j, index);
+            printf("i is %d, j is %d and the index is %d\n", i, j, index);
             new_matrix_values[index] = old_matrix_values[index];
         }
         for(j;j < new_columns;j++){
