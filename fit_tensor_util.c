@@ -370,7 +370,6 @@ void static pad_columns(double* matrix_values, int old_value_length, int new_val
 //Pads rows of matrices. Should be called before pad_columns
 void static pad_rows(double* old_matrix_values, double* new_matrix_values, int original_columns, 
         int new_columns, int original_rows) {
-    printf("The matrix is being padded from %d x %d to ? x %d\n", original_rows, original_columns, new_columns);
     int i;
     for(i = 0;i < original_rows; i++){
         int j;
@@ -396,6 +395,7 @@ padded_matrix* pad_matrix(matrix* matrix_to_pad, int m_multiple, int n_multiple)
     int new_m = matrix_to_pad->rows + additional_rows;
     int new_n = matrix_to_pad->columns + additional_columns;
     double* padded_matrix_values = malloc(sizeof(double) * new_m * new_n);
+    printf("The matrix is being padded from %d x %d to %d x %d\n", matrix_to_pad->rows, matrix_to_pad->columns, new_m, new_n);
     pad_rows(matrix_to_pad->data, padded_matrix_values, matrix_to_pad->rows, new_n, matrix_to_pad->rows);
     pad_columns(padded_matrix_values, matrix_to_pad->rows * matrix_to_pad->columns, new_m * new_n);
     new_matrix->data = padded_matrix_values;
