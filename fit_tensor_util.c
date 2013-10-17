@@ -376,7 +376,6 @@ void static pad_rows(double* old_matrix_values, double* new_matrix_values, int o
         int index;
         for(j = 0; j < original_columns;j++){
             index = i * original_columns +j;
-            //printf("i is %d, j is %d and the index is %d\n", i, j, index);
             new_matrix_values[index] = old_matrix_values[index];
         }
         for(j;j < new_columns;j++){
@@ -395,7 +394,6 @@ padded_matrix* pad_matrix(matrix* matrix_to_pad, int m_multiple, int n_multiple)
     int new_m = matrix_to_pad->rows + additional_rows;
     int new_n = matrix_to_pad->columns + additional_columns;
     double* padded_matrix_values = malloc(sizeof(double) * new_m * new_n);
-    //printf("The matrix is being padded from %d x %d to %d x %d\n", matrix_to_pad->rows, matrix_to_pad->columns, new_m, new_n);
     pad_rows(matrix_to_pad->data, padded_matrix_values, matrix_to_pad->columns, new_n, matrix_to_pad->rows);
     pad_columns(padded_matrix_values, matrix_to_pad->rows * matrix_to_pad->columns, new_m * new_n);
     new_matrix->data = padded_matrix_values;
