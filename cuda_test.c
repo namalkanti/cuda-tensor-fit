@@ -53,8 +53,8 @@ tensor tensor5 = {val5, &vec5};
 
 tensor *tensors[] = {&tensor1, &tensor2, &tensor3, &tensor4, &tensor5};
 
-float min_signal_sample = 1;
-float min_diffusitivity_sample = .0000000005;
+double min_signal_sample = 1;
+double min_diffusitivity_sample = .0000000005;
 
 //Initalization stub for utility test suite
 int init_cuda(void){
@@ -68,10 +68,10 @@ int clean_cuda(void){
 
 //Kernel test function 
 void test_cutoff_log(void){
-    float min_value = M_E;
-    float test1[] = {0, 2, 3, 4, 1, 23, 3, 5, 6, 43, 5};
+    double min_value = M_E;
+    double test1[] = {0, 2, 3, 4, 1, 23, 3, 5, 6, 43, 5};
     int len1 = sizeof(test1)/sizeof(test1[0]);
-    float result1[] = {1.0,
+    double result1[] = {1.0,
      1.0,
      1.0986122886681098,
      1.3862943611198906,
@@ -82,9 +82,9 @@ void test_cutoff_log(void){
      1.791759469228055,
      3.7612001156935624,
      1.6094379124341003};
-    float test2[] = {1, 5, 2, 1, 4, 1.3, 4.5, 1.2, 3, 41, 9};
+    double test2[] = {1, 5, 2, 1, 4, 1.3, 4.5, 1.2, 3, 41, 9};
     int len2 = sizeof(test2)/sizeof(test2[0]);
-    float result2[] = {1.0,
+    double result2[] = {1.0,
      1.6094379124341003,
      1.0,
      1.0,
@@ -95,21 +95,21 @@ void test_cutoff_log(void){
      1.0986122886681098,
      3.713572066704308,
      2.1972245773362196};
-    float* return1 = cutoff_log_cuda(test1, min_value, len1);
-    float* return2 = cutoff_log_cuda(test2, min_value, len2);
-    CU_ASSERT(float_array_compare(return1, result1, len1, MARGIN) == true);
-    CU_ASSERT(float_array_compare(return2, result2, len2, MARGIN) == true);
+    double* return1 = cutoff_log_cuda(test1, min_value, len1);
+    double* return2 = cutoff_log_cuda(test2, min_value, len2);
+    CU_ASSERT(array_compare(return1, result1, len1, MARGIN) == true);
+    CU_ASSERT(array_compare(return2, result2, len2, MARGIN) == true);
     free(return1);
     free(return2);
 }
 
 //Kernel test function
 void test_exp_array(void){
-    float test1[] = {0, 0, 0, 0};
-    float results1[] = {1, 1, 1, 1};
+    double test1[] = {0, 0, 0, 0};
+    double results1[] = {1, 1, 1, 1};
     int size1 = sizeof(test1)/sizeof(test1[0]);
-    float test2[] = {1, 2, 3, 4, 14, 15, 15, 3, 12, 13};
-    float results2[] = {2.718281828459045, 
+    double test2[] = {1, 2, 3, 4, 14, 15, 15, 3, 12, 13};
+    double results2[] = {2.718281828459045, 
         7.38905609893065, 
         20.085536923187668, 
         54.598150033144236, 
@@ -120,10 +120,10 @@ void test_exp_array(void){
         162754.79141900392, 
         442413.3920089205};
     int size2 = sizeof(test2)/sizeof(test2[0]);
-    float* return1 = exp_cuda(test1, size1);
-    float* return2 = exp_cuda(test2, size2);
-    CU_ASSERT(float_array_compare(results1, return1, size1, 1) == true);
-    CU_ASSERT(float_array_compare(results2, return2, size2, 1) == true);
+    double* return1 = exp_cuda(test1, size1);
+    double* return2 = exp_cuda(test2, size2);
+    CU_ASSERT(array_compare(results1, return1, size1, 1) == true);
+    CU_ASSERT(array_compare(results2, return2, size2, 1) == true);
 }
 
 //Initalization stub for utility test suite
