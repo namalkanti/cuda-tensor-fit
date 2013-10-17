@@ -203,15 +203,6 @@ bool arr_compare(double* arr1, double* arr2, int n, double err){
     return true;
 }
 
-bool float_array_compare(float* array1, float* array2, int array_length, float margin){
-    int i;
-    for(i = 0; i < array_length; i++){
-        if(fabs(array1[i] - array2[i]) > margin)
-                return false;
-    }
-    return true;
-}	
-
 double* array_combine(double* arr1, int len1, double* arr2, int len2){
     double* result = malloc(sizeof(double) * (len1 + len2));
     int i;
@@ -323,14 +314,14 @@ void free_tensor(tensor* tens){
     free(tens);
 
 }
-//Function to pad array of floats to multiple and return
-padded_float_array* pad_array(float* array, int array_length,  int multiple) {
-    padded_float_array* padded_array = malloc(sizeof(padded_float_array));
+//Function to pad array of doubles to multiple and return
+padded_double_array* pad_array(double* array, int array_length,  int multiple) {
+    padded_double_array* padded_array = malloc(sizeof(padded_double_array));
     padded_array->original_length = array_length;
     int pad_length = multiple - (array_length % multiple);
     int new_length = array_length + pad_length;
     padded_array->current_length = new_length;
-    float* padded_values = malloc(sizeof(float) * new_length);
+    double* padded_values = malloc(sizeof(double) * new_length);
     int i; 
     for(i = 0;i < array_length;i++){
         padded_values[i] = array[i];
@@ -342,11 +333,11 @@ padded_float_array* pad_array(float* array, int array_length,  int multiple) {
     return padded_array;
 }
 
-//Function to remove array of floats from padded array
-float* get_array_from_padded_array(padded_float_array* padded_array) {
+//Function to remove array of doubles from padded array
+double* get_array_from_padded_array(padded_double_array* padded_array) {
     int original_length = padded_array->original_length;
     int i;
-    float* extracted_array = malloc(sizeof(float) * original_length);
+    double* extracted_array = malloc(sizeof(double) * original_length);
     for(i = 0; i < original_length; i++){
         extracted_array[i] = padded_array->values[i];
     }
@@ -354,7 +345,7 @@ float* get_array_from_padded_array(padded_float_array* padded_array) {
 }
 
 //Function to free memory from padded array
-void free_padded_array(padded_float_array* pointer){
+void free_padded_array(padded_double_array* pointer){
     free(pointer->values);
     free(pointer);
 }

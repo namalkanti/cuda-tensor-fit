@@ -17,10 +17,10 @@ typedef struct {
 
 //Struct for padded arrays to be deployed for kernels.
 typedef struct {
-    float* values;
+    double* values;
     int original_length;
     int current_length;
-}padded_float_array;
+}padded_double_array;
 
 //Struct for padding matrix.
 typedef struct {
