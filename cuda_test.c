@@ -97,8 +97,8 @@ void test_cutoff_log(void){
      2.1972245773362196};
     double* return1 = cutoff_log_cuda(test1, min_value, len1);
     double* return2 = cutoff_log_cuda(test2, min_value, len2);
-    CU_ASSERT(array_compare(return1, result1, len1, MARGIN) == true);
-    CU_ASSERT(array_compare(return2, result2, len2, MARGIN) == true);
+    CU_ASSERT(arr_compare(return1, result1, len1, MARGIN) == true);
+    CU_ASSERT(arr_compare(return2, result2, len2, MARGIN) == true);
     free(return1);
     free(return2);
 }
@@ -122,8 +122,8 @@ void test_exp_array(void){
     int size2 = sizeof(test2)/sizeof(test2[0]);
     double* return1 = exp_cuda(test1, size1);
     double* return2 = exp_cuda(test2, size2);
-    CU_ASSERT(array_compare(results1, return1, size1, 1) == true);
-    CU_ASSERT(array_compare(results2, return2, size2, 1) == true);
+    CU_ASSERT(arr_compare(results1, return1, size1, 1) == true);
+    CU_ASSERT(arr_compare(results2, return2, size2, 1) == true);
 }
 
 //Initalization stub for utility test suite

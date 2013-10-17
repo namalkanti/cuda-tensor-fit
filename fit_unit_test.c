@@ -393,11 +393,11 @@ void test_fitter(void){
 void test_array_padding(void) {
     double test_array[] = {3.4, 232.2, 3.45, 5.34, 3.4, 9.86};
     padded_double_array* padded_array = pad_array(test_array, 6, 10);
-    CU_ASSERT(array_compare(test_array, padded_array->values, 6, MARGIN) == true);
+    CU_ASSERT(arr_compare(test_array, padded_array->values, 6, MARGIN) == true);
     CU_ASSERT((padded_array->original_length == 6) == true)
     CU_ASSERT((padded_array->current_length == 10) == true)
     double* returned_array = get_array_from_padded_array(padded_array);
-    CU_ASSERT(array_compare(test_array, returned_array, 6, MARGIN) == true);
+    CU_ASSERT(arr_compare(test_array, returned_array, 6, MARGIN) == true);
     free_padded_array(padded_array);
     free(returned_array);
 }
