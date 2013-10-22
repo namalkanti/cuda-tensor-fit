@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <cublas_v2.h>
 extern "C" {
 #include "cuda_util.h"
 #include "fit_tensor_util.h"
@@ -79,3 +80,7 @@ double* exp_cuda(double* input, int array_length){
     return output_array;
 }
 
+
+extern "C"
+matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
+}

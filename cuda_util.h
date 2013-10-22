@@ -20,3 +20,12 @@ double* cutoff_log_cuda(double* input, double min_signal, int array_length);
 
 //kernel to take entire array and exp it
 double* exp_cuda(double* input, int array_length);
+
+//Wrapper for CUBLASS Dgemm call
+matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2);
+
+//Wrapper function to weight and fit the data
+double* cuda_fitter(matrix* design_matrix, matrix* weights, signal, signal_length);
+
+//Decomposes tensors and places them inside second argument.
+void decompose_tensors(double* tensors, tensor** tensor_output);
