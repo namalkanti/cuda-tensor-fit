@@ -137,7 +137,7 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
     double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
     double* gpu_array2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
     double* gpu_output;
-    cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix->columns);
+    cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns);
     const double alpha = 1;
     const double beta = 0;
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
