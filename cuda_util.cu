@@ -83,6 +83,7 @@ double* exp_cuda(double* input, int array_length){
 /*Converts matrix to the data format fortran uses for CUBLAS and loads to GPU
   Returns pointer to array on GPU.*/
 double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
+    cublasStatus_t status;
     int length = mat->rows * mat->columns;
     double* gpu_pointer; 
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
@@ -93,8 +94,11 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
             intermediate_matrix[IDX2C(i, j, mat->rows)] = mat->data[i * mat->rows + j];
         }
     }
-    cublasSetMatrix(mat->rows, mat->columns, sizeof(double), intermediate_matrix, 
+    status = cublasSetMatrix(mat->rows, mat->columns, sizeof(double), intermediate_matrix, 
             mat->rows, gpu_pointer, mat->rows);
+    if ( status != CUBLAS_STATUS_SUCCESS ) {
+        puts("Failed to copy matrix to memory.");
+    }
     free(intermediate_matrix);
     return gpu_pointer;
 }
@@ -103,10 +107,14 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
   Will free gpu_pointer.
   Populates a matrix object passed in.*/
 void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* mat){
+    cublasStatus_t status;
     int length = mat->rows * mat->columns;
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
-    cublasGetMatrix(mat->rows, mat->columns, sizeof(double), gpu_pointer, mat->rows,
+    status = cublasGetMatrix(mat->rows, mat->columns, sizeof(double), gpu_pointer, mat->rows,
             intermediate_matrix, mat->rows);
+    if ( status != CUBLAS_STATUS_SUCCESS ) {
+        puts("Failed to retrieve matrix from memory.");
+    }
     int i, j;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
