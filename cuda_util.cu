@@ -87,7 +87,7 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
     double* gpu_pointer; 
     double* intermediate_matrix = malloc(sizeof(double) * length);
     cudaMalloc(&gpu_pointer, sizeof(double) * length);
-    int i, ;
+    int i, j;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
             intermediate_matrix[IDX2C(i, j, mat->rows)] = mat->data[i * mat->rows + j];
@@ -125,13 +125,13 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
     if ( status != CUBLAS_STATUS_SUCESS ) {
         puts("Failed to retrieve cublas handle");
     }
-    double* gpu_array1 = convert_matrix_to_fortran(matrix1);
-    double* gpu_array2 = convert_matrix_to_fortran(matrix2);
-    double* output = calloc(sizeof(double) * matrix1->rows * matrix2->columns);
+    double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
+    double* gpu_array2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
+    double* gpu_output = calloc(sizeof(double) * matrix1->rows * matrix2->columns);
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
-            1.0, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, 0, output, matrix1->rows,);
+            1.0, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, 0, gpu_output, matrix1->rows,);
     matrix* result_matrix = malloc(sizeof(matrix));
-    convert_matrix_from_fortran(output);
+    get_matrix_from_gpu_and_convert_matrix_from_fortran(gpu_output, result_matrix);
     result_matrix->data = output;
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
