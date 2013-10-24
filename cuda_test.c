@@ -130,7 +130,7 @@ void test_exp_array(void){
 void test_cuda_matrix_dot(void) {
     double array1[] = {1, 2, 3, 4};
     double array2[] = {1, 2, 3, 4};
-    double result_array[] = {7, 10, 15, 22}
+    double result_array[] = {7, 10, 15, 22};
     matrix* matrix1 = malloc(sizeof(matrix));
     matrix* matrix2 = malloc(sizeof(matrix));
     matrix* expected = malloc(sizeof(matrix));
@@ -145,6 +145,9 @@ void test_cuda_matrix_dot(void) {
     expected->columns = 2;
     matrix* result = cuda_matrix_dot(matrix1, matrix2);
     CU_ASSERT(true == matrix_compare(expected, result));
+    free_matrix(matrix1);
+    free_matrix(matrix2);
+    free_matrix(expected);
 }
 
 //Initalization stub for utility test suite.

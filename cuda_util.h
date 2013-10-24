@@ -25,7 +25,7 @@ double* exp_cuda(double* input, int array_length);
 matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2);
 
 //Wrapper function to weight and fit the data
-double* cuda_fitter(matrix* design_matrix, matrix* weights, signal, signal_length);
+double* cuda_fitter(matrix* design_matrix, matrix* weights, double * signal, int signal_length);
 
 //Decomposes tensors and places them inside second argument.
 void decompose_tensors(double* tensors, tensor** tensor_output);
