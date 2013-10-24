@@ -85,7 +85,7 @@ double* exp_cuda(double* input, int array_length){
 double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
     int length = mat->rows * mat->columns;
     double* gpu_pointer; 
-    double* intermediate_matrix = malloc(sizeof(double) * length);
+    double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
     cudaMalloc(&gpu_pointer, sizeof(double) * length);
     int i, j;
     for (i = 0; i < mat->rows; i++ ) {
@@ -104,9 +104,10 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
   Populates a matrix object passed in.*/
 void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* mat){
     int length = mat->rows * mat->columns;
-    double* intermediate_matrix = malloc(sizeof(double) * length);
+    double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
     cudaGetMatrix(mat->rows, mat->columns, sizeof(double), gpu_pointer, mat->rows,
             intermediate_matrix, mat->rows);
+    int i, j;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
             mat->data[i * mat->rows + j] = intermediate_matrix[IDX2C(i, j, mat->rows)];
