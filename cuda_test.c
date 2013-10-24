@@ -183,7 +183,7 @@ int main(){
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(cuda_suite, "Matrix dot test", test_matrix_dot))){
+    if ((NULL == CU_add_test(cuda_suite, "Matrix dot test", test_cuda_matrix_dot))){
         CU_cleanup_registry();
         return CU_get_error();
     }
