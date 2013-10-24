@@ -173,7 +173,7 @@ int main(){
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(cuda_suite, "Cut off log  test", test_cutoff_log))){
+    if ((NULL == CU_add_test(cuda_suite, "Cut off log test", test_cutoff_log))){
         CU_cleanup_registry();
         return CU_get_error();
     }
