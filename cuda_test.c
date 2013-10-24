@@ -182,6 +182,11 @@ int main(){
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    if ((NULL == CU_add_test(cuda_suite, "Matrix dot test", test_matrix_dot))){
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     /*opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
     if (NULL == opt_suite){
         CU_cleanup_registry();
