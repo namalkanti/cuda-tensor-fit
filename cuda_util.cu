@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <cuda_runtime.h>
 #include <cublas_v2.h>
 extern "C" {
 #include "cuda_util.h"
@@ -106,7 +105,7 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
 void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* mat){
     int length = mat->rows * mat->columns;
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
-    cudaGetMatrix(mat->rows, mat->columns, sizeof(double), gpu_pointer, mat->rows,
+    cublasGetMatrix(mat->rows, mat->columns, sizeof(double), gpu_pointer, mat->rows,
             intermediate_matrix, mat->rows);
     int i, j;
     for (i = 0; i < mat->rows; i++ ) {
@@ -124,7 +123,7 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
     cublasStatus_t status;
     cublasHandle_t handle;
     status = cublasCreate(&handle);
-    if ( status != CUBLAS_STATUS_SUCESS ) {
+    if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts("Failed to retrieve cublas handle");
     }
     double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
@@ -133,7 +132,7 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
     const double alpha = 1;
     const double beta = 0;
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
-            alpha, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, beta, gpu_output, matrix1->rows);
+            &alpha, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, &beta, gpu_output, matrix1->rows);
     matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
