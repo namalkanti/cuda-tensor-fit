@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <cuda_runtime.h>
 #include <cublas_v2.h>
 extern "C" {
 #include "cuda_util.h"
@@ -130,10 +131,10 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
     double* gpu_array2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
     double* gpu_output = (double*) calloc(matrix1->rows * matrix2->columns, sizeof(double));
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
-            1.0, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, 0, gpu_output, matrix1->rows);
+            const 1.0, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, const 0.0, gpu_output, matrix1->rows);
     matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
-    result_matrix->data = output;
+    return result_matrix;
 }
