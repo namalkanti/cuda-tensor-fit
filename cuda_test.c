@@ -126,7 +126,28 @@ void test_exp_array(void){
     CU_ASSERT(arr_compare(results2, return2, size2, 1) == true);
 }
 
-//Initalization stub for utility test suite
+//Test CUDA matrix multiplication function.
+void test_cuda_matrix_dot(void) {
+    double array1[] = {1, 2, 3, 4};
+    double array2[] = {1, 2, 3, 4};
+    double result_array[] = {7, 10, 15, 22}
+    matrix* matrix1 = malloc(sizeof(matrix));
+    matrix* matrix2 = malloc(sizeof(matrix));
+    matrix* expected = malloc(sizeof(matrix));
+    matrix1->data = array1;
+    matrix1->rows = 2;
+    matrix1->columns = 2;
+    matrix2->data = array2;
+    matrix2->rows = 2;
+    matrix2->columns = 2;
+    expected->data = result_array;
+    expected->rows = 2;
+    expected->columns = 2;
+    matrix* result = cuda_matrix_dot(matrix1, matrix2);
+    CU_ASSERT(true == matrix_compare(expected, result));
+}
+
+//Initalization stub for utility test suite.
 int init_opt(void){
     return 0;
 }
