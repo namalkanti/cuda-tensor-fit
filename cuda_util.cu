@@ -136,7 +136,8 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
     }
     double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
     double* gpu_array2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
-    double* gpu_output = (double*) calloc(matrix1->rows * matrix2->columns, sizeof(double));
+    double* gpu_output;
+    cudaMalloc(&gpu_output, sizeof(double), matrix1->rows * matrix->columns);
     const double alpha = 1;
     const double beta = 0;
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
@@ -145,9 +146,12 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
         puts("Call to cublas function failed.");
     }
     matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
+    double* result_matrix_data = (double *) malloc(matrix1->rows * matrix2->columns);
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
+    cudaFree(gpu_array1);
+    cudaFree(gpu_array2);
     cublasDestroy(handle);
     return result_matrix;
 }
