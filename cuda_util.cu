@@ -5,6 +5,7 @@ extern "C" {
 #include "cuda_util.h"
 #include "fit_tensor_util.h"
 }
+#define IDX2C(i, j, ld) ((j)*(ld)+(i))
 
 extern "C"
 //clones double array and copies to gpu
@@ -80,7 +81,32 @@ double* exp_cuda(double* input, int array_length){
     return output_array;
 }
 
+//Converts matrix to the data format fortran uses for CUBLAS
+void convert_matrix_to_fortran(){
+}
+
+//Converts matrix from the format fortran uses for CUBLAS
+void convert_matrix_from_fortran(){
+}
 
 extern "C"
+//Returns the dot product of the two matrices, does calculations on the GPU
 matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
+    cublasStatus_t status;
+    cublasHandle_t handle;
+    status = cublasCreate(&handle);
+    if ( status != CUBLAS_STATUS_SUCESS ) {
+        puts("Failed to retrieve cublas handle");
+    }
+    convert_matrix_to_fortran(matrix1->data);
+    convert_matrix_to_fortran(matrix2->data);
+    double* output = calloc(sizeof(double) * matrix1->rows * matrix2->columns);
+    status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
+            1.0, matrix1->data, , matrix2->data, , 0, output, ,);
+    matrix* result_matrix = malloc(sizeof(matrix));
+    convert_matrix_from_fortran(output);
+    result_matrix->data = output;
+    result_matrix->rows = matrix1->rows;
+    result_matrix->columns = matrix2->columns;
+    return result_matrix;
 }
