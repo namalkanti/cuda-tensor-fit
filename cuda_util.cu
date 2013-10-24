@@ -3,7 +3,6 @@
 #include <cublas_v2.h>
 extern "C" {
 #include "cuda_util.h"
-#include "fit_tensor_util.h"
 }
 #define IDX2C(i, j, ld) ((j)*(ld)+(i))
 
