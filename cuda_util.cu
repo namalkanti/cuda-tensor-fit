@@ -149,8 +149,8 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
-    cudaFree(gpu_array1);
-    cudaFree(gpu_array2);
+    //cudaFree(gpu_array1);
+    //cudaFree(gpu_array2);
     cublasDestroy(handle);
     return result_matrix;
 }
