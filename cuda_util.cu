@@ -121,7 +121,6 @@ void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* m
             mat->data[i * mat->rows + j] = intermediate_matrix[IDX2C(i, j, mat->rows)];
         }
     }
-    cudaFree(gpu_pointer);
     free(intermediate_matrix);
 }
 
