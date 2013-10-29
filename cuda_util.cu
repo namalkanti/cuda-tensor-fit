@@ -116,11 +116,9 @@ void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* m
         puts("Failed to retrieve matrix from memory.");
     }
     int i, j, count;
-    count = 0;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
             mat->data[i * mat->rows + j] = intermediate_matrix[IDX2C(i, j, mat->rows)];
-            count++;
         }
     }
     //free(intermediate_matrix);
