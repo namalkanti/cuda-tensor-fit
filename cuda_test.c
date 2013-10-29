@@ -144,8 +144,8 @@ void test_cuda_matrix_dot(void) {
     expected->columns = 2;
     matrix* result = cuda_matrix_dot(matrix1, matrix2);
     CU_ASSERT(true == mat_compare(expected, result, MARGIN));
-    free_matrix(matrix1);
-    free_matrix(matrix2);
+    //free_matrix(matrix1);
+    //free_matrix(matrix2);
     //free_matrix(expected);
 }
 
