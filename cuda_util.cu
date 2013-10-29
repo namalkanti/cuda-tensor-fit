@@ -115,10 +115,11 @@ void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* m
     if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts("Failed to retrieve matrix from memory.");
     }
-    int i, j;
+    int i, j, count;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
             mat->data[i * mat->rows + j] = intermediate_matrix[IDX2C(i, j, mat->rows)];
+            count++;
         }
     }
     //free(intermediate_matrix);
@@ -145,7 +146,7 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
         puts("Call to cublas function failed.");
     }
     matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
-    double* result_matrix_data = (double *) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
+    double* result_matrix_data = (double*) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     result_matrix->data = result_matrix_data;
