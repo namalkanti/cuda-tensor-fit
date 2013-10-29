@@ -145,7 +145,7 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
         puts("Call to cublas function failed.");
     }
     matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
-    double* result_matrix_data = (double *) malloc(matrix1->rows * matrix2->columns);
+    double* result_matrix_data = (double *) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
