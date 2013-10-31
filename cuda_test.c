@@ -144,9 +144,6 @@ void test_cuda_matrix_dot(void) {
     expected->columns = 2;
     matrix* result = cuda_matrix_dot(matrix1, matrix2);
     CU_ASSERT(true == mat_compare(expected, result, MARGIN));
-    //free_matrix(matrix1);
-    //free_matrix(matrix2);
-    //free_matrix(expected);
 }
 
 //Initalization stub for utility test suite.
@@ -187,15 +184,6 @@ int main(){
         CU_cleanup_registry();
         return CU_get_error();
     }
-    /*opt_suite = CU_add_suite("Optimization Suite", init_opt, clean_opt);
-    if (NULL == opt_suite){
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-    if ((NULL == CU_add_test(opt_suite, "Complete Signal Fitting Test", test_fit_complete_signal))){
-        CU_cleanup_registry();
-        return CU_get_error();
-    }*/
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
