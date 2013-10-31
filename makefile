@@ -4,6 +4,12 @@ CFLAGS = -g
 
 memcheck = valgrind --tool=memcheck --leak-check=yes --track-origins=yes 
 
+cuda-leak: cuda-test
+	cuda-memcheck --leak-check=full ./cuda_test
+
+opt-leak: opt-test
+	${memcheck} ./opt_test
+
 leaks: test
 	${memcheck} ./main_test
 
