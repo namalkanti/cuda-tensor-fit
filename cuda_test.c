@@ -146,6 +146,10 @@ void test_cuda_matrix_dot(void) {
     CU_ASSERT(true == mat_compare(expected, result, MARGIN));
 }
 
+//Tests the cuda function to fit and weight the input data.
+void test_cuda_fitter (void) {
+}
+
 //Initalization stub for utility test suite.
 int init_opt(void){
     return 0;

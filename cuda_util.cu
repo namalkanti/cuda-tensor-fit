@@ -154,3 +154,12 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
     cudaFree(gpu_array2);
     return result_matrix;
 }
+
+//Kernel for weighting the matrix.
+__global__ void weighting_kernel(){
+}
+
+//Matrix weighter will weight each row of a matrix by a value based on the trans flag that is passed in.
+void matrix_weighter (double* matrix, double* weights, int rows, int columns) {
+
+}
