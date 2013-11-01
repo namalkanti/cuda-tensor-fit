@@ -485,7 +485,8 @@ int main(){
             (NULL == CU_add_test(utility_suite, "Decompose tensor test", test_decompose_tensor)) ||
             (NULL == CU_add_test(utility_suite, "Fitting test", test_fitter)) ||
             (NULL == CU_add_test(utility_suite, "Array Padding test", test_array_padding)) ||
-            (NULL == CU_add_test(utility_suite, "Matrix Padding test", test_matrix_padding))){
+            (NULL == CU_add_test(utility_suite, "Matrix Padding test", test_matrix_padding)) ||
+            (NULL == CU_add_test(utility_suite, "Rounding test", test_rounding_to_2_power))){
         CU_cleanup_registry();
         return CU_get_error();
     }
