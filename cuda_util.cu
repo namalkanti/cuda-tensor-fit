@@ -156,10 +156,14 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
 }
 
 //Kernel for weighting the matrix.
-__global__ void weighting_kernel(){
+//If trans is false, it will weight the rows, otherwise it will weight the columns by the vector.
+__global__ void weighting_kernel (double* matrices, double* weights, int rows, int columns){
 }
 
 //Matrix weighter will weight each row of a matrix by a value based on the trans flag that is passed in.
-void matrix_weighter (double* matrix, double* weights, int rows, int columns) {
-
+void matrix_weighter (double* matrices, double* weights, int rows, int columns, int length, bool trans) {
+    dim3 block, grid;
+    grid.x = length;
+    block.x = round_up_to_power_of_two(columns);
+    block.y = round_up_to_power_of_two(rows);
 }

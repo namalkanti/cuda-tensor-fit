@@ -412,6 +412,18 @@ void test_matrix_padding(void) {
     free_padded_matrix(padded_design_matrix);
 }
 
+//Tests function that rounds to multiple of 32
+void test_rounding_to_2_power(void){
+    int result_one = round_to_power_of_two(3);
+    int result_two = round_to_power_of_two(8);
+    int result_three = round_to_power_of_two(33);
+    int result_four = round_to_power_of_two(69);
+    CU_ASSERT(4 == result_one)
+    CU_ASSERT(8 == result_one)
+    CU_ASSERT(64 == result_one)
+    CU_ASSERT(128 == result_one)
+}
+
 //Init stub for opt tests
 int init_opt(void){
     return 0;
@@ -421,7 +433,6 @@ int init_opt(void){
 int clean_opt(void){
     return 0;
 }
-
 
 //Test function for fit_complete_signal
 void test_fit_complete_signal(void){
