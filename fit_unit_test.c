@@ -419,9 +419,9 @@ void test_rounding_to_2_power(void){
     int result_three = round_to_power_of_two(33);
     int result_four = round_to_power_of_two(69);
     CU_ASSERT(4 == result_one)
-    CU_ASSERT(8 == result_one)
-    CU_ASSERT(64 == result_one)
-    CU_ASSERT(128 == result_one)
+    CU_ASSERT(8 == result_two)
+    CU_ASSERT(64 == result_three)
+    CU_ASSERT(128 == result_four)
 }
 
 //Init stub for opt tests
