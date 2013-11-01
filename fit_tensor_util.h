@@ -90,5 +90,5 @@ padded_matrix* pad_matrix(matrix* matrix_to_pad, int m_multiple, int n_multiple)
 void free_padded_matrix(padded_matrix* matrix_pointer);
 
 //Rounds number up to multiple of 32.
-int round_up_to_power_of_two(int number);
+int round_to_power_of_two(int number);
 

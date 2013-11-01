@@ -402,7 +402,7 @@ void free_padded_matrix(padded_matrix* matrix_pointer){
     free(matrix_pointer);
 }
 
-int round_up_to_power_of_two(int number) {
+int round_to_power_of_two(int number) {
     int estimate = 2;
     while ( estimate / number < 1){
         estimate *= 2;
