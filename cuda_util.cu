@@ -156,14 +156,35 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
 }
 
 //Kernel for weighting the matrix.
-//If trans is false, it will weight the rows, otherwise it will weight the columns by the vector.
-__global__ void weighting_kernel (double* matrices, double* weights, int rows, int columns){
+__global__ void weighting_kernel (double* matrices, double* weights, int rows, int columns) {
+}
+
+//Kernel for weighting a transposed matrix.
+__global__ void weighting_kernel_transposed(double* matrices, double* weights, int rows, int columns) {
 }
 
 //Matrix weighter will weight each row of a matrix by a value based on the trans flag that is passed in.
 void matrix_weighter (double* matrices, double* weights, int rows, int columns, int length, bool trans) {
-    dim3 block, grid;
+    dim3 grid, block;
+    int weight_length;
     grid.x = length;
     block.x = round_up_to_power_of_two(columns);
     block.y = round_up_to_power_of_two(rows);
+    if ( false = trans ) {
+        weight_length = columns;
+    }
+    else {
+        weight_length = rows;
+    }
+    gpu_matrices = cuda_double_copy_to_gpu(matrices, rows * columns * length);
+    gpu_weight = cuda_double_copy_to_gpu(weights, weight_length);
+    if (false == trans){
+        weighting_kernel<<grid, block>>(gpu_matrices, gpu_weights, rows, columns);
+    }
+    else {
+        weighting_kernel_transposed<<grid, block>>(gpu_matrices, gpu_weights, rows, columns);
+    }
+    cudaMemcpy(matrices, gpu_matrices, sizeof(double) * rows* columens * length, cudaMemcpyDeviceToHost);
+    cudaFree(gpu_matrices);
+    cudaFree(gpu_weight);
 }
