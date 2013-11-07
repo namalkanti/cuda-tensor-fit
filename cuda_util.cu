@@ -188,12 +188,12 @@ void matrix_weighter (double* matrices, double* weights, int rows, int columns, 
         weight_length = rows;
     }
     double* gpu_matrices = cuda_double_copy_to_gpu(matrices, rows * columns * length);
-    double* gpu_weight = cuda_double_copy_to_gpu(weights, weight_length);
+    double* gpu_weights = cuda_double_copy_to_gpu(weights, weight_length);
     if (false == trans){
-        weighting_kernel<<<grid, block>>>(gpu_matrices, gpu_weights, rows, columns);
+        weighting_kernel<<<grid, block>>>(gpu_matrices, gpu_weights);
     }
     else {
-        weighting_kernel_transposed<<<grid, block>>>(gpu_matrices, gpu_weights, rows, columns);
+        weighting_kernel_transposed<<<grid, block>>>(gpu_matrices, gpu_weights);
     }
     cudaMemcpy(matrices, gpu_matrices, sizeof(double) * rows* columns * length, cudaMemcpyDeviceToHost);
     cudaFree(gpu_matrices);
