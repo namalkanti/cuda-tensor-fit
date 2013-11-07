@@ -4,6 +4,7 @@
 extern "C" {
 #include "cuda_util.h"
 }
+#include "BatchedSolver/solve.h"
 #define IDX2C(i, j, ld) ((j)*(ld)+(i))
 
 extern "C"
@@ -156,21 +157,31 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
 }
 
 //Kernel for weighting the matrix.
-__global__ void weighting_kernel (double* matrices, double* weights, int rows, int columns) {
+__global__ void weighting_kernel (double* matrices, double* weights) {
+    int grid_index = blockIdx * blockDim.x * blockDim.y;
+    int block_index = blockDim.y * threadIdx.y + threadIdx.x;
+    int matrix_index = grid_index + block_index;
+    matrices[matrix_index] = matrices[matrix_index] * weights[threadIdx.x];
 }
 
 //Kernel for weighting a transposed matrix.
-__global__ void weighting_kernel_transposed(double* matrices, double* weights, int rows, int columns) {
+__global__ void weighting_kernel_transposed(double* matrices, double* weights) {
+    int grid_index = blockIdx * blockDim.x * blockDim.y;
+    int block_index = blockDim.y * threadIdx.y + threadIdx.x;
+    int matrix_index = grid_index + block_index;
+    int weighting_index = blockIdx.x * blockDim.y + threadIdx.y; 
+    matrices[matrix_index] = matrices[matrix_index] * weights[weighting_index];
 }
 
-//Matrix weighter will weight each row of a matrix by a value based on the trans flag that is passed in.
+/*Matrix weighter will weight each row of a matrix by a value based on the trans flag that is passed in.
+  Function expects incoming values to be padded correctly.*/
 void matrix_weighter (double* matrices, double* weights, int rows, int columns, int length, bool trans) {
     dim3 grid, block;
     int weight_length;
     grid.x = length;
-    block.x = round_up_to_power_of_two(columns);
-    block.y = round_up_to_power_of_two(rows);
-    if ( false = trans ) {
+    block.x = columns;
+    block.y = rows;
+    if ( false == trans ) {
         weight_length = columns;
     }
     else {

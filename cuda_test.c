@@ -146,8 +146,17 @@ void test_cuda_matrix_dot(void) {
     CU_ASSERT(true == mat_compare(expected, result, MARGIN));
 }
 
-//Tests the cuda function to fit and weight the input data.
-void test_cuda_fitter (void) {
+//Tests matrix weighter.
+void test_matrix_weighter (void) {
+    double* test_matrix = {1, 2, 3, 4, 1, 2, 3, 4};
+    double* transpose_test_matrix = {1, 2, 3, 4, 1, 2, 3, 4};
+    double* weights = {1, 2};
+    double* expected_matrix = {1, 4, 3, 8, 1, 4, 3, 8};
+    double* expected_transpose_matrix = {1, 2, 6, 8, 1, 2, 6, 8};
+    matrix_weighter(test_matrix, weights, 2, 2, 2, false);
+    matrix_weighter(transpose_test_matrix, weights, 2, 2, 2, true);
+    CU_ASSERT(true == arr_compare(expected_matrix, test_matrix, 4, MARGIN);
+    CU_ASSERT(true == arr_compare(expected_transpose_matrix, transpose_test_matrix, 4, MARGIN);
 }
 
 //Initalization stub for utility test suite.

@@ -25,6 +25,9 @@ double* exp_cuda(double* input, int array_length);
 //Wrapper for CUBLAS Dgemm call
 matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2);
 
+//Function weights matrix according to trans argument.
+void matrix_weighter (double* matrices, double* weights, int rows, int columns, int length, bool trans);
+
 //Wrapper function to weight and fit the data
 double* cuda_fitter(matrix* design_matrix, matrix* weights, double * signal, int signal_length);
 
