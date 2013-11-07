@@ -197,5 +197,5 @@ void matrix_weighter (double* matrices, double* weights, int rows, int columns, 
     }
     cudaMemcpy(matrices, gpu_matrices, sizeof(double) * rows* columns * length, cudaMemcpyDeviceToHost);
     cudaFree(gpu_matrices);
-    cudaFree(gpu_weight);
+    cudaFree(gpu_weights);
 }
