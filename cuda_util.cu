@@ -158,7 +158,7 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
 
 //Kernel for weighting the matrix.
 __global__ void weighting_kernel (double* matrices, double* weights) {
-    int grid_index = blockIdx * blockDim.x * blockDim.y;
+    int grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
     matrices[matrix_index] = matrices[matrix_index] * weights[threadIdx.x];
@@ -166,7 +166,7 @@ __global__ void weighting_kernel (double* matrices, double* weights) {
 
 //Kernel for weighting a transposed matrix.
 __global__ void weighting_kernel_transposed(double* matrices, double* weights) {
-    int grid_index = blockIdx * blockDim.x * blockDim.y;
+    int grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
     int weighting_index = blockIdx.x * blockDim.y + threadIdx.y; 
@@ -187,15 +187,15 @@ void matrix_weighter (double* matrices, double* weights, int rows, int columns, 
     else {
         weight_length = rows;
     }
-    gpu_matrices = cuda_double_copy_to_gpu(matrices, rows * columns * length);
-    gpu_weight = cuda_double_copy_to_gpu(weights, weight_length);
+    double* gpu_matrices = cuda_double_copy_to_gpu(matrices, rows * columns * length);
+    double* gpu_weight = cuda_double_copy_to_gpu(weights, weight_length);
     if (false == trans){
-        weighting_kernel<<grid, block>>(gpu_matrices, gpu_weights, rows, columns);
+        weighting_kernel<<<grid, block>>>(gpu_matrices, gpu_weights, rows, columns);
     }
     else {
-        weighting_kernel_transposed<<grid, block>>(gpu_matrices, gpu_weights, rows, columns);
+        weighting_kernel_transposed<<<grid, block>>>(gpu_matrices, gpu_weights, rows, columns);
     }
-    cudaMemcpy(matrices, gpu_matrices, sizeof(double) * rows* columens * length, cudaMemcpyDeviceToHost);
+    cudaMemcpy(matrices, gpu_matrices, sizeof(double) * rows* columns * length, cudaMemcpyDeviceToHost);
     cudaFree(gpu_matrices);
     cudaFree(gpu_weight);
 }
