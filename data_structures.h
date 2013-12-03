@@ -20,7 +20,7 @@ typedef struct {
     double* values;
     int original_length;
     int current_length;
-}padded_double_array;
+}padded_array;
 
 //Struct for padding matrix.
 typedef struct {

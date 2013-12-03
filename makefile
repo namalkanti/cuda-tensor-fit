@@ -16,11 +16,9 @@ leaks: test
 run-cuda: cuda-test
 	./cuda_test
 
-run-opt:opt-test
-	./opt_test
-
 run: test
-	./main_test
+	./structure_test
+	./opt_test
 
 cuda-test: cuda_util.o
 	gcc ${CFLAGS} -o cuda_test cuda_test.c fit_tensor_util.o fit_tensor.o cuda_util.o -L/usr/local/cuda/lib64 -lgsl -lgslcblas -lm -lcuda -lcudart -lcublas -lcunit 
@@ -34,11 +32,17 @@ test: fit_tensor.o
 cuda_util.o: fit_tensor.o 
 	nvcc ${CFLAGS} -c cuda_util.cu
 
-fit_tensor.o: fit_tensor_opt.c fit_tensor_util.o
-	gcc ${CFLAGS} -o fit_tensor.o -c fit_tensor_opt.c 
+opt_test: opt_util.o
+	gcc ${CFLAGS} -o opt_test opt_test.c opt_util.o structure_util.o -lm -lgsl -lgslcblas -lcunit
+	
+opt_util.o: opt_util.c
+	gcc ${CFLAGS} -o opt_util.o -c opt_util.c
 
-fit_tensor_util.o: fit_tensor_util.c
-	gcc ${CFLAGS} -o fit_tensor_util.o -c fit_tensor_util.c 
+structure_test:structure_util.o
+	gcc ${CFLAGS} -o structure_test structure_unit_test.c structure_util.o -lm -lgsl -lgslcblas -lcunit
+
+structure_util.o: structure_util.c
+	gcc ${CFLAGS} -o structure_util.o -c structure_util.c
 
 clean: 
 	rm *.o

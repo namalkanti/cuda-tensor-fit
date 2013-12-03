@@ -9,9 +9,9 @@ tensor* signal_fit(matrix* ols_fit, matrix* design_matrix, double* sig, double m
     matrix signal_matrix = {sig, signal_length, 1};
     matrix* ols_signal_dot = matrix_dot(ols_fit, &signal_matrix);
     double* weights = exp_array(ols_signal_dot->data, signal_length);
-    double* D = fitter(design_matrix, weights, sig, signal_length);
-    matrix* tensor_matrix = tensor_lower_triangular(D);
-    tensor* signal_tensor = decompose_tensor(tensor_matrix, min_diffusivity);
+    double* D = fit_matrix(design_matrix, weights, sig, signal_length);
+    matrix* tensor_matrix = get_lower_triangular(D);
+    tensor* signal_tensor = decompose_tensor_matrix(tensor_matrix, min_diffusivity);
     free_matrix(ols_signal_dot);
     free(weights);
     free(D);

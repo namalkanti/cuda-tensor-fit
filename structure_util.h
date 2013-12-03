@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include <gsl/gslmatrix.h>
+#include <gsl/gsl_matrix.h>
 #include "data_structures.h"
 #define MARGIN .0000001
 
@@ -19,7 +19,7 @@ double* array_combine(double const* a, double const* b, int alength, int blength
 /*
  * Function clones an array and returns it.
  */
-double* array_clone(double const* array, int length);
+double* array_clone(double const* arr, int length);
 
 /*
  * Rounds number up to multiple of 2.
@@ -31,18 +31,18 @@ int round_to_power_of_two(int number);
 /*
  * Function will take first six elements in array(fail otherwise)
  * and return a 3x3 symmetric matrix with this positioning.
- * 0 1 2
- * 1 3 4
- * 2 4 5
+ * 0 1 3
+ * 1 2 4
+ * 3 4 5
  */
 matrix* get_lower_triangular(double const* input);
 
 /*
  * Takes a the vector and multiples each row by each respective 
  * element in the vector(lenght of the vector has to equal N). If
- * trans is true, do the same operation on the columns instead.
+ * trans is 1, do the same operation on the columns instead.
  */
-matrix* scale_matrix(matrix const* m, double const* vector, int trans);
+matrix* scale_matrix(matrix const* mat, double const* vector, int trans);
 
 /*
  * Returns the dot product of matrix a and matrix b
@@ -69,7 +69,7 @@ bool compare_eigenvalues_by_column(matrix const* a, matrix const* b, double err)
 /*
  * Frees matrix structure.
  */
-void free_matrix(matrix* matrix);
+void free_matrix(matrix* mat);
 
 //Gsl matrix operations
 
@@ -81,7 +81,7 @@ gsl_matrix* to_gsl(matrix const* mat);
 /*
  * Returns a matrix from a gsl matrix.
  */
-matrix* to_matrix(gsl_matrix const* gsl_matrix);
+matrix* to_matrix(gsl_matrix const* gsl_mat);
 
 //Tensor operations
 
@@ -89,7 +89,7 @@ matrix* to_matrix(gsl_matrix const* gsl_matrix);
  * Compares every value in corresponding a and b and returns true if 
  * all values are within error value.
  */
-bool tensor_compare(tensor const* a, tensor const* b, double err);
+bool compare_tensors(tensor const* a, tensor const* b, double err);
 
 /*
  * Frees tensor structure a.

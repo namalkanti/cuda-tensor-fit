@@ -65,6 +65,105 @@ int clean_opt(void){
     return 0;
 }
 
+//Test for cutoff and log function
+void test_cutoff_log(void){
+    double min_value = M_E;
+    double test1[] = {0, 2, 3, 4, 1, 23, 3, 5, 6, 43, 5};
+    size_t len1 = sizeof(test1)/sizeof(test1[0]);
+    double result1[] = {1.0,
+     1.0,
+     1.0986122886681098,
+     1.3862943611198906,
+     1.0,
+     3.1354942159291497,
+     1.0986122886681098,
+     1.6094379124341003,
+     1.791759469228055,
+     3.7612001156935624,
+     1.6094379124341003};
+    double test2[] = {1, 5, 2, 1, 4, 1.3, 4.5, 1.2, 3, 41, 9};
+    size_t len2 = sizeof(test2)/sizeof(test2[0]);
+    double result2[] = {1.0,
+     1.6094379124341003,
+     1.0,
+     1.0,
+     1.3862943611198906,
+     1.0,
+     1.5040773967762742,
+     1.0,
+     1.0986122886681098,
+     3.713572066704308,
+     2.1972245773362196};
+    cutoff_log(test1, min_value, len1);
+    cutoff_log(test2, min_value, len2);
+    CU_ASSERT(array_compare(test1, result1, len1, .0000001) == true);
+    CU_ASSERT(array_compare(test2, result2, len2, .00000001) == true);
+}
+
+//Test function for exponentation
+void test_exp_array(void){
+    double test1[] = {0, 0, 0, 0};
+    double results1[] = {1, 1, 1, 1};
+    size_t size1 = sizeof(test1)/sizeof(test1[0]);
+    double test2[] = {1, 2, 3, 4, 14, 15, 15, 3, 12, 13};
+    double results2[] = {2.718281828459045, 7.38905609893065, 20.085536923187668, 54.598150033144236, 1202604.2841647768, 3269017.3724721107, 3269017.3724721107, 20.085536923187668, 162754.79141900392, 442413.3920089205};
+    size_t size2 = sizeof(test2)/sizeof(test2[0]);
+    double* return1 = exp_array(test1, size1);
+    double* return2 = exp_array(test2, size2);
+    CU_ASSERT(array_compare(results1, return1, size1, .0000001) == true);
+    CU_ASSERT(array_compare(results2, return2, size2, .0000001) == true);
+    free(return1);
+    free(return2);
+}
+
+//Testing function for tensor decomposition
+void test_decompose_tensor_matrix(void){
+    const double min_diffusitivity = 0;
+    double test1_data[] = {0, 1, 3, 1, 2, 4, 3, 4, 5};
+    double test2_data[] = {5, 6, 8, 6, 7, 9, 8, 9, 10};
+    matrix test1 = {test1_data, 3, 3};
+    matrix test2 = {test2_data, 3, 3};
+    double vals1[] = {8.82572109571665, 0, 0};
+    double vecs1_data[] = {-0.32779753,  0.60627778,  0.72455229,
+                             -0.51295123, -0.75825246,  0.40241053,
+                             -0.79336613,  0.23975081, -0.55954422};
+    matrix vecs1 = {vecs1_data, 3, 3};
+    tensor tensor1 = {vals1, &vecs1};
+    double vals2[] = {23.12613876, 0, 0};
+    double vecs2_data[] = {-0.48266957,  0.6524927,   0.58419463,
+                             -0.55684965, -0.74348717,  0.37033133,
+                             -0.6759797,   0.14656091, -0.72219896};
+    matrix vecs2 = {vecs2_data, 3, 3};
+    tensor tensor2 = {vals2, &vecs2};
+    tensor* return1 = decompose_tensor_matrix(&test1, min_diffusitivity);
+    tensor* return2 = decompose_tensor_matrix(&test2, min_diffusitivity);
+    CU_ASSERT(compare_tensors(&tensor1, return1, .00001) == true);
+    CU_ASSERT(compare_tensors(&tensor2, return2, .00001) == true);
+    CU_ASSERT(compare_tensors(&tensor1, return2, .00001) == false);
+    free_tensor(return1);
+    free_tensor(return2);
+}
+
+//Testing function for fit_matrix
+void test_fit_matrix(void){
+    double design1_data[] = {1, 2, 3, 4};
+    matrix design1 = {design1_data, 2, 2};
+    double weight1[] = {2, 1};
+    double sig1[] = {5, 6};
+    double result1[] = {-4, 4.5};
+    double design2_data[] = {1, 2, 3, 4, 5, 6};
+    matrix design2 = {design2_data, 3, 2};
+    double weight2[] = {3, 2, 1};
+    double sig2[] = {1, 2, 2};
+    double result2[] = {-0.34210526, 0.69736842};
+    double* return1 = fit_matrix(&design1, weight1, sig1, 2);
+    double* return2 = fit_matrix(&design2, weight2, sig2, 3);
+    CU_ASSERT(array_compare(result1, return1, 2, .0001) == true);
+    CU_ASSERT(array_compare(result2, return2, 2, .0001) == true);
+    free(return1);
+    free(return2);
+}
+
 //Test function of signal fit function
 void test_signal_fit(void){
     double* csig1 = array_clone(sig1, 56);
@@ -96,12 +195,12 @@ void test_signal_fit(void){
 
 //Test function for fit_complete_signal
 void test_fit_complete_signal(void){
-    double* sig12 = array_combine(sig1, 56, sig2, 56);
-    double* sig123 = array_combine(sig12, 112, sig3, 56);
+    double* sig12 = array_combine(sig1, sig2, 56, 56);
+    double* sig123 = array_combine(sig12, sig3, 112, 56);
     free(sig12);
-    double* sig1234 = array_combine(sig123, 168, sig4, 56);
+    double* sig1234 = array_combine(sig123, sig4, 168, 56);
     free(sig123);
-    double* sig12345 = array_combine(sig1234, 224, sig5, 56);
+    double* sig12345 = array_combine(sig1234, sig5, 224, 56);
     free(sig1234);
     matrix signal = {sig12345, 5, 56};
     tensor* tensor_array[5];
