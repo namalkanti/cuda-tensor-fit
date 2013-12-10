@@ -20,7 +20,7 @@ __global__ void weighting_kernel_transposed(double* matrices, double* weights);
 
 
 extern "C"
-double* cuda_double_copy_to_gpu(double* local_array, int array_length){
+double* cuda_double_copy_to_gpu(double const* local_array, int array_length){
     double* cuda_array;
     cudaMalloc(&cuda_array, sizeof(double) * array_length);
     cudaMemcpy(cuda_array, local_array, sizeof(double) * array_length, cudaMemcpyHostToDevice);
@@ -28,7 +28,7 @@ double* cuda_double_copy_to_gpu(double* local_array, int array_length){
 }
 
 extern "C"
-double* cuda_double_return_from_gpu(double* cuda_array, int array_length){
+double* cuda_double_return_from_gpu(double const* cuda_array, int array_length){
     double* result_array = (double *) malloc(sizeof(double) * array_length);
     cudaMemcpy(result_array, cuda_array, sizeof(double) * array_length, cudaMemcpyDeviceToHost);
     return result_array;
@@ -40,38 +40,38 @@ void cuda_double_allocate(double* pointer, int pointer_length){
 }
 
 extern "C"
-void free_cuda_memory(double* pointer){
+void free_cuda_memory(double const* pointer){
     cudaFree(pointer);
 }
 
 extern "C"
-double* cutoff_log_cuda(double* input, double min_signal, int array_length){
-    padded_double_array* padded_array = pad_array(input, array_length, WARP_SIZE);
-    double* device_array = cuda_double_copy_to_gpu(padded_array->values, padded_array->current_length);
-    int blocks_in_grid = padded_array->current_length / WARP_SIZE;
+double* cutoff_log_cuda(double const* input, double min_signal, int array_length){
+    padded_array* padded_arr = pad_array(input, array_length, WARP_SIZE);
+    double* device_array = cuda_double_copy_to_gpu(padded_arr->values, padded_arr->current_length);
+    int blocks_in_grid = padded_arr->current_length / WARP_SIZE;
     cutoff_log_kernel<<<blocks_in_grid, WARP_SIZE>>>(device_array, min_signal);
-    padded_array->values = cuda_double_return_from_gpu(device_array, padded_array->current_length);
-    double* result_array = get_array_from_padded_array(padded_array);
+    padded_arr->values = cuda_double_return_from_gpu(device_array, padded_arr->current_length);
+    double* result_array = get_array_from_padded_array(padded_arr);
     free_cuda_memory(device_array);
-    free_padded_array(padded_array);
+    free_padded_array(padded_arr);
     return result_array;
 }
 
 extern "C"
-double* exp_cuda(double* input, int array_length){
-    padded_double_array* padded_array = pad_array(input, array_length, WARP_SIZE);
-    double* device_array = cuda_double_copy_to_gpu(padded_array->values, padded_array->current_length);
-    int blocks_in_grid = padded_array->current_length/ WARP_SIZE;
+double* exp_cuda(double const* input, int array_length){
+    padded_array* padded_arr = pad_array(input, array_length, WARP_SIZE);
+    double* device_array = cuda_double_copy_to_gpu(padded_arr->values, padded_arr->current_length);
+    int blocks_in_grid = padded_arr->current_length/ WARP_SIZE;
     exp_kernel<<<blocks_in_grid, WARP_SIZE>>>(device_array);
-    padded_array->values = cuda_double_return_from_gpu(device_array, padded_array->current_length);
-    double* output_array = get_array_from_padded_array(padded_array);
+    padded_arr->values = cuda_double_return_from_gpu(device_array, padded_arr->current_length);
+    double* output_array = get_array_from_padded_array(padded_arr);
     free_cuda_memory(device_array);
-    free_padded_array(padded_array);
+    free_padded_array(padded_arr);
     return output_array;
 }
 
 extern "C"
-matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
+matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     cublasStatus_t status;
     cublasHandle_t handle;
     status = cublasCreate(&handle);
@@ -101,7 +101,7 @@ matrix* cuda_matrix_dot(matrix* matrix1, matrix* matrix2){
 }
     
 extern "C"
-void matrix_weighter (double* matrices, double* weights, int rows, int columns, int length, bool trans) {
+void matrix_weighter (double* matrices, double const* weights, int rows, int columns, int length, bool trans) {
     dim3 grid, block;
     int weight_length;
     grid.x = length;
@@ -128,6 +128,7 @@ void matrix_weighter (double* matrices, double* weights, int rows, int columns, 
 
 extern "C"
 double* cuda_fitter(matrix const* design_matrix, matrix const* weights, double const* signal, int signal_length){
+    return 0;
 }
 
 extern "C"
@@ -184,7 +185,7 @@ void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* m
 
 //kernel to take entire array and run cutoff log function
 __global__ void cutoff_log_kernel(double* device_array, double min_signal){
-    int thread_id = blockidx.x * blockdim.x + threadidx.x;
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
     if (device_array[thread_id] < min_signal){
         device_array[thread_id] = logf(min_signal);
     }
@@ -195,24 +196,24 @@ __global__ void cutoff_log_kernel(double* device_array, double min_signal){
 
 //kernel to take entire array and exp it
 __global__ void exp_kernel(double* cuda_array){
-    int thread_id = blockidx.x * blockdim.x + threadidx.x;
+    int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
     cuda_array[thread_id] = expf(cuda_array[thread_id]);
 }
 
 //kernel for weighting the matrix.
 __global__ void weighting_kernel (double* matrices, double* weights) {
-    int grid_index = blockidx.x * blockdim.x * blockdim.y;
-    int block_index = blockdim.y * threadidx.y + threadidx.x;
+    int grid_index = blockIdx.x * blockDim.x * blockDim.y;
+    int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
     matrices[matrix_index] = matrices[matrix_index] * weights[threadidx.x];
 }
 
 //kernel for weighting a transposed matrix.
 __global__ void weighting_kernel_transposed(double* matrices, double* weights) {
-    int grid_index = blockidx.x * blockdim.x * blockdim.y;
-    int block_index = blockdim.y * threadidx.y + threadidx.x;
+    int grid_index = blockIdx.x * blockDim.x * blockDim.y;
+    int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
-    int weighting_index = blockidx.x * blockdim.y + threadidx.y; 
+    int weighting_index = blockIdx.x * blockDim.y + threadIdx.y; 
     matrices[matrix_index] = matrices[matrix_index] * weights[weighting_index];
 }
 
