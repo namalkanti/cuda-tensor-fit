@@ -16,7 +16,7 @@ leaks: test
 run-cuda: cuda-test
 	./cuda_test
 
-run: opt_test structure_test
+run: structure_test opt_test
 	./structure_test
 	./opt_test
 
@@ -32,7 +32,7 @@ opt_test: opt_util.o
 opt_util.o: opt_util.c
 	gcc ${CFLAGS} -o opt_util.o -c opt_util.c
 
-structure_test:structure_util.o
+structure_test: structure_util.o
 	gcc ${CFLAGS} -o structure_test structure_unit_test.c structure_util.o -lm -lgsl -lgslcblas -lcunit
 
 structure_util.o: structure_util.c
