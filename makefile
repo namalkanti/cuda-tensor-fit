@@ -7,11 +7,9 @@ memcheck = valgrind --tool=memcheck --leak-check=yes --track-origins=yes
 cuda-leak: cuda-test
 	cuda-memcheck --leak-check full ./cuda_test
 
-opt-leak: opt-test
-	${memcheck} ./opt_test
-
 leaks: test
-	${memcheck} ./main_test
+	${memcheck} ./structure_test
+	${memcheck} ./opt_test
 
 run-cuda: cuda-test
 	./cuda_test
@@ -21,7 +19,7 @@ run: structure_test opt_test
 	./opt_test
 
 cuda-test: cuda_util.o
-	gcc ${CFLAGS} -o cuda_test cuda_test.c fit_tensor_util.o fit_tensor.o cuda_util.o -L/usr/local/cuda/lib64 -lgsl -lgslcblas -lm -lcuda -lcudart -lcublas -lcunit 
+	gcc ${CFLAGS} -o cuda_test cuda_test.c structure_util.o opt_util.o cuda_util.o -L/usr/local/cuda/lib64 -lgsl -lgslcblas -lm -lcuda -lcudart -lcublas -lcunit 
 
 cuda_util.o: fit_tensor.o 
 	nvcc ${CFLAGS} -c cuda_util.cu
