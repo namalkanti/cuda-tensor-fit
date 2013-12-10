@@ -8,8 +8,8 @@ extern "C" {
 #define IDX2C(i, j, ld) ((j)*(ld)+(i))
 
 //Helper function declarations
-double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat);
-void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* mat);
+double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat);
+void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat);
 
 //Kernel declarations
 __global__ void cutoff_log_kernel(double* device_array, double min_signal);
@@ -40,7 +40,7 @@ void cuda_double_allocate(double* pointer, int pointer_length){
 }
 
 extern "C"
-void free_cuda_memory(double const* pointer){
+void free_cuda_memory(double* pointer){
     cudaFree(pointer);
 }
 
@@ -139,7 +139,7 @@ void decompose_tensors(double const* tensors, tensor** tensor_output){
 
 /*Converts matrix to the data format fortran uses for CUBLAS and loads to GPU
   Returns pointer to array on GPU.*/
-double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
+double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     cublasStatus_t status;
     int length = mat->rows * mat->columns;
     double* gpu_pointer; 
@@ -163,7 +163,7 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix* mat){
 /*Converts matrix from the format fortran uses for CUBLAS after retrieving from GPU
   Will free gpu_pointer.
   Populates a matrix object passed in.*/
-void get_matrix_from_gpu_and_convert_from_fortran(double* gpu_pointer, matrix* mat){
+void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat){
     cublasStatus_t status;
     int length = mat->rows * mat->columns;
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
@@ -205,7 +205,7 @@ __global__ void weighting_kernel (double* matrices, double* weights) {
     int grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
-    matrices[matrix_index] = matrices[matrix_index] * weights[threadidx.x];
+    matrices[matrix_index] = matrices[matrix_index] * weights[threadIdx.x];
 }
 
 //kernel for weighting a transposed matrix.
