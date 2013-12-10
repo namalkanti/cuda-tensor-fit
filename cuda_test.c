@@ -143,7 +143,7 @@ void test_cuda_matrix_dot(void) {
     expected->rows = 2;
     expected->columns = 2;
     matrix* result = cuda_matrix_dot(matrix1, matrix2);
-    CU_ASSERT(true == mat_compare(expected, result, MARGIN));
+    CU_ASSERT(true == matrix_compare(expected, result, MARGIN));
 }
 
 //Tests matrix weighter.
