@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "fit_tensor_opt.h"
+#include "fit_tensor.h"
 
 #define WARP_SIZE 32
 
