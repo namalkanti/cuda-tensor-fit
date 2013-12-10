@@ -14,7 +14,7 @@ double* cuda_double_return_from_gpu(double const* cuda_array, int array_length);
 void cuda_double_allocate(double* pointer, int pointer_length);
 
 //Frees double device memory
-void free_cuda_memory(double const* pointer);
+void free_cuda_memory(double* pointer);
 
 //Kernel to take entire array and run cutoff log function
 double* cutoff_log_cuda(double const* input, double min_signal, int array_length);
