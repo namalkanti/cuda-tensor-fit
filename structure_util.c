@@ -105,6 +105,14 @@ matrix* matrix_dot(matrix const* a, matrix const* b){
     return c;
 }
 
+matrix* transpose(matrix const* mat){
+    gsl_matrix* gsl_mat = to_gsl(mat);
+    int result = gsl_matrix_transpose(gsl_mat);
+    matrix* transposed = to_matrix(gsl_mat);
+    gsl_matrix_free(gsl_mat);
+    return transposed;
+}
+
 bool matrix_compare(matrix const* a, matrix const* b, double err){
     if (a->rows != b->rows || a->columns != b->columns){
         return false;

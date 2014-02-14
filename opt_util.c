@@ -69,7 +69,7 @@ double* fit_matrix(matrix const* design, double const* weights, double const* si
     gsl_matrix_transpose_memcpy(trans_gsl, weighted_design_gsl);
     matrix* trans = to_matrix(trans_gsl);
     matrix* fit = matrix_dot(trans, weighted_design);
-    matrix* inter_signal = matrix_dot(trans,&signal_mat);
+    matrix* inter_signal = matrix_dot(trans, &signal_mat);
     gsl_vector* inter_sig_gsl = gsl_vector_alloc(inter_signal->rows);
     for (i = 0; i < inter_sig_gsl->size; i++){
         gsl_vector_set(inter_sig_gsl, i, inter_signal->data[i]);

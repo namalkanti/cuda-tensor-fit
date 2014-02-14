@@ -14,10 +14,14 @@ void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, mat
 //Kernel declarations
 __global__ void cutoff_log_kernel(double* device_array, double min_signal);
 __global__ void exp_kernel(double* cuda_array);
-__global__ void weighting_kernel (double* matrices, double* weights); 
-__global__ void weighting_kernel_transposed(double* matrices, double* weights); 
+__global__ void weighting_kernel (double* matrices, double* weights, double* results); 
+__global__ void weighting_kernel_transposed(double* matrices, double* weights, double* results); 
+__global__ void transpose_kernel(double const* matrices, double* transposed);
 
 
+extern "C"
+matrix* process_signal(matrix const* signal){
+}
 
 extern "C"
 double* cuda_double_copy_to_gpu(double const* local_array, int array_length){
@@ -42,6 +46,12 @@ void cuda_double_allocate(double* pointer, int pointer_length){
 extern "C"
 void free_cuda_memory(double* pointer){
     cudaFree(pointer);
+}
+
+extern "C"
+void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
+    free_cuda_memory(gpu_matrix->data);
+    free(gpu_matrix);
 }
 
 extern "C"
@@ -101,7 +111,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
 }
     
 extern "C"
-void matrix_weighter (double* matrices, double const* weights, int rows, int columns, int length, bool trans) {
+double* matrix_weighter (double const* matrix, double const* weights, int rows, int columns, int length, bool trans) {
     dim3 grid, block;
     int weight_length;
     grid.x = length;
@@ -113,22 +123,96 @@ void matrix_weighter (double* matrices, double const* weights, int rows, int col
     else {
         weight_length = rows;
     }
-    double* gpu_matrices = cuda_double_copy_to_gpu(matrices, rows * columns * length);
-    double* gpu_weights = cuda_double_copy_to_gpu(weights, weight_length);
+    double* gpu_matrix = cuda_double_copy_to_gpu(matrix, rows * columns);
+    double* gpu_weights = cuda_double_copy_to_gpu(weights, weight_length * length);
+    double* gpu_results;
+    cudaMalloc(&gpu_results, sizeof(double) * rows * columns * length);
     if (false == trans){
-        weighting_kernel<<<grid, block>>>(gpu_matrices, gpu_weights);
+        weighting_kernel<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
     else {
-        weighting_kernel_transposed<<<grid, block>>>(gpu_matrices, gpu_weights);
+        weighting_kernel_transposed<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
-    cudaMemcpy(matrices, gpu_matrices, sizeof(double) * rows* columns * length, cudaMemcpyDeviceToHost);
-    cudaFree(gpu_matrices);
+    double* weighted_matrices = malloc(sizeof(double) * rows * columns * length);
+    cudaMemcpy(weighted_matrices, gpu_results, sizeof(double) * rows * columns * length, cudaMemcpyDeviceToHost);
+    cudaFree(gpu_matrix);
     cudaFree(gpu_weights);
+    cudaFree(gpu_results);
+    return weighted_matrices;
 }
 
 extern "C"
-double* cuda_fitter(matrix const* design_matrix, matrix const* weights, double const* signal, int signal_length){
-    return 0;
+double* transpose_matrices(double* matrices, int rows, int columns, int length){
+    double* transposed = malloc(sizeof(double) * rows * columns * length);
+    double* gpu_matrices = cuda_double_copy_to_gpu(matrices, rows * columns * length);
+    double* gpu_tranposed = cuda_double_copy_to_gpu(transposed, rows * columns * length);
+    dim3 grid, block;
+    grid.x = length;
+    block.x = columns;
+    block.y = rows;
+    transpose_kernel<<<grid, block>>>(double const* gpu_matrices, double* gpu_transposed);
+    transposed = cuda_double_return_from_gpu(gpu_transposed, rows * columns * length);
+    free_cuda_memory(gpu_matrices);
+    free_cuda_memory(gpu_transposed);
+    return transposed;
+}
+
+extern "C"
+double* dot_matrices(double const* matrix_batch_one, int rows, double const* matrix_batch_two, int columns,
+        int k, int length){
+    cublasStatus_t status;
+    cublasHandle_t handle;
+    status = cublasCreate(&handle);
+    if ( status != CUBLAS_STATUS_SUCCESS ) {
+        puts("Failed to retrieve cublas handle.");
+    }
+    double* transposed_batch1 = transpose_matrices(matrix_batch_one, rows, k, length);
+    double* transposed_batch2 = transpose_matrices(matrix_batch_two, k, columns, length);
+    double* gpu_array1 = cuda_double_copy_to_gpu(transposed_batch1, rows * k * length);
+    double* gpu_array2 = cuda_double_copy_to_gpu(transposed_batch2, k *  columns * length);
+    double* gpu_output;
+    cudaMalloc(&gpu_output, sizeof(double)* transposed_batch1->rows 
+            * transposed_batch2->columns * length);
+    const double alpha = 1;
+    const double beta = 0;
+    status = cublasDgemmBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N, rows, columns, 
+            k, &alpha, gpu_array1, rows, gpu_array2, k, &beta, 
+            gpu_output, rows, length);
+    if ( status != CUBLAS_STATUS_SUCCESS ) {
+        puts("Call to cublas function failed.");
+    }
+    double* results;
+    cudaMalloc(&gpu_output, sizeof(double) * rows * columns * length);
+    results = cuda_double_return_from_gpu(gpu_output, rows * columns * length);
+    results = transpose_matrices(results, rows, columns, length);
+    free_cuda_memory(gpu_array1);
+    free_cuda_memory(gpu_array2);
+    free_cuda_memory(gpu_output);
+    free(transposed_batch1);
+    free(transposed_batch2);
+    return results;
+
+}
+
+extern "C"
+double* solve_matrices(){
+}
+
+extern "C"
+double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, 
+        double const* signal, int signal_length, int number_of_signals){
+    int signal_elements = signal_length;
+    int total_elements = signal_elements * number_of_signals;
+    double* cutoff_and_logged_signal = cutoff_log_cuda(signal, min_signal, total_elements);
+    matrix signal_matrix = {cutoff_and_logged_signal, signal_elements, signal_length};
+    matrix* ols_signal_dot_matrix = cuda_matrix_dot(ols_matrix, &signal_matrix);
+    matrix* weights = exp_cuda(ols_signal_dot_matrix, total_elements);
+    matrix* weighted_matrices = matrix_weighter(signal, weights, signal_elements, signal_length, total_elements, false);
+    matrix* transposed_weighted_matrices = transpose_matrices();
+    matrix* column_major_data = cuda_matrix_dot(transposed_weighted_matrices, signal);
+    matrix* data = transpose_matrices(column_major_data);
+    matrix* weighted_fitting_matrix = dot_matrices;
+    matrix* solutions = solve_matrices();
 }
 
 extern "C"
@@ -201,19 +285,28 @@ __global__ void exp_kernel(double* cuda_array){
 }
 
 //kernel for weighting the matrix.
-__global__ void weighting_kernel (double* matrices, double* weights) {
-    int grid_index = blockIdx.x * blockDim.x * blockDim.y;
+__global__ void weighting_kernel (double* matrix, double* weights, double* results) {
+    int matrix_grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
-    matrices[matrix_index] = matrices[matrix_index] * weights[threadIdx.x];
+    int weight_index = blockIdx.x * blockDim.x + threadIdx.x; 
+    results[matrix_index] = matrices[block_index] * weights[weight_index];
 }
 
 //kernel for weighting a transposed matrix.
-__global__ void weighting_kernel_transposed(double* matrices, double* weights) {
+__global__ void weighting_kernel_transposed(double* matrix, double* weights, double* results) {
     int grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
     int weighting_index = blockIdx.x * blockDim.y + threadIdx.y; 
-    matrices[matrix_index] = matrices[matrix_index] * weights[weighting_index];
+    results[matrix_index] = matrices[block_index] * weights[weighting_index];
+}
+
+//kernel for transposing multiple matrices.
+__global__ void transpose_kernel(double const* matrices, double* transposed) {
+    int matrix_offset = blockIdx.x * blockDim.x * blockDim.y;
+    int matrix_index = matrix_offset + blockDim.x * threadIdx.y + threadIdx.x;
+    int transpose_index = matrix_offset + IDX2C(threadIdx.x, threadIdx.y, blockDim.y);
+    transposed[transpose_index] = matrices[matrix_index];
 }
 

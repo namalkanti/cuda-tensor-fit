@@ -50,6 +50,11 @@ matrix* scale_matrix(matrix const* mat, double const* vector, int trans);
 matrix* matrix_dot(matrix const* a, matrix const* b);
 
 /*
+ * Returns a transposed matrix
+ */
+matrix* transpose(matrix const* mat);
+
+/*
  * Compares values in matrix a and b, and returns true if they
  * differ within the given error.
  */

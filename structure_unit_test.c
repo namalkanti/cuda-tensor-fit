@@ -185,6 +185,24 @@ void test_matrix_dot(void){
     free_matrix(return3);
 }
 
+//Tests matrix tranpose function.
+void test_matrix_transpose(void){
+    double test_data[] = {1, 2, 3, 4};
+    matrix* test_matrix = malloc(sizeof(matrix));
+    matrix* expected_matrix = malloc(sizeof(matrix));
+    double expected_data[] = {1, 3, 2, 4};
+    expected_matrix->data = expected_data;
+    expected_matrix->rows = 2;
+    expected_matrix->columns = 2;
+    test_matrix->data = test_data;
+    test_matrix->rows = 2;
+    test_matrix->columns = 2;
+    matrix* result_matrix = transpose(test_matrix);
+    CU_ASSERT(matrix_compare(expected_matrix, result_matrix, MARGIN) == true);
+    CU_ASSERT(matrix_compare(test_matrix, result_matrix, MARGIN) == false);
+    free_matrix(result_matrix);
+}
+
 //Tests matrix comparison function
 void test_compare_matrix(void){
     double mat1_data[] = {0, 0, 0, 0};
@@ -350,7 +368,8 @@ int main(){
             (NULL == CU_add_test(utility_suite, "Matrix dot test", test_matrix_dot)) ||
             (NULL == CU_add_test(utility_suite, "Array Padding test", test_array_padding)) ||
             (NULL == CU_add_test(utility_suite, "Matrix Padding test", test_matrix_padding)) ||
-            (NULL == CU_add_test(utility_suite, "Rounding test", test_rounding_to_2_power))){
+            (NULL == CU_add_test(utility_suite, "Rounding test", test_rounding_to_2_power)) ||
+            (NULL == CU_add_test(utility_suite, "Transpose test", test_matrix_transpose))){
         CU_cleanup_registry();
         return CU_get_error();
     }
