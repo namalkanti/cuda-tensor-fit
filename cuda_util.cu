@@ -20,7 +20,16 @@ __global__ void transpose_kernel(double const* matrices, double* transposed);
 
 
 extern "C"
-matrix* process_signal(matrix const* signal){
+matrix* process_signal(matrix const* signal, double min_signal){
+    double* signal_data = array_clone(signal->data);
+    int signal_length = signal->rows * signal->columns;
+    double* processed_signal_data = cuda_double_copy_to_gpu(cutoff_log_cuda(signal_data, min_signal, signal_length));
+    matrix* processed_signal = {processed_signal_data, signal->rows, signal->columns};
+    return processed_signal;
+}
+
+extern "C"
+matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 }
 
 extern "C"
