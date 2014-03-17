@@ -1,11 +1,18 @@
-#include <stdio.h>
+
 #include <stdlib.h>
 #include <cublas_v2.h>
 extern "C" {
 #include "cuda_util.h"
 }
 #include "BatchedSolver/solve.h"
+
 #define IDX2C(i, j, ld) ((j)*(ld)+(i))
+
+#define TENSOR_DIMENSIONS 3
+#define TENSOR_INPUT_ELEMENTS 6
+#define TENSOR_ELEMENTS 9
+#define EIGENDECOMPOSITION_ELEMENTS 12
+
 
 //Helper function declarations
 double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat);
@@ -17,19 +24,83 @@ __global__ void exp_kernel(double* cuda_array);
 __global__ void weighting_kernel (double* matrices, double* weights, double* results); 
 __global__ void weighting_kernel_transposed(double* matrices, double* weights, double* results); 
 __global__ void transpose_kernel(double const* matrices, double* transposed);
+__global__ void assemble_tensors(double const* tensor_input, double* tensors);
+__global__ void eigenvalue_kernel(double* data, double* eigenvalues);
+__global__ void eigenvector_kernel(double const* data, double* eigenvectors);
+
+//Device function declarations
+__device__ double trace(double const* data, double* eigenvectors);
+__device__ double determinant(double const* data, int offset);
+__device__ double diagonal_q_difference(double const* data, int offset, double q);
+__device__ void subtract_from_diagonal(double* data, int offset, double value);
+__device__ void scale_gpu_data_segment(double* data, int offset, double scalar);
 
 
 extern "C"
 matrix* process_signal(matrix const* signal, double min_signal){
     double* signal_data = array_clone(signal->data);
     int signal_length = signal->rows * signal->columns;
-    double* processed_signal_data = cuda_double_copy_to_gpu(cutoff_log_cuda(signal_data, min_signal, signal_length));
+    double* kernel_results = cutoff_log_cuda(signal_data, min_signal, signal_length);
+    double* processed_signal_data = cuda_double_copy_to_gpu(kernel_results);
     matrix* processed_signal = {processed_signal_data, signal->rows, signal->columns};
+    free(signal_data);
+    free_cuda_memory(kernel_results);
     return processed_signal;
 }
 
 extern "C"
 matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
+    matrx* weights = cuda_matrix_dot(ols_fit_matrix, signal);
+    double* gpu_weights_data = cuda_double_copy_to_gpu(weights->data);
+    matrix gpu_weights= {.data = gpu_weights_data, .rows = weights->rows, .columns = weights->columns};
+    free_matrix(weights);
+    return gpu_weights;
+}
+
+extern "C"
+double* cuda_fitter(matrix const* design_matrix, matrix const* weights, matrix const* signal){
+    double* weighted_design_data = matrix_weigher(design_matrix->data, weights->data, data->rows, 
+            data->columns, weights->rows);
+    double* solution_vectors;
+    int signal_elements = signal->rows * signal->columns;
+    cuda_double_allocate(solution_vectors, signal_elements);
+    int solver_status = dsolve_batch(weighted_design_data, signal->data, solution_vectors, 
+            signal->columns, signal->rows);
+    if ( 0 > solver_status) {
+        fputs("Batched solver failed to run correctly, program will fail", stderr);
+    }
+    return solution_vectors
+}
+
+extern "C"
+double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensors){
+    double* tensors, tensors_copy;
+    cuda_double_allocate(tensors_input, TENSOR_ELEMENTS * number_of_tensors);
+    dim3 grid, block;
+    grid.x = number_of_tensors;
+    block.x = 1;
+    block.y = 1;
+    assemble_tensors<<<grid, block>>>(tensors_input, tensors);
+    assemble_tensors<<<grid, block>>>(tensors_input, tensors_copy
+    double* eigenvalues, eigenvectors, eigendecomposition;
+    eigendecomposition = malloc(sizeof(double) * EIGENDECOMPOSITION_ELEMENTS * number_of_tensors);  
+    cuda_double_allocate(eigenvalues, TENSOR_DIMENSIONS * number_of_tensors);
+    cuda_double_allocate(eigenvectors, TENSOR_ELEMENTS * number_of_tensors);
+    eigenvalue_kernel<<<grid, block>>>(tensors_copy, eigenvalues);
+    eigenvector_kernel<<<grid, block>>>(tensors, eigenvectors)
+    assemble_eigendecomposition(eigenvalues, eigenvectors, eigendecomposition);
+    return eigendecomposition;
+}
+
+extern "C"
+matrix* process_matrix(matrix const* design_matrix){
+    double* gpu_matrix_data = convert_matrix_to_fortran_and_load_to_gpu(design_matrix);
+    matrix* processed_matrix = {gpu_matrix_data, design_matrix->rows, design_matrix->columns};
+    return processed_matrix;
+}
+
+extern "C"
+void assemble_eigendecomposition(double const* eigenvalues, double const* eigenvectors, double* eigendecomposition){
 }
 
 extern "C"
@@ -50,6 +121,7 @@ double* cuda_double_return_from_gpu(double const* cuda_array, int array_length){
 extern "C"
 void cuda_double_allocate(double* pointer, int pointer_length){
     cudaMalloc(&pointer, pointer_length);
+    cudaMemset(&pointer, 0, pointer_length);
 }
 
 extern "C"
@@ -318,4 +390,112 @@ __global__ void transpose_kernel(double const* matrices, double* transposed) {
     int transpose_index = matrix_offset + IDX2C(threadIdx.x, threadIdx.y, blockDim.y);
     transposed[transpose_index] = matrices[matrix_index];
 }
+
+//kernel for arranging tensors into symmetric matrix
+__global__ void assemble_tensors(double const* tensor_input, double* tensors){
+    int tensor_matrix_offset = blockIdx.x * TENSOR_DIMENSIONS * TENSOR_DIMENSIONS;
+    int input_matrix_offset = blockIdx.x * TENSOR_INPUT_ELEMENTS;
+    tensors[tensor_matrix_offset + 0] = tensor_input[input_matrix_offset + 0];
+    tensors[tensor_matrix_offset + 1] = tensor_input[input_matrix_offset + 1];
+    tensors[tensor_matrix_offset + 2] = tensor_input[input_matrix_offset + 3];
+    tensors[tensor_matrix_offset + 3] = tensor_input[input_matrix_offset + 1];
+    tensors[tensor_matrix_offset + 4] = tensor_input[input_matrix_offset + 2];
+    tensors[tensor_matrix_offset + 5] = tensor_input[input_matrix_offset + 4];
+    tensors[tensor_matrix_offset + 6] = tensor_input[input_matrix_offset + 3];
+    tensors[tensor_matrix_offset + 7] = tensor_input[input_matrix_offset + 4];
+    tensors[tensor_matrix_offset + 8] = tensor_input[input_matrix_offset + 5];
+}
+
+//kernel for calculating eigenvalues.
+__global__ void eigenvalue_kernel(double* data, double* eigenvalues){
+    int data_offset = blockIdx.x * TENSOR_DIMENSIONS * TENSOR_DIMENSIONS;
+    int eigen_offset = blockIdx.x * TENSOR_DIMENSIONS;
+
+    double diagonal_detection = diagonal_q_difference(data, data_offset + (0*TENSOR_DIMENSIONS+1), 0) + 
+        diagonal_q_difference(data, data_offset + (0*TENSOR_DIMENSIONS+2), 0) + 
+        diagonal_q_difference(data, data_offset(1*TENSOR_DIMENSIONS+2), 0);
+
+    int diagonal_one_offset = data_offset + 0;
+    int diagonal_two_offset = data_offset + (1*TENSOR_DIMENSIONS+1);
+    int diagonal_three_offset = data_offset + (2*TENSOR_DIMENSIONS+2);
+
+    double diagonal_one = data[diagonal_one_offset];
+    double diagonal_two = data[diagonal_two_offset];
+    double diagonal_three = data[diagonal_three_offset];
+
+    if (0 == diagonal_detection) {
+        eigenvalues[eigen_offset + 0] = diagonal_one;
+        eigenvalues[eigen_offset + 1] = diagonal_two;
+        eigenvalues[eigen_offset + 2] = diagonal_three;
+    }
+    else {
+        q = trace(data)/3;
+        p2 = diagonal_q_difference(data, diagonal_one_offset, q) +
+            diagonal_q_difference(data, diagonal_two_offset, q) +
+            diagonal_q_difference(data, diagonal_three_offset, q) +
+            2 * pi;
+        p = sqrt(p2 / 6);
+        subtract_for_diagonal(data, data_offset, q);
+        scale_gpu_data_segment(data, data_offset, 1/p);
+        r = determinant(data, data_offset) / 2
+    }
+
+    if ( r <= -1){
+        phi = pi / 3;
+    }
+    else if (r >= 1){
+        phi = 0;
+    }
+    else {
+        phi = acos(r) / 3;
+    }
+
+    eig1 = q + 2 * p * cos(phi);
+    eig3 = q + 2 * p * cos(phi + (2 * pi / 3));
+    eigenvalues[eigen_offset + 1] = 3 * q - eig1 - eig3;
+    eigenvalues[eigen_offset + 0] = eig1;
+    eigenvalues[eigen_offset + 2] = eig3;
+}
+
+//kernel for calculating eigenvectors
+__global__ void eigenvector_kernel(double const* data, double* eigenvectors){
+}
+
+//device function to calculate trace of a 3x3 matrix
+__device__ double trace(double const* data, int offset){
+    return data[offset + 0] + 
+        data[offset + (1 * TENSOR_DIMENSIONS + 1)] + 
+        data[offset + (2 * TENSOR_DIMENSIONS + 2)]
+}
+
+//device function to calculate determinant of a 3x3 matrix
+__device__ double determinant(double const* data, int offset){
+}
+
+//device function to subtract q from diagonal and square
+__device__ double diagonal_q_difference(double const* data, int offset, double q){
+    double element = data[offset];
+    return pow(element - q, 2)
+}
+
+//device function to subtract value from diagonal
+__device__ void subtract_from_diagonal(double* data, int offset, double value){
+    data[offset + 0 * TENSOR_DIMENSIONS + 0] = data[offset + 0 * TENSOR_DIMENSIONS * 0] - value;
+    data[offset + 1 * TENSOR_DIMENSIONS + 1] = data[offset + 1 * TENSOR_DIMENSIONS + 1] - value;
+    data[offset + 2 * TENSOR_DIMENSIONS + 2] = data[offset + 2 * TENSOR_DIMENSIONS + 2] - value;
+}
+
+//device function to scale a matrix
+__device__ void scale_gpu_data_segment(double* data, int offset, double scalar){
+    data[offset + 0] = data[offset + 0] * scalar;  
+    data[offset + 1] = data[offset + 1] * scalar;  
+    data[offset + 2] = data[offset + 2] * scalar;  
+    data[offset + 3] = data[offset + 3] * scalar;  
+    data[offset + 4] = data[offset + 4] * scalar;  
+    data[offset + 5] = data[offset + 5] * scalar;  
+    data[offset + 6] = data[offset + 6] * scalar;  
+    data[offset + 7] = data[offset + 7] * scalar;  
+    data[offset + 8] = data[offset + 8] * scalar;  
+}
+
 

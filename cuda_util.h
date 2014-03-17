@@ -22,10 +22,16 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* weights, matrix c
 
 //Takes tensors as a single gpu array as first argument.
 //Returns eigendecompositions as eigenvalues in column major, followed by eigenvectors.
-double* cuda_decompose_tensors(double const* tensors);
+double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensors);
 
 //Extracts eigendecomposition values, unpads, and moves into 2nd argument.
 void extract_eigendecompositions(double const* eigendecompositions, tensor** output);
+
+/*
+Takes in two double arrays on the gpu representing a list of eigenvalues and eigenvectors
+and organizes them into an eigendecomposition.
+*/
+void assemble_eigendecomposition(double const* eigenvalues, double const* eigenvectors, double* eigendecomposition);
 
 //Clones double array and copies to gpu
 double* cuda_double_copy_to_gpu(double const* local_array, int array_length);
