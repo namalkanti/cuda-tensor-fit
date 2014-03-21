@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <cublas_v2.h>
 extern "C" {
@@ -7,6 +6,7 @@ extern "C" {
 #include "BatchedSolver/solve.h"
 
 #define IDX2C(i, j, ld) ((j)*(ld)+(i))
+#define SQR(x)      ((x)*(x))                        // x^2 
 
 #define TENSOR_DIMENSIONS 3
 #define TENSOR_INPUT_ELEMENTS 6
@@ -25,16 +25,12 @@ __global__ void weighting_kernel (double* matrices, double* weights, double* res
 __global__ void weighting_kernel_transposed(double* matrices, double* weights, double* results); 
 __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors);
-__global__ void eigenvalue_kernel(double* data, double* eigenvalues);
-__global__ void eigenvector_kernel(double const* data, double* eigenvectors);
+__global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
 
-//Device function declarations
-__device__ double trace(double const* data, double* eigenvectors);
-__device__ double determinant(double const* data, int offset);
-__device__ double diagonal_q_difference(double const* data, int offset, double q);
-__device__ void subtract_from_diagonal(double* data, int offset, double value);
-__device__ void scale_gpu_data_segment(double* data, int offset, double scalar);
-
+//device functions
+__device__ void assemble_eigendecomposition(double* eigendecomposition, double* offset, 
+        double Q[3][3], double w[3]);
+__device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
 extern "C"
 matrix* process_signal(matrix const* signal, double min_signal){
@@ -69,6 +65,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* weights, matrix c
     if ( 0 > solver_status) {
         fputs("Batched solver failed to run correctly, program will fail", stderr);
     }
+    free_cuda_memory(solution_vectors);
     return solution_vectors
 }
 
@@ -81,14 +78,13 @@ double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensor
     block.x = 1;
     block.y = 1;
     assemble_tensors<<<grid, block>>>(tensors_input, tensors);
-    assemble_tensors<<<grid, block>>>(tensors_input, tensors_copy
-    double* eigenvalues, eigenvectors, eigendecomposition;
-    eigendecomposition = malloc(sizeof(double) * EIGENDECOMPOSITION_ELEMENTS * number_of_tensors);  
-    cuda_double_allocate(eigenvalues, TENSOR_DIMENSIONS * number_of_tensors);
-    cuda_double_allocate(eigenvectors, TENSOR_ELEMENTS * number_of_tensors);
-    eigenvalue_kernel<<<grid, block>>>(tensors_copy, eigenvalues);
-    eigenvector_kernel<<<grid, block>>>(tensors, eigenvectors)
-    assemble_eigendecomposition(eigenvalues, eigenvectors, eigendecomposition);
+    double* gpu_eigendecomposition;
+    int length_of_eigendecomposition = EIGENDECOMPOSITION_ELEMENTS * number_of_tensors;
+    cuda_double_allocate(gpu_eigendecomposition, length_of_eigendecomposition);
+    eigendecomposition_kernel<<<grid, block>>>(tensors, gpu_eigendecomposition);
+    eigendecomposition = cuda_double_return_from_gpu(gpu_eigendecomposition, length_of_eigendecomposition);
+    free_cuda_memory(tensors_input);
+    free_cuda_memory(gpu_eigendecomposition);
     return eigendecomposition;
 }
 
@@ -100,7 +96,16 @@ matrix* process_matrix(matrix const* design_matrix){
 }
 
 extern "C"
-void assemble_eigendecomposition(double const* eigenvalues, double const* eigenvectors, double* eigendecomposition){
+void extract_eigendecompositions(double const* eigendecompositions, tensor** ouput, int number_of_tensors){
+    int i;
+    for(i = 0; i < number_of_tensors;i++){
+        double* eigenvalues = array_clone(eigendecompositions[i * EIGENDECOMPOSITION_ELEMENTS], TENSOR_DIMENSIONS);
+        double* eigenvectors = array_clone(eigendecomposition[(i * EIGENDECOMPOSITION_ELEMENTS) + 3],
+            TENSOR_ELEMENTS);        
+        ouput[i]->vals = eigenvalues;
+        output[i]->vecs = eigenvectors;
+    }
+    return;
 }
 
 extern "C"
@@ -407,95 +412,161 @@ __global__ void assemble_tensors(double const* tensor_input, double* tensors){
 }
 
 //kernel for calculating eigenvalues.
-__global__ void eigenvalue_kernel(double* data, double* eigenvalues){
-    int data_offset = blockIdx.x * TENSOR_DIMENSIONS * TENSOR_DIMENSIONS;
-    int eigen_offset = blockIdx.x * TENSOR_DIMENSIONS;
-
-    double diagonal_detection = diagonal_q_difference(data, data_offset + (0*TENSOR_DIMENSIONS+1), 0) + 
-        diagonal_q_difference(data, data_offset + (0*TENSOR_DIMENSIONS+2), 0) + 
-        diagonal_q_difference(data, data_offset(1*TENSOR_DIMENSIONS+2), 0);
-
-    int diagonal_one_offset = data_offset + 0;
-    int diagonal_two_offset = data_offset + (1*TENSOR_DIMENSIONS+1);
-    int diagonal_three_offset = data_offset + (2*TENSOR_DIMENSIONS+2);
-
-    double diagonal_one = data[diagonal_one_offset];
-    double diagonal_two = data[diagonal_two_offset];
-    double diagonal_three = data[diagonal_three_offset];
-
-    if (0 == diagonal_detection) {
-        eigenvalues[eigen_offset + 0] = diagonal_one;
-        eigenvalues[eigen_offset + 1] = diagonal_two;
-        eigenvalues[eigen_offset + 2] = diagonal_three;
-    }
-    else {
-        q = trace(data)/3;
-        p2 = diagonal_q_difference(data, diagonal_one_offset, q) +
-            diagonal_q_difference(data, diagonal_two_offset, q) +
-            diagonal_q_difference(data, diagonal_three_offset, q) +
-            2 * pi;
-        p = sqrt(p2 / 6);
-        subtract_for_diagonal(data, data_offset, q);
-        scale_gpu_data_segment(data, data_offset, 1/p);
-        r = determinant(data, data_offset) / 2
-    }
-
-    if ( r <= -1){
-        phi = pi / 3;
-    }
-    else if (r >= 1){
-        phi = 0;
-    }
-    else {
-        phi = acos(r) / 3;
-    }
-
-    eig1 = q + 2 * p * cos(phi);
-    eig3 = q + 2 * p * cos(phi + (2 * pi / 3));
-    eigenvalues[eigen_offset + 1] = 3 * q - eig1 - eig3;
-    eigenvalues[eigen_offset + 0] = eig1;
-    eigenvalues[eigen_offset + 2] = eig3;
+__global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition){
+    int matrix_offset = blockIdx.x * blockDim.x * TENSOR_DIMENSIONS;
+    int eigen_offset = blockIdx.x * blockDim.x * EIGENDECOMPOSITION_ELEMENTS;
+    double A[3][3] = deposit_data_segment_into_array(data, matrix_offset);
+    double Q[3][3] = {0};
+    double w[3] = {0};
+    dsyevj3(A, Q, w);
+    assemble_eigendecomposition(eigendecomposition, eigen_offset, A, Q, w);
 }
 
-//kernel for calculating eigenvectors
-__global__ void eigenvector_kernel(double const* data, double* eigenvectors){
+//device function of assembling eigendecomposition from respective blocks.
+__device__ void assemble_eigendecomposition(double* eigendecomposition, double* offset, 
+        double Q[3][3], double w[3]){
+    eigendecomposition[offset + 0] = w[0];
+    eigendecomposition[offset + 1] = w[1];
+    eigendecomposition[offset + 2] = w[2];
+    eigendecomposition[offset + 3] = Q[0][0];
+    eigendecomposition[offset + 4] = Q[0][1];
+    eigendecomposition[offset + 5] = Q[0][2];
+    eigendecomposition[offset + 6] = Q[1][0];
+    eigendecomposition[offset + 7] = Q[1][1];
+    eigendecomposition[offset + 8] = Q[1][2];
+    eigendecomposition[offset + 9] = Q[2][0];
+    eigendecomposition[offset + 10] = Q[2][1];
+    eigendecomposition[offset + 11] = Q[2][2];
 }
 
-//device function to calculate trace of a 3x3 matrix
-__device__ double trace(double const* data, int offset){
-    return data[offset + 0] + 
-        data[offset + (1 * TENSOR_DIMENSIONS + 1)] + 
-        data[offset + (2 * TENSOR_DIMENSIONS + 2)]
-}
+// Jacobi algorithm for eigen decomposition. Implemented by Joachlm Kopp for his paper
+// on 3x3 hermitian eigendecompositions. Copied here for use as a device function on a kernel.
+__device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3])
+// ----------------------------------------------------------------------------
+// Calculates the eigenvalues and normalized eigenvectors of a symmetric 3x3
+// matrix A using the Jacobi algorithm.
+// The upper triangular part of A is destroyed during the calculation,
+// the diagonal elements are read but not destroyed, and the lower
+// triangular elements are not referenced at all.
+// ----------------------------------------------------------------------------
+// Parameters:
+//   A: The symmetric input matrix
+//   Q: Storage buffer for eigenvectors
+//   w: Storage buffer for eigenvalues
+// ----------------------------------------------------------------------------
+// Return value:
+//   0: Success
+//  -1: Error (no convergence)
+// ----------------------------------------------------------------------------
+{
+  const int n = 3;
+  double sd, so;                  // Sums of diagonal resp. off-diagonal elements
+  double s, c, t;                 // sin(phi), cos(phi), tan(phi) and temporary storage
+  double g, h, z, theta;          // More temporary storage
+  double thresh;
+  
+  // Initialize Q to the identitity matrix
+#ifndef EVALS_ONLY
+  for (int i=0; i < n; i++)
+  {
+    Q[i][i] = 1.0;
+    for (int j=0; j < i; j++)
+      Q[i][j] = Q[j][i] = 0.0;
+  }
+#endif
 
-//device function to calculate determinant of a 3x3 matrix
-__device__ double determinant(double const* data, int offset){
-}
+  // Initialize w to diag(A)
+  for (int i=0; i < n; i++)
+    w[i] = A[i][i];
 
-//device function to subtract q from diagonal and square
-__device__ double diagonal_q_difference(double const* data, int offset, double q){
-    double element = data[offset];
-    return pow(element - q, 2)
-}
+  // Calculate SQR(tr(A))  
+  sd = 0.0;
+  for (int i=0; i < n; i++)
+    sd += fabs(w[i]);
+  sd = SQR(sd);
+ 
+  // Main iteration loop
+  for (int nIter=0; nIter < 50; nIter++)
+  {
+    // Test for convergence 
+    so = 0.0;
+    for (int p=0; p < n; p++)
+      for (int q=p+1; q < n; q++)
+        so += fabs(A[p][q]);
+    if (so == 0.0)
+      return 0;
 
-//device function to subtract value from diagonal
-__device__ void subtract_from_diagonal(double* data, int offset, double value){
-    data[offset + 0 * TENSOR_DIMENSIONS + 0] = data[offset + 0 * TENSOR_DIMENSIONS * 0] - value;
-    data[offset + 1 * TENSOR_DIMENSIONS + 1] = data[offset + 1 * TENSOR_DIMENSIONS + 1] - value;
-    data[offset + 2 * TENSOR_DIMENSIONS + 2] = data[offset + 2 * TENSOR_DIMENSIONS + 2] - value;
-}
+    if (nIter < 4)
+      thresh = 0.2 * so / SQR(n);
+    else
+      thresh = 0.0;
 
-//device function to scale a matrix
-__device__ void scale_gpu_data_segment(double* data, int offset, double scalar){
-    data[offset + 0] = data[offset + 0] * scalar;  
-    data[offset + 1] = data[offset + 1] * scalar;  
-    data[offset + 2] = data[offset + 2] * scalar;  
-    data[offset + 3] = data[offset + 3] * scalar;  
-    data[offset + 4] = data[offset + 4] * scalar;  
-    data[offset + 5] = data[offset + 5] * scalar;  
-    data[offset + 6] = data[offset + 6] * scalar;  
-    data[offset + 7] = data[offset + 7] * scalar;  
-    data[offset + 8] = data[offset + 8] * scalar;  
-}
+    // Do sweep
+    for (int p=0; p < n; p++)
+      for (int q=p+1; q < n; q++)
+      {
+        g = 100.0 * fabs(A[p][q]);
+        if (nIter > 4  &&  fabs(w[p]) + g == fabs(w[p])
+                       &&  fabs(w[q]) + g == fabs(w[q]))
+        {
+          A[p][q] = 0.0;
+        }
+        else if (fabs(A[p][q]) > thresh)
+        {
+          // Calculate Jacobi transformation
+          h = w[q] - w[p];
+          if (fabs(h) + g == fabs(h))
+          {
+            t = A[p][q] / h;
+          }
+          else
+          {
+            theta = 0.5 * h / A[p][q];
+            if (theta < 0.0)
+              t = -1.0 / (sqrt(1.0 + SQR(theta)) - theta);
+            else
+              t = 1.0 / (sqrt(1.0 + SQR(theta)) + theta);
+          }
+          c = 1.0/sqrt(1.0 + SQR(t));
+          s = t * c;
+          z = t * A[p][q];
 
+          // Apply Jacobi transformation
+          A[p][q] = 0.0;
+          w[p] -= z;
+          w[q] += z;
+          for (int r=0; r < p; r++)
+          {
+            t = A[r][p];
+            A[r][p] = c*t - s*A[r][q];
+            A[r][q] = s*t + c*A[r][q];
+          }
+          for (int r=p+1; r < q; r++)
+          {
+            t = A[p][r];
+            A[p][r] = c*t - s*A[r][q];
+            A[r][q] = s*t + c*A[r][q];
+          }
+          for (int r=q+1; r < n; r++)
+          {
+            t = A[p][r];
+            A[p][r] = c*t - s*A[q][r];
+            A[q][r] = s*t + c*A[q][r];
+          }
+
+          // Update eigenvectors
+#ifndef EVALS_ONLY          
+          for (int r=0; r < n; r++)
+          {
+            t = Q[r][p];
+            Q[r][p] = c*t - s*Q[r][q];
+            Q[r][q] = s*t + c*Q[r][q];
+          }
+#endif
+        }
+      }
+  }
+
+  return -1;
+}
 
