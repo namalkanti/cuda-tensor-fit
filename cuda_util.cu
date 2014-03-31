@@ -37,8 +37,8 @@ matrix* process_signal(matrix const* signal, double min_signal){
     double* signal_data = array_clone(signal->data);
     int signal_length = signal->rows * signal->columns;
     double* kernel_results = cutoff_log_cuda(signal_data, min_signal, signal_length);
-    double* processed_signal_data = cuda_double_copy_to_gpu(kernel_results);
-    matrix* processed_signal = {processed_signal_data, signal->rows, signal->columns};
+    double* processed_signal_data = cuda_double_copy_to_gpu(kernel_results, signal_length);
+    matrix* processed_signal = create_matrix(processed_signal_data, signal->rows, signal->columns};
     free(signal_data);
     free_cuda_memory(kernel_results);
     return processed_signal;
@@ -46,17 +46,17 @@ matrix* process_signal(matrix const* signal, double min_signal){
 
 extern "C"
 matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
-    matrx* weights = cuda_matrix_dot(ols_fit_matrix, signal);
-    double* gpu_weights_data = cuda_double_copy_to_gpu(weights->data);
-    matrix gpu_weights= {.data = gpu_weights_data, .rows = weights->rows, .columns = weights->columns};
+    matrix* weights = cuda_matrix_dot(ols_fit_matrix, signal);
+    double* gpu_weights_data = cuda_double_copy_to_gpu(weights->data, weights->rows * weights->columns);
+    matrix* gpu_weights= create_matrix( gpu_weights_data, weights->rows, weights->columns);
     free_matrix(weights);
     return gpu_weights;
 }
 
 extern "C"
-double* cuda_fitter(matrix const* design_matrix, matrix const* weights, matrix const* signal){
-    double* weighted_design_data = matrix_weigher(design_matrix->data, weights->data, data->rows, 
-            data->columns, weights->rows);
+double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signal){
+    double* weighted_design_data = matrix_weighter(design_matrix->data, weights->data, design_matrix->rows, 
+            design_matrix->columns, weights->rows, true);
     double* solution_vectors;
     int signal_elements = signal->rows * signal->columns;
     cuda_double_allocate(solution_vectors, signal_elements);
@@ -66,13 +66,13 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* weights, matrix c
         fputs("Batched solver failed to run correctly, program will fail", stderr);
     }
     free_cuda_memory(solution_vectors);
-    return solution_vectors
+    return solution_vectors;
 }
 
 extern "C"
 double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensors){
-    double* tensors, tensors_copy;
-    cuda_double_allocate(tensors_input, TENSOR_ELEMENTS * number_of_tensors);
+    double* tensors;
+    cuda_double_allocate(tensors, TENSOR_ELEMENTS * number_of_tensors);
     dim3 grid, block;
     grid.x = number_of_tensors;
     block.x = 1;
@@ -82,8 +82,8 @@ double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensor
     int length_of_eigendecomposition = EIGENDECOMPOSITION_ELEMENTS * number_of_tensors;
     cuda_double_allocate(gpu_eigendecomposition, length_of_eigendecomposition);
     eigendecomposition_kernel<<<grid, block>>>(tensors, gpu_eigendecomposition);
-    eigendecomposition = cuda_double_return_from_gpu(gpu_eigendecomposition, length_of_eigendecomposition);
-    free_cuda_memory(tensors_input);
+    double* eigendecomposition = cuda_double_return_from_gpu(gpu_eigendecomposition, length_of_eigendecomposition);
+    free_cuda_memory(tensors);
     free_cuda_memory(gpu_eigendecomposition);
     return eigendecomposition;
 }
@@ -91,7 +91,7 @@ double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensor
 extern "C"
 matrix* process_matrix(matrix const* design_matrix){
     double* gpu_matrix_data = convert_matrix_to_fortran_and_load_to_gpu(design_matrix);
-    matrix* processed_matrix = {gpu_matrix_data, design_matrix->rows, design_matrix->columns};
+    matrix* processed_matrix = create_matrix(gpu_matrix_data, design_matrix->rows, design_matrix->columns);
     return processed_matrix;
 }
 

@@ -5,7 +5,7 @@
 //Takes in a matrix(represeting several signals in row major format).
 //Removes values below minimum value and takes logarithm of all values.
 //Then pads, loads to gpu, and returns a padded matrix with a gpu pointer.
-matrix* process_signal(matrix const* signal);
+matrix* process_signal(matrix const* signal, double min_signal);
 
 //Takes in an ols_fit matrix and signal matrix in row major.
 //Converts signal to column major,multiplies, and exponentiates.
@@ -64,7 +64,7 @@ double* dot_matrices();
 double* solve_matrices();
 
 //Wrapper function to weight and fit the data
-double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, double const* signal, int signal_length, int number_of_signals);
+double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signal);
 
 //Decomposes tensors and places them inside second argument.
 void decompose_tensors(double const* tensors, tensor** tensor_output);

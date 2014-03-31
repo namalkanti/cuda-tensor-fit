@@ -140,6 +140,14 @@ matrix* clone_matrix(matrix const* mat){
     return clone;
 }
 
+matrix* create_matrix(double const* data, int rows, int columns){
+    matrix* pointer = malloc(sizeof(matrix));
+    pointer->data = data;
+    pointer->rows = rows;
+    pointer->columns = columns;
+    return pointer;
+}
+
 bool compare_eigenvalues_by_column(matrix const* a, matrix const* b, double err){
     double vec1a[] = {a->data[0], a->data[3], a->data[6]};
     double vec1an[] = {a->data[0], a->data[3], a->data[6]};

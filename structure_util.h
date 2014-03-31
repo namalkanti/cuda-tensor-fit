@@ -66,6 +66,11 @@ bool matrix_compare(matrix const* a, matrix const* b, double err);
 matrix* clone_matrix(matrix const* mat);
 
 /*
+ * Creates an matrix on the heap and returns a pointer to it.
+ */
+matrix* create_matrix(double const* data, int rows, int columns);
+
+/*
  *Compares absolute value of columns  in 3x3 matrix with each other; 
  *if inside margin, return true.
  */
