@@ -231,7 +231,7 @@ double* matrix_weighter (double const* matrix, double const* weights, int rows, 
 }
 
 extern "C"
-double* transpose_matrices(double* matrices, int rows, int columns, int length){
+double* transpose_matrices(double const* matrices, int rows, int columns, int length){
     double* transposed = (double*) malloc(sizeof(double) * rows * columns * length);
     double* gpu_matrices = cuda_double_copy_to_gpu(matrices, rows * columns * length);
     double* gpu_transposed = cuda_double_copy_to_gpu(transposed, rows * columns * length);
@@ -257,16 +257,16 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     }
     double* transposed_batch1 = transpose_matrices(matrix_batch_one, rows, k, length);
     double* transposed_batch2 = transpose_matrices(matrix_batch_two, k, columns, length);
-    double* gpu_array1 = cuda_double_copy_to_gpu(transposed_batch1, rows * k * length);
-    double* gpu_array2 = cuda_double_copy_to_gpu(transposed_batch2, k *  columns * length);
+    const double* gpu_array1 = cuda_double_copy_to_gpu(transposed_batch1, rows * k * length);
+    const double* gpu_array2 = cuda_double_copy_to_gpu(transposed_batch2, k *  columns * length);
     double* gpu_output;
     cudaMalloc(&gpu_output, sizeof(double)* transposed_batch1->rows 
             * transposed_batch2->columns * length);
     const double alpha = 1;
     const double beta = 0;
     status = cublasDgemmBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N, rows, columns, 
-            k, &alpha, gpu_array1, rows, gpu_array2, k, &beta, 
-            gpu_output, rows, length);
+            k, &alpha, &gpu_array1, rows, &gpu_array2, k, &beta, 
+            &gpu_output, rows, length);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts("Call to cublas function failed.");
     }
@@ -281,27 +281,6 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     free(transposed_batch2);
     return results;
 
-}
-
-extern "C"
-double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, 
-        double const* signal, int signal_length, int number_of_signals){
-    int signal_elements = signal_length;
-    int total_elements = signal_elements * number_of_signals;
-    double* cutoff_and_logged_signal = cutoff_log_cuda(signal, min_signal, total_elements);
-    matrix signal_matrix = {cutoff_and_logged_signal, signal_elements, signal_length};
-    matrix* ols_signal_dot_matrix = cuda_matrix_dot(ols_matrix, &signal_matrix);
-    matrix* weights = exp_cuda(ols_signal_dot_matrix, total_elements);
-    matrix* weighted_matrices = matrix_weighter(signal, weights, signal_elements, signal_length, total_elements, false);
-    matrix* transposed_weighted_matrices = transpose_matrices();
-    matrix* column_major_data = cuda_matrix_dot(transposed_weighted_matrices, signal);
-    matrix* data = transpose_matrices(column_major_data);
-    matrix* weighted_fitting_matrix = dot_matrices;
-    matrix* solutions = solve_matrices();
-}
-
-extern "C"
-void decompose_tensors(double const* tensors, tensor** tensor_output){
 }
 
 //Helper functions

@@ -55,13 +55,13 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2);
 double* matrix_weighter (double const* matrix, double const* weights, int rows, int columns, int length, bool trans);
 
 //Transposes multiple matrices on the GPU
-double* transpose_matrices(double* matrices, int rows, int columns, int length);
+double* transpose_matrices(double const* matrices, int rows, int columns, int length);
 
 //Returns the dot product of multiple paired matrices. Expects arguments as gpu pointers and in column major.
 double* dot_matrices(double const* matrix_batch_one, int rows, double const* matrix_batch_two, int columns, int k, int length);
 
 //Wrapper function to weight and fit the data
-double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signal);
+double* cuda_fitter(matrix const* design_matrix, matrix const* ols_matrix, 
+        matrix const* column_major_weights, matrix const* signal, 
+        int signal_length, int number_of_signals, int min_signal);
 
-//Decomposes tensors and places them inside second argument.
-void decompose_tensors(double const* tensors, tensor** tensor_output);
