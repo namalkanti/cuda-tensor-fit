@@ -36,11 +36,11 @@ __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
 extern "C"
 matrix* process_signal(matrix const* signal, double min_signal){
-    double* signal_data = array_clone(signal->data);
+    double* signal_data = array_clone(signal->data, signal->rows * signal->columns);
     int signal_length = signal->rows * signal->columns;
     double* kernel_results = cutoff_log_cuda(signal_data, min_signal, signal_length);
     double* processed_signal_data = cuda_double_copy_to_gpu(kernel_results, signal_length);
-    matrix* processed_signal = create_matrix(processed_signal_data, signal->rows, signal->columns};
+    matrix* processed_signal = create_matrix(processed_signal_data, signal->rows, signal->columns);
     free(signal_data);
     free_cuda_memory(kernel_results);
     return processed_signal;
