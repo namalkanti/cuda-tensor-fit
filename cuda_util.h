@@ -52,7 +52,7 @@ double* exp_cuda(double const* input, int array_length);
 matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2);
 
 //Function takes different weights and weights several copies of the same matrix and returns it. Expects arguments as gpu pointers.
-double* matrix_weighter (double* matrix, double const* weights, int rows, int columns, int length, bool trans);
+double* matrix_weighter (double const* matrix, double const* weights, int rows, int columns, int length, bool trans);
 
 //Transposes multiple matrices on the GPU
 double* transpose_matrices(double* matrices, int rows, int columns, int length);

@@ -8,6 +8,8 @@ extern "C" {
 #define IDX2C(i, j, ld) ((j)*(ld)+(i))
 #define SQR(x)      ((x)*(x))                        // x^2 
 
+#define WARP_SIZE 16
+
 #define TENSOR_DIMENSIONS 3
 #define TENSOR_INPUT_ELEMENTS 6
 #define TENSOR_ELEMENTS 9
@@ -96,13 +98,13 @@ matrix* process_matrix(matrix const* design_matrix){
 }
 
 extern "C"
-void extract_eigendecompositions(double const* eigendecompositions, tensor** ouput, int number_of_tensors){
+void extract_eigendecompositions(double const* eigendecompositions, tensor** output, int number_of_tensors){
     int i;
     for(i = 0; i < number_of_tensors;i++){
         double* eigenvalues = array_clone(eigendecompositions[i * EIGENDECOMPOSITION_ELEMENTS], TENSOR_DIMENSIONS);
-        double* eigenvectors = array_clone(eigendecomposition[(i * EIGENDECOMPOSITION_ELEMENTS) + 3],
+        double* eigenvectors = array_clone(eigendecompositions[(i * EIGENDECOMPOSITION_ELEMENTS) + 3],
             TENSOR_ELEMENTS);        
-        ouput[i]->vals = eigenvalues;
+        output[i]->vals = eigenvalues;
         output[i]->vecs = eigenvectors;
     }
     return;
