@@ -350,7 +350,7 @@ __global__ void exp_kernel(double* cuda_array){
 }
 
 //kernel for weighting the matrix.
-__global__ void weighting_kernel (double* matrix, double* weights, double* results) {
+__global__ void weighting_kernel (double* matrices, double* weights, double* results) {
     int matrix_grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = matrix_grid_index + block_index;

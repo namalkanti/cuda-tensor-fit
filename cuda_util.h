@@ -61,7 +61,5 @@ double* transpose_matrices(double const* matrices, int rows, int columns, int le
 double* dot_matrices(double const* matrix_batch_one, int rows, double const* matrix_batch_two, int columns, int k, int length);
 
 //Wrapper function to weight and fit the data
-double* cuda_fitter(matrix const* design_matrix, matrix const* ols_matrix, 
-        matrix const* column_major_weights, matrix const* signal, 
-        int signal_length, int number_of_signals, int min_signal);
+double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signal);
 
