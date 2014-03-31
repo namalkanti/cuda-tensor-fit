@@ -57,8 +57,8 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 
 extern "C"
 double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signal){
-    double* weighted_design_data = matrix_weighter(design_matrix->data, weights->data, design_matrix->rows, 
-            design_matrix->columns, weights->rows, true);
+    double* weighted_design_data = matrix_weighter(design_matrix->data, column_weights->data, design_matrix->rows, 
+            design_matrix->columns, column_major_weights->rows, true);
     double* solution_vectors;
     int signal_elements = signal->rows * signal->columns;
     cuda_double_allocate(solution_vectors, signal_elements);
@@ -101,8 +101,8 @@ extern "C"
 void extract_eigendecompositions(double const* eigendecompositions, tensor** output, int number_of_tensors){
     int i;
     for(i = 0; i < number_of_tensors;i++){
-        double* eigenvalues = array_clone(eigendecompositions[i * EIGENDECOMPOSITION_ELEMENTS], TENSOR_DIMENSIONS);
-        double* eigenvectors = array_clone(eigendecompositions[(i * EIGENDECOMPOSITION_ELEMENTS) + 3],
+        double* eigenvalues = array_clone((double const*)eigendecompositions[i * EIGENDECOMPOSITION_ELEMENTS], TENSOR_DIMENSIONS);
+        double* eigenvectors = array_clone((double const *)eigendecompositions[(i * EIGENDECOMPOSITION_ELEMENTS) + 3],
             TENSOR_ELEMENTS);        
         output[i]->vals = eigenvalues;
         output[i]->vecs = eigenvectors;
