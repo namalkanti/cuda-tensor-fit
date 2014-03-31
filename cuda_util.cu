@@ -32,6 +32,7 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, double* offset, 
         double Q[3][3], double w[3]);
+__device__ double[3][3] deposit_data_segment_into_array(double const* data, int offset);
 __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
 extern "C"
@@ -352,13 +353,13 @@ __global__ void exp_kernel(double* cuda_array){
 __global__ void weighting_kernel (double* matrix, double* weights, double* results) {
     int matrix_grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
-    int matrix_index = grid_index + block_index;
+    int matrix_index = matrix_grid_index + block_index;
     int weight_index = blockIdx.x * blockDim.x + threadIdx.x; 
     results[matrix_index] = matrices[block_index] * weights[weight_index];
 }
 
 //kernel for weighting a transposed matrix.
-__global__ void weighting_kernel_transposed(double* matrix, double* weights, double* results) {
+__global__ void weighting_kernel_transposed(double* matrices, double* weights, double* results) {
     int grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
@@ -393,7 +394,8 @@ __global__ void assemble_tensors(double const* tensor_input, double* tensors){
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition){
     int matrix_offset = blockIdx.x * blockDim.x * TENSOR_DIMENSIONS;
     int eigen_offset = blockIdx.x * blockDim.x * EIGENDECOMPOSITION_ELEMENTS;
-    double A[3][3] = deposit_data_segment_into_array(data, matrix_offset);
+    double A[3][3] = {0}; 
+    deposit_data_segment_into_array(data, matrix_offset, A);
     double Q[3][3] = {0};
     double w[3] = {0};
     dsyevj3(A, Q, w);
@@ -415,6 +417,19 @@ __device__ void assemble_eigendecomposition(double* eigendecomposition, double* 
     eigendecomposition[offset + 9] = Q[2][0];
     eigendecomposition[offset + 10] = Q[2][1];
     eigendecomposition[offset + 11] = Q[2][2];
+}
+
+//device function to return tensor as array for eigendecompostion
+__device__ double[3][3] deposit_data_segment_into_array(double const* data, int matrix_offset, double[3][3] A){
+    A[0][0] = data[matrix_offset];
+    A[0][1] = data[matrix_offset + 1];
+    A[0][2] = data[matrix_offset + 2];
+    A[1][0] = data[matrix_offset + 3];
+    A[1][1] = data[matrix_offset + 4];
+    A[1][2] = data[matrix_offset + 5];
+    A[2][0] = data[matrix_offset + 6];
+    A[2][1] = data[matrix_offset + 7];
+    A[2][2] = data[matrix_offset + 8];
 }
 
 // Jacobi algorithm for eigen decomposition. Implemented by Joachlm Kopp for his paper
