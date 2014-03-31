@@ -57,8 +57,8 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 
 extern "C"
 double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signal){
-    double* weighted_design_data = matrix_weighter(design_matrix->data, column_weights->data, design_matrix->rows, 
-            design_matrix->columns, column_major_weights->rows, true);
+    double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
+            design_matrix->rows, design_matrix->columns, column_major_weights->rows, true);
     double* solution_vectors;
     int signal_elements = signal->rows * signal->columns;
     cuda_double_allocate(solution_vectors, signal_elements);
@@ -101,11 +101,12 @@ extern "C"
 void extract_eigendecompositions(double const* eigendecompositions, tensor** output, int number_of_tensors){
     int i;
     for(i = 0; i < number_of_tensors;i++){
-        double* eigenvalues = array_clone((double const*)eigendecompositions[i * EIGENDECOMPOSITION_ELEMENTS], TENSOR_DIMENSIONS);
-        double* eigenvectors = array_clone((double const *)eigendecompositions[(i * EIGENDECOMPOSITION_ELEMENTS) + 3],
-            TENSOR_ELEMENTS);        
+        double const* eigenvalue_pointer = eigendecompositions + (i * EIGENDECOMPOSITION_ELEMENTS);
+        double const* eigenvector_pointer = eigendecompositions + ((i * EIGENDECOMPOSITION_ELEMENTS) + 3);
+        double* eigenvalues = array_clone(eigenvalue_pointer, TENSOR_DIMENSIONS);
+        double* eigenvectors = array_clone(eigenvector_pointer, TENSOR_ELEMENTS);        
         output[i]->vals = eigenvalues;
-        output[i]->vecs = eigenvectors;
+        output[i]->vecs = create_matrix(eigenvectors, 3, 3);
     }
     return;
 }
@@ -221,7 +222,7 @@ double* matrix_weighter (double const* matrix, double const* weights, int rows, 
     else {
         weighting_kernel_transposed<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
-    double* weighted_matrices = malloc(sizeof(double) * rows * columns * length);
+    double* weighted_matrices = (double*) malloc(sizeof(double) * rows * columns * length);
     cudaMemcpy(weighted_matrices, gpu_results, sizeof(double) * rows * columns * length, cudaMemcpyDeviceToHost);
     cudaFree(gpu_matrix);
     cudaFree(gpu_weights);
@@ -231,14 +232,14 @@ double* matrix_weighter (double const* matrix, double const* weights, int rows, 
 
 extern "C"
 double* transpose_matrices(double* matrices, int rows, int columns, int length){
-    double* transposed = malloc(sizeof(double) * rows * columns * length);
+    double* transposed = (double*) malloc(sizeof(double) * rows * columns * length);
     double* gpu_matrices = cuda_double_copy_to_gpu(matrices, rows * columns * length);
-    double* gpu_tranposed = cuda_double_copy_to_gpu(transposed, rows * columns * length);
+    double* gpu_transposed = cuda_double_copy_to_gpu(transposed, rows * columns * length);
     dim3 grid, block;
     grid.x = length;
     block.x = columns;
     block.y = rows;
-    transpose_kernel<<<grid, block>>>(double const* gpu_matrices, double* gpu_transposed);
+    transpose_kernel<<<grid, block>>>(gpu_matrices, gpu_transposed);
     transposed = cuda_double_return_from_gpu(gpu_transposed, rows * columns * length);
     free_cuda_memory(gpu_matrices);
     free_cuda_memory(gpu_transposed);
@@ -280,10 +281,6 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     free(transposed_batch2);
     return results;
 
-}
-
-extern "C"
-double* solve_matrices(){
 }
 
 extern "C"
