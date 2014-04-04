@@ -30,7 +30,7 @@ __global__ void assemble_tensors(double const* tensor_input, double* tensors);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
 
 //device functions
-__device__ void assemble_eigendecomposition(double* eigendecomposition, double* offset, 
+__device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, 
         double Q[3][3], double w[3]);
 __device__ double[3][3] deposit_data_segment_into_array(double const* data, int offset);
 __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
@@ -271,15 +271,15 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts("Call to cublas function failed.");
     }
-    double* results;
-    cudaMalloc(&gpu_output, sizeof(double) * rows * columns * length);
-    results = cuda_double_return_from_gpu(gpu_output, rows * columns * length);
+    double* transposed_results, results;
+    transposed_results = cuda_double_return_from_gpu(gpu_output, rows * columns * length);
     results = transpose_matrices(results, rows, columns, length);
     free_cuda_memory(gpu_array1);
     free_cuda_memory(gpu_array2);
     free_cuda_memory(gpu_output);
     free(transposed_batch1);
     free(transposed_batch2);
+    free(transposed_results);
     return results;
 
 }
@@ -399,11 +399,11 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
     double Q[3][3] = {0};
     double w[3] = {0};
     dsyevj3(A, Q, w);
-    assemble_eigendecomposition(eigendecomposition, eigen_offset, A, Q, w);
+    assemble_eigendecomposition(eigendecomposition, eigen_offset, Q, w);
 }
 
 //device function of assembling eigendecomposition from respective blocks.
-__device__ void assemble_eigendecomposition(double* eigendecomposition, double* offset, 
+__device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, 
         double Q[3][3], double w[3]){
     eigendecomposition[offset + 0] = w[0];
     eigendecomposition[offset + 1] = w[1];
