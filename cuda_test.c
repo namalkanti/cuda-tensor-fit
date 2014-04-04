@@ -161,15 +161,15 @@ void test_extract_eigendecompositions(void){
     tensor* second_tensor = malloc(sizeof(tensor));
     double first_vecs[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     matrix* first_tensor_vecs = create_matrix(first_vecs, 3, 3);
-    first_tensor->vals = {1, 2, 3} 
+    first_tensor->vals = (double[]) {1, 2, 3};
     first_tensor->vecs = first_tensor_vecs;
     double second_vecs[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     matrix* second_tensor_vecs = create_matrix(second_vecs, 3, 3);
-    second_tensor->vals = {4, 5, 6}
+    second_tensor->vals = (double[]) {4, 5, 6};
     second_tensor->vecs = second_tensor_vecs;
     extract_eigendecompositions(gpu_eigendecomposition, &result_tensors, 2);
-    CU_ASSERT(compare_tensors(first_tensor, results_tensors[0], MARGIN));
-    CU_ASSERT(compare_tensors(second_tensor, results_tensors[1], MARGIN));
+    CU_ASSERT(compare_tensors(first_tensor, result_tensors[0], MARGIN));
+    CU_ASSERT(compare_tensors(second_tensor, result_tensors[1], MARGIN));
     free_tensor(result_tensors);
     free_tensor(result_tensors + 1);
     free(result_tensors);
