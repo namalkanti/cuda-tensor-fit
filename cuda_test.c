@@ -139,7 +139,7 @@ void test_cuda_fitter(void){
     double* result_data = cuda_double_return_from_gpu(gpu_result_data, 6);
     CU_ASSERT(true == array_compare(expected_results, result_data, 6, MARGIN));
     free_cuda_memory(gpu_result_data);
-    free(results_data);
+    free(result_data);
 }
 
 //Test case for tensor decomposition function
@@ -157,12 +157,14 @@ void test_extract_eigendecompositions(void){
     double eigendecomposition[] = {1, 2, 4, 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1};
     double* gpu_eigendecomposition = cuda_double_copy_to_gpu(eigendecomposition, 2 * 12 );
     tensor* result_tensors = malloc(sizeof(tensor) * 2);
+    tensor* first_tensor = malloc(sizeof(tensor));
+    tensor* second_tensor = malloc(sizeof(tensor));
     matrix* first_tensor_vecs = create_matrix([1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
-    result_tensors[0].vals = {1, 2, 3} 
-    result_tensors[0].vecs = first_tensor_vecs;
-    matrix* second_tensor_vecs = ([1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
-    result_tensors[1].vals = {4, 5, 6}
-    result_tensors[1].vecs = second_tensor_vecs;
+    first_tensor->vals = {1, 2, 3} 
+    first_tensor->vecs = first_tensor_vecs;
+    matrix* second_tensor_vecs = create_matrix([1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
+    second_tensor->vals = {4, 5, 6}
+    second_tensor->vecs = second_tensor_vecs;
     extract_eigendecompositions(gpu_eigendecomposition, &result_tensors);
     CU_ASSERT(compare_tensors(first_tensor, results_tensors[0], MARGIN));
     CU_ASSERT(compare_tensors(second_tensor, results_tensors[1], MARGIN));
