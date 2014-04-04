@@ -30,8 +30,7 @@ __global__ void assemble_tensors(double const* tensor_input, double* tensors);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
 
 //device functions
-__device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, 
-        double Q[3][3], double w[3]);
+__device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, double Q[3][3], double w[3]);
 __device__ void deposit_data_segment_into_array(double const* data, int offset, double[3][3] A);
 __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
@@ -261,8 +260,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     double* gpu_array1 = cuda_double_copy_to_gpu(transposed_batch1, rows * k * length);
     double* gpu_array2 = cuda_double_copy_to_gpu(transposed_batch2, k *  columns * length);
     double* gpu_output;
-    cudaMalloc(&gpu_output, sizeof(double)* transposed_batch1->rows 
-            * transposed_batch2->columns * length);
+    cudaMalloc(&gpu_output, sizeof(double)* transposed_batch1->rows * transposed_batch2->columns * length);
     const double alpha = 1;
     const double beta = 0;
     status = cublasDgemmBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N, rows, columns, 
