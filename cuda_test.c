@@ -134,9 +134,9 @@ void test_cuda_fitter(void){
     matrix* test_weights_matrix = create_matrix(cuda_double_copy_to_gpu(test_weights_data, 6), 2, 3);
     double test_signal_data[] = {1, 2, 3, 4, 5, 6};
     matrix* test_signal_matrix = create_matrix(cuda_double_copy_to_gpu(test_signal_data, 6), 2, 3);
-    matrix* result_matrix = cuda_fitter(test_design_matrix, test_weights_matrix, test_signal_matrix);
+    double* gpu_result_data = cuda_fitter(test_design_matrix, test_weights_matrix, test_signal_matrix);
     double expected_results[] = {-1, 1, -1, 1, -1, 1};
-    double result_data[] = cuda_double_return_from_gpu(result_matrix->data, 6);
+    double* result_data = cuda_double_return_from_gpu(gpu_result_data, 6);
     CU_ASSERT(true == array_compare(expected_resullts, result_data, 6, MARGIN));
     free_matrix_with_cuda_pointer(results_matrix);
     free(results_data);
