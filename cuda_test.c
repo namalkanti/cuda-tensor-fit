@@ -159,16 +159,16 @@ void test_extract_eigendecompositions(void){
     tensor* result_tensors = malloc(sizeof(tensor) * 2);
     tensor* first_tensor = malloc(sizeof(tensor));
     tensor* second_tensor = malloc(sizeof(tensor));
-    matrix* first_tensor_vecs = create_matrix([1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
+    matrix* first_tensor_vecs = create_matrix((double[]) [1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
     first_tensor->vals = {1, 2, 3} 
     first_tensor->vecs = first_tensor_vecs;
-    matrix* second_tensor_vecs = create_matrix([1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
+    matrix* second_tensor_vecs = create_matrix((double[])[1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
     second_tensor->vals = {4, 5, 6}
     second_tensor->vecs = second_tensor_vecs;
     extract_eigendecompositions(gpu_eigendecomposition, &result_tensors);
     CU_ASSERT(compare_tensors(first_tensor, results_tensors[0], MARGIN));
     CU_ASSERT(compare_tensors(second_tensor, results_tensors[1], MARGIN));
-    free_tensor(result_tensors);
+    free_tensor(results_tensors);
     free_tensor(results_tensors + 1);
     free(result_tensors);
 }
@@ -275,7 +275,7 @@ void test_tranpose_matrices (void) {
     double expected_matrix[] = {1, 4, 2, 5, 3, 6, 1, 4, 2, 5, 3, 6};
     double* result_matrix = transpose_matrices(test_matrix, 3, 2, 2);
     CU_ASSERT(true == array_compare(expected_matrix, result_matrix, 12, MARGIN));
-    free_matrix(result_matrix);
+    free(result_matrix);
 }
 
 //Tests dotting multiple matrices on the GPU
