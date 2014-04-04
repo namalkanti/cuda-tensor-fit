@@ -32,7 +32,7 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, 
         double Q[3][3], double w[3]);
-__device__ void deposit_data_segment_into_array(double const* data, int offset);
+__device__ void deposit_data_segment_into_array(double const* data, int offset, double* A);
 __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
 extern "C"
@@ -258,8 +258,8 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     }
     double* transposed_batch1 = transpose_matrices(matrix_batch_one, rows, k, length);
     double* transposed_batch2 = transpose_matrices(matrix_batch_two, k, columns, length);
-    const double* gpu_array1 = cuda_double_copy_to_gpu(transposed_batch1, rows * k * length);
-    const double* gpu_array2 = cuda_double_copy_to_gpu(transposed_batch2, k *  columns * length);
+    double* gpu_array1 = cuda_double_copy_to_gpu(transposed_batch1, rows * k * length);
+    double* gpu_array2 = cuda_double_copy_to_gpu(transposed_batch2, k *  columns * length);
     double* gpu_output;
     cudaMalloc(&gpu_output, sizeof(double)* transposed_batch1->rows 
             * transposed_batch2->columns * length);
@@ -273,7 +273,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     }
     double* transposed_results, results;
     transposed_results = cuda_double_return_from_gpu(gpu_output, rows * columns * length);
-    results = transpose_matrices(results, rows, columns, length);
+    results = transpose_matrices(transposed_results, rows, columns, length);
     free_cuda_memory(gpu_array1);
     free_cuda_memory(gpu_array2);
     free_cuda_memory(gpu_output);
