@@ -31,7 +31,7 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
 
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, double Q[3][3], double w[3]);
-__device__ void deposit_data_segment_into_array(double const* data, int offset, double[3][3] A);
+__device__ void deposit_data_segment_into_array(double const* data, int offset, double A[3][3]);
 __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
 extern "C"
@@ -418,7 +418,7 @@ __device__ void assemble_eigendecomposition(double* eigendecomposition, int offs
 }
 
 //device function to return tensor as array for eigendecompostion
-__device__ void deposit_data_segment_into_array(double const* data, int matrix_offset, double[3][3] A){
+__device__ void deposit_data_segment_into_array(double const* data, int matrix_offset, double A[3][3]){
     A[0][0] = data[matrix_offset];
     A[0][1] = data[matrix_offset + 1];
     A[0][2] = data[matrix_offset + 2];
