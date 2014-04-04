@@ -260,11 +260,11 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     double* gpu_array1 = cuda_double_copy_to_gpu(transposed_batch1, rows * k * length);
     double* gpu_array2 = cuda_double_copy_to_gpu(transposed_batch2, k *  columns * length);
     double* gpu_output;
-    cudaMalloc(&gpu_output, sizeof(double)* transposed_batch1->rows * transposed_batch2->columns * length);
+    cudaMalloc(&gpu_output, sizeof(double)* rows * columns * length);
     const double alpha = 1;
     const double beta = 0;
     status = cublasDgemmBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N, rows, columns, 
-            k, &alpha, &gpu_array1, rows, &gpu_array2, k, &beta, 
+            k, &alpha, (const double*) &gpu_array1, rows, (const double*) &gpu_array2, k, &beta, 
             &gpu_output, rows, length);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts("Call to cublas function failed.");
