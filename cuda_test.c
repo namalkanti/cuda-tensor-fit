@@ -137,8 +137,8 @@ void test_cuda_fitter(void){
     double* gpu_result_data = cuda_fitter(test_design_matrix, test_weights_matrix, test_signal_matrix);
     double expected_results[] = {-1, 1, -1, 1, -1, 1};
     double* result_data = cuda_double_return_from_gpu(gpu_result_data, 6);
-    CU_ASSERT(true == array_compare(expected_resullts, result_data, 6, MARGIN));
-    free_matrix_with_cuda_pointer(results_matrix);
+    CU_ASSERT(true == array_compare(expected_results, result_data, 6, MARGIN));
+    free_cuda_memory(gpu_results_data);
     free(results_data);
 }
 
@@ -148,7 +148,7 @@ void test_cuda_decompose_tensors(void){
     double* gpu_test_data = cuda_double_copy_to_gpu(test_data, 12);
     double expected_results[] = {1, 2, 4, 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1};
     double* eigendecomposition = cuda_decompose_tensors(gpu_test_data, 2);
-    CU_ASSERT( true == array_compare(expected_results, cuda_double_return_from_gpu(eigendecomposition), 24, MARGIN));
+    CU_ASSERT( true == array_compare(expected_results, cuda_double_return_from_gpu(eigendecomposition, 24), 24, MARGIN));
     free(eigendecomposition);
 }
 
