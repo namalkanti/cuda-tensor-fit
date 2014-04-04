@@ -32,7 +32,7 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, 
         double Q[3][3], double w[3]);
-__device__ void deposit_data_segment_into_array(double const* data, int offset, double* A);
+__device__ void deposit_data_segment_into_array(double const* data, int offset, double[3][3] A);
 __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
 extern "C"
@@ -271,7 +271,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts("Call to cublas function failed.");
     }
-    double* transposed_results, results;
+    double *transposed_results, *results;
     transposed_results = cuda_double_return_from_gpu(gpu_output, rows * columns * length);
     results = transpose_matrices(transposed_results, rows, columns, length);
     free_cuda_memory(gpu_array1);
