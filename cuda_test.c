@@ -78,11 +78,11 @@ void test_process_signal(void){
     expected_output->rows = 2;
     expected_output->columns = 4;
     int min_signal = 2;
-    matrix* results = process_signal(test_input);
+    matrix* results = process_signal(test_input, 1);
     double* gpu_data = results->data;
-    result->data = cuda_double_return_from_gpu(gpu_data, 8);
+    results->data = cuda_double_return_from_gpu(gpu_data, 8);
     free_cuda_memory(gpu_data);
-    CU_ASSERT(true == matrix_compare(expected_data, results, MARGIN));
+    CU_ASSERT(true == matrix_compare(expected_output, results, MARGIN));
 }
 
 //Test case for weight generation function
@@ -105,9 +105,9 @@ void test_generate_weights(void){
     expected_weights->columns = 2;
     matrix* results = generate_weights(test_ols, test_signal);
     double* gpu_data = results->data;
-    results->data = cuda_double_return_from_gpu(gpu_data);
+    results->data = cuda_double_return_from_gpu(gpu_data, results->rows * results->columns);
     free_cuda_memory(gpu_data);
-    CU_ASSERT(true == matrix_compare(expected_weights, results));
+    CU_ASSERT(true == matrix_compare(expected_weights, results, MARGIN));
 }
 
 //Test case for process matrix function
@@ -123,17 +123,17 @@ void test_process_matrix(void){
     expected_matrix->rows = 4;
     expected_matrix->columns = 2;
     matrix* results = process_matrix(test_matrix);
-    CU_ASSERT(true == matrix_compare(expected_matrix, results));
+    CU_ASSERT(true == matrix_compare(expected_matrix, results, MARGIN));
 }
 
 //Test case for cuda fitter function
 void test_cuda_fitter(void){
     double test_design_data[] = {1, 3, 2, 4};
-    matrix test_design_matrix = {.data = cuda_double_copy_to_gpu(test_design_data, 4), .rows = 2, .columns = 2};
+    matrix test_design_matrix = create_matrix(cuda_double_copy_to_gpu(test_design_data, 4), 2, 2);
     double test_weights_data[] = {1, 2, 3, 4, 5, 6};
-    matrix test_weights_matrix = {.data = cuda_double_copy_to_gpu(test_weights_data, 6), .rows = 2, .columns = 3};
+    matrix test_weights_matrix = create_matrix(cuda_double_copy_to_gpu(test_weights_data, 6), 2, 3);
     double test_signal_data[] = {1, 2, 3, 4, 5, 6};
-    matrix test_signal_matrix {.data = cuda_double_copy_to_gpu(test_signal_matrix, 6), .rows = 2, .columns = 3};
+    matrix test_signal_matrix = create_matrix(cuda_double_copy_to_gpu(test_signal_matrix, 6), 2, 3);
     matrix* result_matrix = cuda_fitter(test_design_matrix, test_weights_matrix, test_signal_matrix);
     double expected_results[] = {-1, 1, -1, 1, -1, 1};
     double result_data[] = cuda_double_return_from_gpu(result_matrix->data, 6);
@@ -147,7 +147,7 @@ void test_cuda_decompose_tensors(void){
     double test_data[] = {1, 0, 2, 0, 0, 3, 4, 0, 5, 0, 0, 6};
     double* gpu_test_data = cuda_double_copy_to_gpu(test_data, 12);
     double expected_results[] = {1, 2, 4, 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1};
-    double* eigendecomposition = cuda_decompose_tensors(gpu_test_data);
+    double* eigendecomposition = cuda_decompose_tensors(gpu_test_data, 2);
     CU_ASSERT( true == array_compare(expected_results, cuda_double_return_from_gpu(eigendecomposition), 24, MARGIN));
     free(eigendecomposition);
 }
@@ -155,18 +155,20 @@ void test_cuda_decompose_tensors(void){
 //Test case for eigendecomposition extraction
 void test_extract_eigendecompositions(void){
     double eigendecomposition[] = {1, 2, 4, 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1};
-    double* gpu_eigendecomposition = cuda_double_copy_to_gpu(eigendecomposition);
+    double* gpu_eigendecomposition = cuda_double_copy_to_gpu(eigendecomposition, 2 * 12 );
     tensor* result_tensors = malloc(sizeof(tensor) * 2);
-    matrix first_tensor_vecs = {.data = [1, 0, 0, 0, 1, 0, 0, 0, 1], .rows = 3, .columns = 3};
-    tensor first_tensor = {.vals = {1, 2, 3}, .vecs = first_tensor_vecs};
-    matrix second_tensor_vecs = {.data = [1, 0, 0, 0, 1, 0, 0, 0, 1], .rows = 3, .columns = 3};
-    tensor second_tensor = {.vals = {4, 5, 6}, .vecs = second_tensor_vecs};
+    matrix first_tensor_vecs = create_matrix([1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
+    result_tensors[0].vals = {1, 2, 3} 
+    result_tensors[0].vecs = first_tensor_vecs;
+    matrix second_tensor_vecs = ([1, 0, 0, 0, 1, 0, 0, 0, 1], 3, 3);
+    result_tensors[1].vals = {4, 5, 6}
+    result_tensors[1].vecs = second_tensor_vecs;
     extract_eigendecompositions(eigendecompositions, &results_tensors);
     CU_ASSERT(compare_tensors(first_tensor, results_tensors[0], MARGIN));
     CU_ASSERT(compare_tensors(second_tensor, results_tensors[1], MARGIN));
-    free_tensor(result_tensors[0]);
-    free_tensor(results_tensors[1]);
-    free(result_tensor);
+    free_tensor(result_tensors);
+    free_tensor(results_tensors + 1);
+    free(result_tensors);
 }
 
 //Kernel test function 
@@ -258,18 +260,18 @@ void test_matrix_weighter (void) {
     double expected_matrix[] = {1, 4, 3, 8, 3, 8, 9, 16};
     double expected_transpose_matrix[] = {1, 2, 6, 8, 3, 8, 9, 16};
     double* test_result = matrix_weighter(test_matrix, weights, 2, 2, 2, false);
-    double* tranpose_test_result = matrix_weighter(transpose_test_matrix, weights, 2, 2, 2, true);
+    double* transpose_test_result = matrix_weighter(transpose_test_matrix, weights, 2, 2, 2, true);
     CU_ASSERT(true == array_compare(expected_matrix, test_result, 8, MARGIN));
     CU_ASSERT(true == array_compare(expected_transpose_matrix, transpose_test_result, 8, MARGIN));
-    free_matrix(test_result);
-    free_matrix(transpose_test_result);
+    free(test_result);
+    free(transpose_test_result);
 }
 
 //Tests transposing multiple matrices on the GPU
 void test_tranpose_matrices (void) {
     double test_matrix[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
     double expected_matrix[] = {1, 4, 2, 5, 3, 6, 1, 4, 2, 5, 3, 6};
-    double result_matrix = transpose_matrices(double* test_matrix);
+    double* result_matrix = transpose_matrices(double* test_matrix, 3, 2, 2);
     CU_ASSERT(true == array_compare(expected_matrix, result_matrix, 12, MARGIN));
     free_matrix(result_matrix);
 }
@@ -280,19 +282,7 @@ void test_dot_matrices (void) {
     double expected_matrices[] = {7, 10, 15, 22, 67, 78, 91, 108, 191, 210, 231, 254};
     double* gpu_test_input = cuda_double_copy_to_gpu(test_matrices, 12)
     double* results = dot_matrices(gpu_test_input, 2, gpu_test_input, 2, 2, 3);
-    CU_ASSERT(true == array_compare(expected_matrices, results, 12, MARGIN);
-}
-
-//Tests solving multiple matrics on the GPU
-void test_solve_matrices (void) {
-}
-
-//Tests fitting matrices according to DT tensor fitting method.
-void test_cuda_fitter (void) {
-}
-
-//Tests tensor decomposition(eigendecomposition of real, symmetric 3x3 matrix)
-void test_decompose_tensors (void) {
+    CU_ASSERT(true == array_compare(expected_matrices, results, 12, MARGIN));
 }
 
 //Initalization stub for utility test suite.
