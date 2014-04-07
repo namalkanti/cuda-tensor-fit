@@ -272,7 +272,7 @@ void test_matrix_weighter (void) {
 }
 
 //Tests transposing multiple matrices on the GPU
-void test_tranpose_matrices (void) {
+void test_transpose_matrices (void) {
     double test_matrix[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
     double expected_matrix[] = {1, 4, 2, 5, 3, 6, 1, 4, 2, 5, 3, 6};
     double* result_matrix = transpose_matrices(test_matrix, 3, 2, 2);
