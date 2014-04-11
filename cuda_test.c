@@ -69,14 +69,14 @@ int clean_cuda(void){
 void test_process_signal(void){
     matrix* test_input = malloc(sizeof(matrix));
     matrix* expected_output = malloc(sizeof(matrix));
-    double test_data[] = {1, 2, 3, 1, 4, 5, 6};
-    double expected_data[] = { 0.69314718,  0.69314718,  1.09861229,  0.69314718,  1.38629436, 1.60943791,  1.79175947};
+    double test_data[] = {1, 2, 3, 1, 4, 5};
+    double expected_data[] = { 0.69314718,  0.69314718,  1.09861229,  0.69314718, 1.38629436, 1.60943791};
     test_input->data = test_data;
     test_input->rows = 2;
-    test_input->columns = 4;
+    test_input->columns = 3;
     expected_output->data = expected_data;
     expected_output->rows = 2;
-    expected_output->columns = 4;
+    expected_output->columns = 3;
     int min_signal = 2;
     matrix* results = process_signal(test_input, 2);
     double* gpu_data = results->data;
