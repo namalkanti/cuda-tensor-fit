@@ -9,7 +9,7 @@ extern "C" {
 #define SQR(x)      ((x)*(x))                        // x^2 
 
 #define gpu_error_check(ans) { gpu_assert((ans), __FILE__, __LINE__); }
-inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=true){
+inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=false){
     if (code != cudaSuccess) {
         fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
     }
