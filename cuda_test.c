@@ -106,8 +106,11 @@ void test_generate_weights(void){
     matrix* results = generate_weights(test_ols, test_signal);
     double* gpu_data = results->data;
     results->data = cuda_double_return_from_gpu(gpu_data, results->rows * results->columns);
-    free_cuda_memory(gpu_data);
     CU_ASSERT(true == matrix_compare(expected_weights, results, MARGIN));
+    free_cuda_memory(gpu_data);
+    free(test_ols);
+    free(test_signal);
+    free(expected_weights);
 }
 
 //Test case for process matrix function
