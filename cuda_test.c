@@ -328,7 +328,7 @@ int main(){
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(cuda_suite, "Process matrix test", test_process_matrix))){
+    /*if ((NULL == CU_add_test(cuda_suite, "Process matrix test", test_process_matrix))){
         CU_cleanup_registry();
         return CU_get_error();
     }
@@ -372,7 +372,7 @@ int main(){
     if ((NULL == CU_add_test(cuda_suite, "Matrix weighting test", test_matrix_weighter))){
         CU_cleanup_registry();
         return CU_get_error();
-    }
+    }*/
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
