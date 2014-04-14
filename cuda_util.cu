@@ -199,8 +199,8 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts(cublas_get_error_string(status));
     }
-    matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
-    double* result_matrix_data = (double*) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
+    matrix* result_matrix =  malloc(sizeof(matrix));
+    double* result_matrix_data =  malloc(sizeof(double) * matrix1->rows * matrix2->columns);
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     result_matrix->data = result_matrix_data;
