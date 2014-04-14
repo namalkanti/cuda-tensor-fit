@@ -115,7 +115,7 @@ extern "C"
 double* cuda_double_copy_to_gpu(double const* local_array, int array_length){
     double* cuda_array;
     cudaMalloc(&cuda_array, sizeof(double) * array_length);
-    cudaMemcpy(cuda_array, local_array, sizeof(double) * array_length, cudaMemcpyHostToDevice);
+    cudaError_t status = cudaMemcpy(cuda_array, local_array, sizeof(double) * array_length, cudaMemcpyHostToDevice);
     return cuda_array;
 }
 
