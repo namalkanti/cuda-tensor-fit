@@ -8,7 +8,7 @@ extern "C" {
 #define IDX2C(i, j, ld) ((j)*(ld)+(i))
 #define SQR(x)      ((x)*(x))                        // x^2 
 
-#define gpu_error_check(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+#define gpu_error_check(ans) { gpu_assert((ans), __FILE__, __LINE__); }
 inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=true){
     if (code != cudaSuccess) {
         fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
@@ -29,6 +29,7 @@ inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=true){
 //Helper function declarations
 double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat);
 void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat);
+const char* cublas_get_error_string(cublasStatus_t status);
 
 //Kernel declarations
 __global__ void cutoff_log_kernel(double* device_array, double min_signal);
@@ -263,7 +264,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     cublasHandle_t handle;
     status = cublasCreate(&handle);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts(status);
+        puts(cublas_get_error_status(status));
     }
     double* transposed_batch1 = transpose_matrices(matrix_batch_one, rows, k, length);
     double* transposed_batch2 = transpose_matrices(matrix_batch_two, k, columns, length);
@@ -277,7 +278,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
             k, &alpha, (const double**) &gpu_array1, rows, (const double**) &gpu_array2, k, &beta, 
             &gpu_output, rows, length);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts(status);
+        puts(cublas_get_error_string(status));
     }
     double *transposed_results, *results;
     transposed_results = cuda_double_return_from_gpu(gpu_output, rows * columns * length);
@@ -311,7 +312,7 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     status = cublasSetMatrix(mat->rows, mat->columns, sizeof(double), intermediate_matrix, 
             mat->rows, gpu_pointer, mat->rows);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts("Failed to copy matrix to memory.");
+        puts(cublas_get_error_string(status));
     }
     free(intermediate_matrix);
     return gpu_pointer;
@@ -327,7 +328,7 @@ void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, mat
     status = cublasGetMatrix(mat->rows, mat->columns, sizeof(double), gpu_pointer, mat->rows,
             intermediate_matrix, mat->rows);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts("Failed to retrieve matrix from memory.");
+        puts(cublas_get_error_string(status));
     }
     int i, j;
     for (i = 0; i < mat->rows; i++ ) {
@@ -336,6 +337,22 @@ void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, mat
         }
     }
     free(intermediate_matrix);
+}
+
+//Gets error and returns string based on it by the error returned.
+const char* cublas_get_error_string(cublasStatus_t status){
+    switch(status)
+    {
+        case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
+        case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
+        case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
+        case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE"; 
+        case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH"; 
+        case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
+        case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED"; 
+        case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR"; 
+    }
+    return "unknown error";
 }
 
 //Kernels
