@@ -186,7 +186,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     cublasHandle_t handle;
     status = cublasCreate(&handle);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts("Failed to retrieve cublas handle.");
+        puts(cublas_get_error_string(status));
     }
     double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
     double* gpu_array2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
@@ -197,7 +197,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
             &alpha, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, &beta, gpu_output, matrix1->rows);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts("Call to cublas function failed.");
+        puts(cublas_get_error_string(status));
     }
     matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
     double* result_matrix_data = (double*) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
