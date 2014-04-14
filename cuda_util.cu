@@ -8,6 +8,16 @@ extern "C" {
 #define IDX2C(i, j, ld) ((j)*(ld)+(i))
 #define SQR(x)      ((x)*(x))                        // x^2 
 
+#define gpu_error_check(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=true){
+    if (code != cudaSuccess) {
+        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+    }
+    if (abort){
+        exit(code);
+    }
+}
+
 #define WARP_SIZE 16
 
 #define TENSOR_DIMENSIONS 3
@@ -114,27 +124,27 @@ void extract_eigendecompositions(double const* eigendecompositions, tensor** out
 extern "C"
 double* cuda_double_copy_to_gpu(double const* local_array, int array_length){
     double* cuda_array;
-    cudaMalloc(&cuda_array, sizeof(double) * array_length);
-    cudaError_t status = cudaMemcpy(cuda_array, local_array, sizeof(double) * array_length, cudaMemcpyHostToDevice);
+    gpu_error_check(cudaMalloc(&cuda_array, sizeof(double) * array_length));
+    gpu_error_check(cudaMemcpy(cuda_array, local_array, sizeof(double) * array_length, cudaMemcpyHostToDevice));
     return cuda_array;
 }
 
 extern "C"
 double* cuda_double_return_from_gpu(double const* cuda_array, int array_length){
     double* result_array = (double *) malloc(sizeof(double) * array_length);
-    cudaMemcpy(result_array, cuda_array, sizeof(double) * array_length, cudaMemcpyDeviceToHost);
+    gpu_error_check(cudaMemcpy(result_array, cuda_array, sizeof(double) * array_length, cudaMemcpyDeviceToHost));
     return result_array;
 }
 
 extern "C"
 void cuda_double_allocate(double* pointer, int pointer_length){
-    cudaMalloc(&pointer, pointer_length);
-    cudaMemset(&pointer, 0, pointer_length);
+    gpu_error_check(cudaMalloc(&pointer, pointer_length));
+    gpu_error_check(cudaMemset(&pointer, 0, pointer_length));
 }
 
 extern "C"
 void free_cuda_memory(double* pointer){
-    cudaFree(pointer);
+    gpu_error_check(cudaFree(pointer));
 }
 
 extern "C"
@@ -180,7 +190,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
     double* gpu_array2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
     double* gpu_output;
-    cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns);
+    gpu_error_check(cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns));
     const double alpha = 1;
     const double beta = 0;
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
@@ -194,8 +204,8 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     result_matrix->columns = matrix2->columns;
     result_matrix->data = result_matrix_data;
     get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
-    cudaFree(gpu_array1);
-    cudaFree(gpu_array2);
+    gpu_error_check(cudaFree(gpu_array1));
+    gpu_error_check(cudaFree(gpu_array2));
     return result_matrix;
 }
     
@@ -215,7 +225,7 @@ double* matrix_weighter (double const* matrix, double const* weights, int rows, 
     double* gpu_matrix = cuda_double_copy_to_gpu(matrix, rows * columns);
     double* gpu_weights = cuda_double_copy_to_gpu(weights, weight_length * length);
     double* gpu_results;
-    cudaMalloc(&gpu_results, sizeof(double) * rows * columns * length);
+    gpu_error_check(cudaMalloc(&gpu_results, sizeof(double) * rows * columns * length));
     if (false == trans){
         weighting_kernel<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
@@ -223,10 +233,10 @@ double* matrix_weighter (double const* matrix, double const* weights, int rows, 
         weighting_kernel_transposed<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
     double* weighted_matrices = (double*) malloc(sizeof(double) * rows * columns * length);
-    cudaMemcpy(weighted_matrices, gpu_results, sizeof(double) * rows * columns * length, cudaMemcpyDeviceToHost);
-    cudaFree(gpu_matrix);
-    cudaFree(gpu_weights);
-    cudaFree(gpu_results);
+    gpu_error_check(cudaMemcpy(weighted_matrices, gpu_results, sizeof(double) * rows * columns * length, cudaMemcpyDeviceToHost));
+    gpu_error_check(cudaFree(gpu_matrix));
+    gpu_error_check(cudaFree(gpu_weights));
+    gpu_error_check(cudaFree(gpu_results));
     return weighted_matrices;
 }
 
@@ -253,7 +263,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     cublasHandle_t handle;
     status = cublasCreate(&handle);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts("Failed to retrieve cublas handle.");
+        puts(status);
     }
     double* transposed_batch1 = transpose_matrices(matrix_batch_one, rows, k, length);
     double* transposed_batch2 = transpose_matrices(matrix_batch_two, k, columns, length);
@@ -267,7 +277,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
             k, &alpha, (const double**) &gpu_array1, rows, (const double**) &gpu_array2, k, &beta, 
             &gpu_output, rows, length);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts("Call to cublas function failed.");
+        puts(status);
     }
     double *transposed_results, *results;
     transposed_results = cuda_double_return_from_gpu(gpu_output, rows * columns * length);
