@@ -227,11 +227,11 @@ void free_tensor(tensor* tens){
 //Defintions of padded array functions.
 
 padded_array* pad_array(double const* arr, int length,  int multiple) {
-    padded_array* padded_array = malloc(sizeof(padded_array));
-    padded_array->original_length = length;
+    padded_array* padded_arr = malloc(sizeof(padded_array));
+    padded_arr->original_length = length;
     int pad_length = multiple - (length % multiple);
     int new_length = length + pad_length;
-    padded_array->current_length = new_length;
+    padded_arr->current_length = new_length;
     double* padded_values = malloc(sizeof(double) * new_length);
     int i; 
     for(i = 0;i < length;i++){
@@ -240,16 +240,16 @@ padded_array* pad_array(double const* arr, int length,  int multiple) {
     for(i;i < new_length;i++){
         padded_values[i] = 0;
     }
-    padded_array->values = padded_values;
-    return padded_array;
+    padded_arr->values = padded_values;
+    return padded_arr;
 }
 
-double* get_array_from_padded_array(padded_array const* padded_array) {
-    int original_length = padded_array->original_length;
+double* get_array_from_padded_array(padded_array const* padded_arr) {
+    int original_length = padded_arr->original_length;
     int i;
     double* extracted_array = malloc(sizeof(double) * original_length);
     for(i = 0; i < original_length; i++){
-        extracted_array[i] = padded_array->values[i];
+        extracted_array[i] = padded_arr->values[i];
     }
     return extracted_array;
 }
