@@ -53,7 +53,7 @@ matrix* process_signal(matrix const* signal, double min_signal){
     double* processed_signal_data = cuda_double_copy_to_gpu(kernel_results, signal_length);
     matrix* processed_signal = create_matrix(processed_signal_data, signal->rows, signal->columns);
     free(signal_data);
-    free_cuda_memory(kernel_results);
+    free(kernel_results);
     return processed_signal;
 }
 
