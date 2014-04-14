@@ -193,7 +193,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     double* gpu_output;
     gpu_error_check(cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns));
     const double alpha = 1;
-    const double beta = 0;
+    const double beta = 1;
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
             &alpha, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, &beta, gpu_output, matrix1->rows);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
@@ -302,18 +302,14 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     int length = mat->rows * mat->columns;
     double* gpu_pointer; 
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
-    cudaMalloc(&gpu_pointer, sizeof(double) * length);
+    gpu_error_check(cudaMalloc(&gpu_pointer, sizeof(double) * length));
     int i, j;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
             intermediate_matrix[IDX2C(i, j, mat->rows)] = mat->data[i * mat->rows + j];
         }
     }
-    status = cublasSetMatrix(mat->rows, mat->columns, sizeof(double), intermediate_matrix, 
-            mat->rows, gpu_pointer, mat->rows);
-    if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts(cublas_get_error_string(status));
-    }
+    gpu_error_check(cudaMemcpy(gpu_pointer, intermediate_matrix, length, cudaMemcpyHostToDevice));
     free(intermediate_matrix);
     return gpu_pointer;
 }
@@ -325,11 +321,7 @@ void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, mat
     cublasStatus_t status;
     int length = mat->rows * mat->columns;
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
-    status = cublasGetMatrix(mat->rows, mat->columns, sizeof(double), gpu_pointer, mat->rows,
-            intermediate_matrix, mat->rows);
-    if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts(cublas_get_error_string(status));
-    }
+    gpu_error_check(cudaMemcpy(intermediate_matrix, gpu_pointer, length, cudaMemcpyDeviceToHost));
     int i, j;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
