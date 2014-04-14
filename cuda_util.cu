@@ -264,7 +264,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     cublasHandle_t handle;
     status = cublasCreate(&handle);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts(cublas_get_error_status(status));
+        puts(cublas_get_error_string(status));
     }
     double* transposed_batch1 = transpose_matrices(matrix_batch_one, rows, k, length);
     double* transposed_batch2 = transpose_matrices(matrix_batch_two, k, columns, length);
