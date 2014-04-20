@@ -203,8 +203,8 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     double* result_matrix_data =  (double*) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
-    get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
     result_matrix->data = result_matrix_data;
+    get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
     gpu_error_check(cudaFree(gpu_array1));
     gpu_error_check(cudaFree(gpu_array2));
     return result_matrix;
