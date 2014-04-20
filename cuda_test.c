@@ -321,7 +321,7 @@ int main(){
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(cuda_suite, "Process signal test", test_process_signal))){
+    /*if ((NULL == CU_add_test(cuda_suite, "Process signal test", test_process_signal))){
         CU_cleanup_registry();
         return CU_get_error();
     }
@@ -331,7 +331,7 @@ int main(){
         return CU_get_error();
     }
 
-    /*if ((NULL == CU_add_test(cuda_suite, "Process matrix test", test_process_matrix))){
+    if ((NULL == CU_add_test(cuda_suite, "Process matrix test", test_process_matrix))){
         CU_cleanup_registry();
         return CU_get_error();
     }
