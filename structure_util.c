@@ -140,9 +140,9 @@ matrix* clone_matrix(matrix const* mat){
     return clone;
 }
 
-matrix* create_matrix(double const* data, int rows, int columns){
+matrix* create_matrix(double* data, int rows, int columns){
     matrix* pointer = malloc(sizeof(matrix));
-    pointer->data = array_clone(data, rows * columns);
+    pointer->data = data;
     pointer->rows = rows;
     pointer->columns = columns;
     return pointer;
