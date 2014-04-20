@@ -68,7 +68,7 @@ matrix* clone_matrix(matrix const* mat);
 /*
  * Creates an matrix on the heap and returns a pointer to it.
  */
-matrix* create_matrix(double const* data, int rows, int columns);
+matrix* create_matrix(double* data, int rows, int columns);
 
 /*
  *Compares absolute value of columns  in 3x3 matrix with each other; 
