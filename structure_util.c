@@ -142,7 +142,7 @@ matrix* clone_matrix(matrix const* mat){
 
 matrix* create_matrix(double const* data, int rows, int columns){
     matrix* pointer = malloc(sizeof(matrix));
-    pointer->data = data;
+    pointer->data = array_clone(data, rows * columns);
     pointer->rows = rows;
     pointer->columns = columns;
     return pointer;
