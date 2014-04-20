@@ -126,6 +126,10 @@ void test_process_matrix(void){
     expected_matrix->rows = 4;
     expected_matrix->columns = 2;
     matrix* results = process_matrix(test_matrix);
+    double* gpu_data = results->data;
+    double* results_data = cuda_double_return_from_gpu(gpu_data, results->rows * results->columns);
+    results->data = results_data;
+    free_cuda_memory(gpu_data);
     CU_ASSERT(true == matrix_compare(expected_matrix, results, MARGIN));
 }
 
