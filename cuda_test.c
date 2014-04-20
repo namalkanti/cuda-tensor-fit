@@ -326,22 +326,22 @@ int main(){
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(cuda_suite, "Generate weights test", test_generate_weights))){
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    /*if ((NULL == CU_add_test(cuda_suite, "Process matrix test", test_process_matrix))){
+    /*if ((NULL == CU_add_test(cuda_suite, "Generate weights test", test_generate_weights))){
         CU_cleanup_registry();
         return CU_get_error();
     }*/
 
-    if ((NULL == CU_add_test(cuda_suite, "Cuda fitter", test_cuda_fitter))){
+    if ((NULL == CU_add_test(cuda_suite, "Process matrix test", test_process_matrix))){
         CU_cleanup_registry();
         return CU_get_error();
     }
 
-    /*if ((NULL == CU_add_test(cuda_suite, "Decompose tensor test", test_cuda_decompose_tensors))){
+    /*if ((NULL == CU_add_test(cuda_suite, "Cuda fitter", test_cuda_fitter))){
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+
+    if ((NULL == CU_add_test(cuda_suite, "Decompose tensor test", test_cuda_decompose_tensors))){
         CU_cleanup_registry();
         return CU_get_error();
     }
