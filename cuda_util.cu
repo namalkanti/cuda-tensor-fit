@@ -61,7 +61,7 @@ extern "C"
 matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
     matrix* weights = cuda_matrix_dot(ols_fit_matrix, signal);
     double* gpu_weights_data = cuda_double_copy_to_gpu(weights->data, weights->rows * weights->columns);
-    matrix* gpu_weights= create_matrix( gpu_weights_data, weights->rows, weights->columns);
+    matrix* gpu_weights= create_matrix(gpu_weights_data, weights->rows, weights->columns);
     free_matrix(weights);
     return gpu_weights;
 }
