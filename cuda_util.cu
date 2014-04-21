@@ -300,7 +300,6 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
 double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     int length = mat->rows * mat->columns;
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
-    gpu_error_check(cudaMalloc(&gpu_pointer, sizeof(double) * length));
     int i, j, column_major_index;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
@@ -308,7 +307,7 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
             intermediate_matrix[column_major_index] = mat->data[i * mat->columns + j];
         }
     }
-    gpu_array = cuda_double_copy_to_gpu(intermediate_matrix, length);
+    double* gpu_array = cuda_double_copy_to_gpu(intermediate_matrix, length);
     free(intermediate_matrix);
     return gpu_array;
 }
