@@ -299,7 +299,6 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
   Returns pointer to array on GPU.*/
 double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     int length = mat->rows * mat->columns;
-    double* gpu_pointer; 
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
     gpu_error_check(cudaMalloc(&gpu_pointer, sizeof(double) * length));
     int i, j, column_major_index;
@@ -309,9 +308,9 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
             intermediate_matrix[column_major_index] = mat->data[i * mat->columns + j];
         }
     }
-    gpu_error_check(cudaMemcpy(gpu_pointer, intermediate_matrix, length, cudaMemcpyHostToDevice));
+    gpu_array = cuda_double_copy_to_gpu(intermediate_matrix, length);
     free(intermediate_matrix);
-    return gpu_pointer;
+    return gpu_array;
 }
 
 /*Converts matrix from the format fortran uses for CUBLAS after retrieving from GPU
