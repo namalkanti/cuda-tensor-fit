@@ -83,6 +83,7 @@ void test_process_signal(void){
     results->data = cuda_double_return_from_gpu(gpu_data, 6);
     free_cuda_memory(gpu_data);
     CU_ASSERT(true == matrix_compare(expected_output, results, MARGIN));
+    free_matrix(results);
 }
 
 //Test case for weight generation function
@@ -118,19 +119,20 @@ void test_process_matrix(void){
     matrix* test_matrix = malloc(sizeof(matrix));
     matrix* expected_matrix = malloc(sizeof(matrix));
     double test_data[] = {1, 2, 3, 4, 5, 6};
-    double expected_data[] = {1, 4, 2, 5, 3, 6, 0, 0};
+    double expected_data[] = {1, 4, 2, 5, 3, 6};
     test_matrix->data = test_data;
     test_matrix->rows = 2;
     test_matrix->columns = 3;
     expected_matrix->data = expected_data;
-    expected_matrix->rows = 4;
-    expected_matrix->columns = 2;
+    expected_matrix->rows = 2;
+    expected_matrix->columns = 3;
     matrix* results = process_matrix(test_matrix);
     double* gpu_data = results->data;
     double* results_data = cuda_double_return_from_gpu(gpu_data, results->rows * results->columns);
     results->data = results_data;
     free_cuda_memory(gpu_data);
     CU_ASSERT(true == matrix_compare(expected_matrix, results, MARGIN));
+    free_matrix(results);
 }
 
 //Test case for cuda fitter function
