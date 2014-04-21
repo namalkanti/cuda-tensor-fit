@@ -302,10 +302,11 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     double* gpu_pointer; 
     double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
     gpu_error_check(cudaMalloc(&gpu_pointer, sizeof(double) * length));
-    int i, j;
+    int i, j, column_major_index;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
-            intermediate_matrix[IDX2C(i, j, mat->rows)] = mat->data[i * mat->rows + j];
+            column_major_index  = IDX2C(i, j, mat->rows); 
+            intermediate_matrix[column_major_index] = mat->data[i * mat->rows + j];
         }
     }
     gpu_error_check(cudaMemcpy(gpu_pointer, intermediate_matrix, length, cudaMemcpyHostToDevice));
