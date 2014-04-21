@@ -306,7 +306,7 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
             column_major_index  = IDX2C(i, j, mat->rows); 
-            intermediate_matrix[column_major_index] = mat->data[i * mat->rows + j];
+            intermediate_matrix[column_major_index] = mat->data[i * mat->columns + j];
         }
     }
     gpu_error_check(cudaMemcpy(gpu_pointer, intermediate_matrix, length, cudaMemcpyHostToDevice));
@@ -324,7 +324,7 @@ void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, mat
     int i, j;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
-            mat->data[i * mat->rows + j] = intermediate_matrix[IDX2C(i, j, mat->rows)];
+            mat->data[i * mat->columns + j] = intermediate_matrix[IDX2C(i, j, mat->rows)];
         }
     }
     free(intermediate_matrix);
