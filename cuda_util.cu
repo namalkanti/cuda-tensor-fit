@@ -10,7 +10,7 @@ extern "C" {
 
 #define gpu_error_check(ans) { gpu_assert((ans), __FILE__, __LINE__); }
 inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=false){
-    if (true) {
+    if (code != cudaSuccess) {
         fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
     }
     if (abort){
