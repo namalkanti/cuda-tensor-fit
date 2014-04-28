@@ -70,7 +70,7 @@ void test_process_signal(void){
     matrix* test_input = malloc(sizeof(matrix));
     matrix* expected_output = malloc(sizeof(matrix));
     double test_data[] = {1, 2, 3, 1, 4, 5};
-    double expected_data[] = { 0.69314718,  0.69314718, 1.09861229,  0.69314718, 1.38629436, 1.60943791};
+    double expected_data[] = {0.69314718,  0.69314718, 1.09861229,  0.69314718, 1.38629436, 1.60943791};
     test_input->data = test_data;
     test_input->rows = 2;
     test_input->columns = 3;
@@ -91,10 +91,10 @@ void test_generate_weights(void){
     matrix* test_ols = malloc(sizeof(matrix));
     matrix* test_signal = malloc(sizeof(matrix));
     matrix* expected_weights = malloc(sizeof(matrix));
-    double ols_data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    double signal_data[] = {1, 2, 3, 4, 5, 6};
-    double expected_data[] = {3.58491285e+09,   1.44625706e+12,   1.90734657e+21,
-         6.23514908e+27,   1.01480039e+33,   2.68811714e+43} ;
+    double ols_data[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+    double signal_data[] = {1, 4, 2, 5, 3, 6};
+    double expected_data[] = {4.03428793e+02, 3.26901737e+06, 4.03428793e+02,
+         3.26901737e+06, 4.03428793e+02, 3.26901737e+06} ;
     test_ols->data = ols_data;
     test_ols->rows = 3;
     test_ols->columns = 3;
