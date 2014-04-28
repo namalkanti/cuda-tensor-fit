@@ -18,7 +18,7 @@ matrix* process_matrix(matrix const* design_matrix);
 //Takes in matrices with gpu pointers for data. 
 //Does a weighted least squares regression.
 //Returns six value tensor for each signal as single column major array on the gpu.
-double* cuda_fitter(matrix const* design_matrix, matrix const* weights, matrix const* signals);
+double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals);
 
 //Takes tensors as a single gpu array as first argument.
 //Returns eigendecompositions as eigenvalues in column major, followed by eigenvectors.
@@ -34,7 +34,7 @@ double* cuda_double_copy_to_gpu(double const* local_array, int array_length);
 double* cuda_double_return_from_gpu(double const* cuda_array, int array_length);
 
 //Allocates space for a double array on the device
-void cuda_double_allocate(double* pointer, int pointer_length);
+void cuda_double_allocate(double** pointer, int pointer_length);
 
 //Frees double device memory
 void free_cuda_memory(double* pointer);

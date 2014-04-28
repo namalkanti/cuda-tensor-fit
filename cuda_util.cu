@@ -75,7 +75,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
             design_matrix->rows, design_matrix->columns, column_major_weights->rows, true);
     double* solution_vectors;
     int signal_elements = signals->rows * signals->columns;
-    cuda_double_allocate(solution_vectors, signal_elements);
+    cuda_double_allocate(&solution_vectors, signal_elements);
     int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, 
             signals->columns, signals->rows);
     if ( 0 > solver_status) {
@@ -88,7 +88,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
 extern "C"
 double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensors){
     double* tensors;
-    cuda_double_allocate(tensors, TENSOR_ELEMENTS * number_of_tensors);
+    cuda_double_allocate(&tensors, TENSOR_ELEMENTS * number_of_tensors);
     dim3 grid, block;
     grid.x = number_of_tensors;
     block.x = 1;
@@ -96,7 +96,7 @@ double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensor
     assemble_tensors<<<grid, block>>>(tensors_input, tensors);
     double* gpu_eigendecomposition;
     int length_of_eigendecomposition = EIGENDECOMPOSITION_ELEMENTS * number_of_tensors;
-    cuda_double_allocate(gpu_eigendecomposition, length_of_eigendecomposition);
+    cuda_double_allocate(&gpu_eigendecomposition, length_of_eigendecomposition);
     eigendecomposition_kernel<<<grid, block>>>(tensors, gpu_eigendecomposition);
     double* eigendecomposition = cuda_double_return_from_gpu(gpu_eigendecomposition, length_of_eigendecomposition);
     free_cuda_memory(tensors);
@@ -141,9 +141,9 @@ double* cuda_double_return_from_gpu(double const* cuda_array, int array_length){
 }
 
 extern "C"
-void cuda_double_allocate(double* pointer, int pointer_length){
-    gpu_error_check(cudaMalloc(&pointer, pointer_length));
-    //gpu_error_check(cudaMemset(pointer, 0, pointer_length));
+void cuda_double_allocate(double** pointer, int pointer_length){
+    gpu_error_check(cudaMalloc(pointer, pointer_length));
+    gpu_error_check(cudaMemset(*pointer, 0, pointer_length));
 }
 
 extern "C"
@@ -220,7 +220,7 @@ double* matrix_weighter (double const* gpu_matrix, double const* gpu_weights, in
     block.x = columns;
     block.y = rows;
     double* gpu_results;
-    cuda_double_allocate(gpu_results, sizeof(double) * rows * columns * length);
+    cuda_double_allocate(&gpu_results, sizeof(double) * rows * columns * length);
     if (false == trans){
         weighting_kernel<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
