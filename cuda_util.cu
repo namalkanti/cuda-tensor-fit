@@ -34,8 +34,8 @@ const char* cublas_get_error_string(cublasStatus_t status);
 //Kernel declarations
 __global__ void cutoff_log_kernel(double* device_array, double min_signal);
 __global__ void exp_kernel(double* cuda_array);
-__global__ void weighting_kernel (double* matrices, double* weights, double* results); 
-__global__ void weighting_kernel_transposed(double* matrices, double* weights, double* results); 
+__global__ void weighting_kernel (double const* matrices, double const* weights, double* results); 
+__global__ void weighting_kernel_transposed(double const* matrices, double const* weights, double* results); 
 __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
@@ -216,7 +216,6 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
 extern "C"
 double* matrix_weighter (double const* gpu_matrix, double const* gpu_weights, int rows, int columns, int length, bool trans) {
     dim3 grid, block;
-    int weight_length;
     grid.x = length;
     block.x = columns;
     block.y = rows;
