@@ -143,7 +143,7 @@ double* cuda_double_return_from_gpu(double const* cuda_array, int array_length){
 extern "C"
 void cuda_double_allocate(double* pointer, int pointer_length){
     gpu_error_check(cudaMalloc(&pointer, pointer_length));
-    gpu_error_check(cudaMemset(pointer, 0, pointer_length));
+    //gpu_error_check(cudaMemset(pointer, 0, pointer_length));
 }
 
 extern "C"
