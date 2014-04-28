@@ -172,7 +172,6 @@ void test_cuda_decompose_tensors(void){
 //Test case for eigendecomposition extraction
 void test_extract_eigendecompositions(void){
     double eigendecomposition[] = {1, 2, 4, 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1};
-    double* gpu_eigendecomposition = cuda_double_copy_to_gpu(eigendecomposition, 2 * 12 );
     tensor* result_tensors = malloc(sizeof(tensor) * 2);
     tensor* first_tensor = malloc(sizeof(tensor));
     tensor* second_tensor = malloc(sizeof(tensor));
@@ -184,7 +183,7 @@ void test_extract_eigendecompositions(void){
     matrix* second_tensor_vecs = create_matrix(second_vecs, 3, 3);
     second_tensor->vals = (double[]) {4, 5, 6};
     second_tensor->vecs = second_tensor_vecs;
-    extract_eigendecompositions(gpu_eigendecomposition, &result_tensors, 2);
+    extract_eigendecompositions(eigendecomposition, &result_tensors, 2);
     CU_ASSERT(compare_tensors(first_tensor, result_tensors, MARGIN));
     CU_ASSERT(compare_tensors(second_tensor, result_tensors +1, MARGIN));
     free_tensor(result_tensors);
