@@ -74,10 +74,10 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
             design_matrix->rows, design_matrix->columns, column_major_weights->rows, true);
     double* solution_vectors;
-    int signal_elements = signal->rows * signal->columns;
+    int signal_elements = signals->rows * signals->columns;
     cuda_double_allocate(solution_vectors, signal_elements);
-    int solver_status = dsolve_batch(weighted_design_data, signal->data, solution_vectors, 
-            signal->columns, signal->rows);
+    int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, 
+            signals->columns, signals->rows);
     if ( 0 > solver_status) {
         fputs("Batched solver failed to run correctly, program will fail", stderr);
     }
