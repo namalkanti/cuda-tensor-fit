@@ -93,8 +93,8 @@ void test_generate_weights(void){
     matrix* expected_weights = malloc(sizeof(matrix));
     double ols_data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     double signal_data[] = {1, 2, 3, 4, 5, 6};
-    double expected_data[] = {1.06864746e+13, 4.60718663e+28, 4.31123155e+15, 
-        1.50609731e+35, 1.73927494e+18, 4.92345829e+41};
+    double expected_data[] = {3.58491285e+09,   1.44625706e+12,   1.90734657e+21,
+         6.23514908e+27,   1.01480039e+33,   2.68811714e+43} ;
     test_ols->data = ols_data;
     test_ols->rows = 3;
     test_ols->columns = 3;
