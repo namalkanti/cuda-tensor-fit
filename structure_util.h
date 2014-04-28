@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <gsl/gsl_matrix.h>
 #include "data_structures.h"
-#define MARGIN .0000001
 
 //Array functions.
 

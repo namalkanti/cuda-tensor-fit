@@ -214,7 +214,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
 }
     
 extern "C"
-double* matrix_weighter (double const* matrix, double const* weights, int rows, int columns, int length, bool trans) {
+double* matrix_weighter (double const* gpu_matrix, double const* gpu_weights, int rows, int columns, int length, bool trans) {
     dim3 grid, block;
     int weight_length;
     grid.x = length;
@@ -226,20 +226,15 @@ double* matrix_weighter (double const* matrix, double const* weights, int rows, 
     else {
         weight_length = rows;
     }
-    double* gpu_matrix = cuda_double_copy_to_gpu(matrix, rows * columns);
-    double* gpu_weights = cuda_double_copy_to_gpu(weights, weight_length * length);
     double* gpu_results;
-    gpu_error_check(cudaMalloc(&gpu_results, sizeof(double) * rows * columns * length));
+    cuda_double_allocate(gpu_results, sizeof(double) * rows * columns * length);
     if (false == trans){
         weighting_kernel<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
     else {
         weighting_kernel_transposed<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
-    double* weighted_matrices = (double*) malloc(sizeof(double) * rows * columns * length);
-    gpu_error_check(cudaMemcpy(weighted_matrices, gpu_results, sizeof(double) * rows * columns * length, cudaMemcpyDeviceToHost));
-    gpu_error_check(cudaFree(gpu_matrix));
-    gpu_error_check(cudaFree(gpu_weights));
+    double* weighted_matrices = cuda_double_return_from_gpu(gpu_results, sizeof(double) * rows * columns * length);
     gpu_error_check(cudaFree(gpu_results));
     return weighted_matrices;
 }
