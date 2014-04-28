@@ -353,20 +353,20 @@ int main(){
     /*if ((NULL == CU_add_test(cuda_suite, "Cuda fitter", test_cuda_fitter))){
         CU_cleanup_registry();
         return CU_get_error();
-    }*/
+    }
 
     if ((NULL == CU_add_test(cuda_suite, "Decompose tensor test", test_cuda_decompose_tensors))){
         CU_cleanup_registry();
         return CU_get_error();
-    }
+    }*/
     
     
-    /*if ((NULL == CU_add_test(cuda_suite, "Extract eigendecomposition test", test_extract_eigendecompositions))){
+    if ((NULL == CU_add_test(cuda_suite, "Extract eigendecomposition test", test_extract_eigendecompositions))){
         CU_cleanup_registry();
         return CU_get_error();
     }
  
-    if ((NULL == CU_add_test(cuda_suite, "Transpose matrices test", test_transpose_matrices))){
+    /*if ((NULL == CU_add_test(cuda_suite, "Transpose matrices test", test_transpose_matrices))){
         CU_cleanup_registry();
         return CU_get_error();
     }   
