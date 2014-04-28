@@ -71,6 +71,7 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 
 extern "C"
 double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals){
+    //Need to make sure I'm weighting matrices correctly since now they are already in column major
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
             design_matrix->rows, design_matrix->columns, column_major_weights->rows, true);
     double* solution_vectors;
@@ -397,10 +398,10 @@ __global__ void assemble_tensors(double const* tensor_input, double* tensors){
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition){
     int matrix_offset = blockIdx.x * blockDim.x * TENSOR_DIMENSIONS;
     int eigen_offset = blockIdx.x * blockDim.x * EIGENDECOMPOSITION_ELEMENTS;
-    double A[3][3] = {0}; 
+    double A[3][3]; 
     deposit_data_segment_into_array(data, matrix_offset, A);
-    double Q[3][3] = {0};
-    double w[3] = {0};
+    double Q[3][3];
+    double w[3];
     dsyevj3(A, Q, w);
     assemble_eigendecomposition(eigendecomposition, eigen_offset, Q, w);
 }
