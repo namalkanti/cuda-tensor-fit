@@ -70,7 +70,7 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 }
 
 extern "C"
-double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signal){
+double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals){
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
             design_matrix->rows, design_matrix->columns, column_major_weights->rows, true);
     double* solution_vectors;
@@ -220,12 +220,6 @@ double* matrix_weighter (double const* gpu_matrix, double const* gpu_weights, in
     grid.x = length;
     block.x = columns;
     block.y = rows;
-    if ( false == trans ) {
-        weight_length = columns;
-    }
-    else {
-        weight_length = rows;
-    }
     double* gpu_results;
     cuda_double_allocate(gpu_results, sizeof(double) * rows * columns * length);
     if (false == trans){
@@ -361,7 +355,7 @@ __global__ void exp_kernel(double* cuda_array){
 }
 
 //kernel for weighting the matrix.
-__global__ void weighting_kernel (double* matrices, double* weights, double* results) {
+__global__ void weighting_kernel (double const* matrices, double const* weights, double* results) {
     int matrix_grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = matrix_grid_index + block_index;
@@ -370,7 +364,7 @@ __global__ void weighting_kernel (double* matrices, double* weights, double* res
 }
 
 //kernel for weighting a transposed matrix.
-__global__ void weighting_kernel_transposed(double* matrices, double* weights, double* results) {
+__global__ void weighting_kernel_transposed(double const* matrices, double const* weights, double* results) {
     int grid_index = blockIdx.x * blockDim.x * blockDim.y;
     int block_index = blockDim.y * threadIdx.y + threadIdx.x;
     int matrix_index = grid_index + block_index;
