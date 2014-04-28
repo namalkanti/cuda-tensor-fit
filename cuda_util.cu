@@ -227,7 +227,7 @@ double* matrix_weighter (double const* gpu_matrix, double const* gpu_weights, in
     else {
         weighting_kernel_transposed<<<grid, block>>>(gpu_matrix, gpu_weights, gpu_results);
     }
-    double* weighted_matrices = cuda_double_return_from_gpu(gpu_results, sizeof(double) * rows * columns * length);
+    double* weighted_matrices = cuda_double_return_from_gpu(gpu_results, rows * columns * length);
     gpu_error_check(cudaFree(gpu_results));
     return weighted_matrices;
 }
