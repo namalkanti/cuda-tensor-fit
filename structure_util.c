@@ -134,9 +134,6 @@ matrix* clone_matrix(matrix const* mat){
     clone->data = clone_data;
     clone->rows= mat->rows;
     clone->columns = mat->columns;
-    if (!matrix_compare(mat, clone, MARGIN)){
-        return NULL;
-    }
     return clone;
 }
 
