@@ -184,8 +184,8 @@ void test_extract_eigendecompositions(void){
     second_tensor->vals = (double[]) {4, 5, 6};
     second_tensor->vecs = second_tensor_vecs;
     extract_eigendecompositions(eigendecomposition, result_tensors, 2);
-    CU_ASSERT(compare_tensors(first_tensor, result_tensors, MARGIN));
-    CU_ASSERT(compare_tensors(second_tensor, result_tensors + 1, MARGIN));
+    CU_ASSERT(compare_tensors(first_tensor, result_tensors[0], MARGIN));
+    CU_ASSERT(compare_tensors(second_tensor, result_tensors[1], MARGIN));
     free_tensor(result_tensors);
     free_tensor(result_tensors + 1);
     free(result_tensors);
