@@ -398,10 +398,18 @@ __global__ void assemble_tensors(double const* tensor_input, double* tensors){
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition){
     int matrix_offset = blockIdx.x * blockDim.x * TENSOR_DIMENSIONS;
     int eigen_offset = blockIdx.x * blockDim.x * EIGENDECOMPOSITION_ELEMENTS;
-    double A[3][3]; 
+    double A[3][3] = {
+        {0, 0, 0},
+        {0, 0, 0},
+        {0, 0, 0}
+    }; 
     deposit_data_segment_into_array(data, matrix_offset, A);
-    double Q[3][3];
-    double w[3];
+    double Q[3][3] = {
+        {0, 0, 0},
+        {0, 0, 0}, 
+        {0, 0, 0}
+    };
+    double w[3] = {0, 0, 0};
     dsyevj3(A, Q, w);
     assemble_eigendecomposition(eigendecomposition, eigen_offset, Q, w);
 }
