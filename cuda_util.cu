@@ -79,7 +79,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, 
             signals->columns, signals->rows);
     if ( 0 > solver_status) {
-        fputs("Batched solver failed to run correctly, program will fail", stderr);
+        fputs("Batched solver failed to run correctly, program will fail\n", stderr);
     }
     free_cuda_memory(solution_vectors);
     return solution_vectors;
@@ -143,7 +143,7 @@ double* cuda_double_return_from_gpu(double const* cuda_array, int array_length){
 extern "C"
 void cuda_double_allocate(double* pointer, int pointer_length){
     gpu_error_check(cudaMalloc(&pointer, pointer_length));
-    gpu_error_check(cudaMemset(&pointer, 0, pointer_length));
+    gpu_error_check(cudaMemset(pointer, 0, pointer_length));
 }
 
 extern "C"
