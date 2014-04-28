@@ -317,8 +317,7 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
   Populates a matrix object passed in.*/
 void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat){
     int length = mat->rows * mat->columns;
-    double* intermediate_matrix = (double*) malloc(sizeof(double) * length);
-    gpu_error_check(cudaMemcpy(intermediate_matrix, gpu_pointer, length, cudaMemcpyDeviceToHost));
+    double* intermediate_matrix = cuda_double_return_from_gpu(gpu_pointer, length);
     int i, j;
     for (i = 0; i < mat->rows; i++ ) {
         for (j = 0; j < mat->columns; j++) {
