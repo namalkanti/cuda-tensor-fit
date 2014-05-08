@@ -301,8 +301,7 @@ void test_transpose_matrices (void) {
 void test_dot_matrices (void) {
     double test_matrices[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     double expected_matrices[] = {7, 10, 15, 22, 67, 78, 91, 108, 191, 210, 231, 254};
-    double* gpu_test_input = cuda_double_copy_to_gpu(test_matrices, 12);
-    double* results = dot_matrices(gpu_test_input, 2, gpu_test_input, 2, 2, 3);
+    double* results = dot_matrices(test_matrices, 2, test_matrices, 2, 2, 3);
     CU_ASSERT(true == array_compare(expected_matrices, results, 12, MARGIN));
 }
 
