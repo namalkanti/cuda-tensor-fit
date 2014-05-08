@@ -22,7 +22,7 @@ cuda-test: cuda_util.o
 	gcc ${CFLAGS} -o cuda_test cuda_test.c structure_util.o opt_util.o cuda_util.o BatchedSolver/solve.o -L/usr/local/cuda/lib64 -lgsl -lgslcblas -lm -lcuda -lcudart -lcublas -lcunit 
 
 cuda_util.o: structure_util.o opt_util.o 
-	nvcc ${CFLAGS} -G -c  -O0 cuda_util.cu
+	nvcc ${CFLAGS} -G -c cuda_util.cu
 
 opt_test: opt_util.o
 	gcc ${CFLAGS} -o opt_test opt_test.c opt_util.o structure_util.o -lm -lgsl -lgslcblas -lcunit
