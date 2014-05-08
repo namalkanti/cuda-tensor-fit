@@ -282,7 +282,6 @@ void test_matrix_weighter (void) {
     double expected_transpose_matrix[] = {1, 2, 6, 8, 3, 6, 12, 16};
     double* transpose_test_result = matrix_weighter(transpose_test_matrix, weights, 2, 2, 2, true);
     CU_ASSERT(true == array_compare(expected_transpose_matrix, transpose_test_result, 8, MARGIN));
-    free(test_result);
     free(transpose_test_result);
 }
 
