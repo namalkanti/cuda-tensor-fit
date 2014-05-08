@@ -371,12 +371,12 @@ int main(){
         return CU_get_error();
     }   
  
-    /*if ((NULL == CU_add_test(cuda_suite, "Dot matrices test", test_dot_matrices))){
+    if ((NULL == CU_add_test(cuda_suite, "Dot matrices test", test_dot_matrices))){
         CU_cleanup_registry();
         return CU_get_error();
     }       
 
-    if ((NULL == CU_add_test(cuda_suite, "Exp test", test_exp_array))){
+    /*if ((NULL == CU_add_test(cuda_suite, "Exp test", test_exp_array))){
         CU_cleanup_registry();
         return CU_get_error();
     }
