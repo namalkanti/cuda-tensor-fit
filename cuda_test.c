@@ -288,7 +288,7 @@ void test_matrix_weighter (void) {
     free(transpose_test_result);
     free_cuda_memory(gpu_transpose_test_matrix);
     free_cuda_memory(gpu_weights);
-    free_cuda_memory(gpu_transpose_test_result);
+    free_cuda_memory(gpu_transpose_test_results);
 }
 
 //Tests transposing multiple matrices on the GPU
