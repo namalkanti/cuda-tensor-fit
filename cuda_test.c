@@ -188,7 +188,6 @@ void test_extract_eigendecompositions(void){
     CU_ASSERT(compare_tensors(second_tensor, result_tensors[1], MARGIN));
     free_tensor(result_tensors[0]);
     free_tensor(result_tensors[1]);
-    free(result_tensors);
 }
 
 //Kernel test function 
