@@ -172,8 +172,7 @@ void test_cuda_decompose_tensors(void){
 //Test case for eigendecomposition extraction
 void test_extract_eigendecompositions(void){
     double eigendecomposition[] = {1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1};
-    tensor* allocation = malloc(sizeof(&tensor) * 2);
-    tensor** result_tensors = &allocation;
+    tensor*[] result_tensors = {NULL};
     tensor* first_tensor = malloc(sizeof(tensor));
     tensor* second_tensor = malloc(sizeof(tensor));
     double first_vecs[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
