@@ -286,6 +286,7 @@ void test_matrix_weighter (void) {
     double* gpu_test_results = matrix_weighter(gpu_test_matrix, gpu_weights, 2, 2, 2, false);
     double* gpu_transpose_test_results = matrix_weighter(gpu_transpose_test_matrix, gpu_weights, 2, 2, 2, true);
     double* transpose_test_results = cuda_double_return_from_gpu(gpu_transpose_test_results, 8);
+    double* test_results = cuda_double_return_from_gpu(gpu_test_results, 8);
     CU_ASSERT(true == array_compare(expected_matrix, test_results, 8, MARGIN));
     CU_ASSERT(true == array_compare(expected_transpose_matrix, transpose_test_results, 8, MARGIN));
     free(transpose_test_results);
