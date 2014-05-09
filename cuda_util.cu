@@ -121,8 +121,8 @@ void extract_eigendecompositions(double const* eigendecompositions, tensor* outp
         double const* eigenvector_pointer = eigendecompositions + ((i * EIGENDECOMPOSITION_ELEMENTS) + 3);
         double* eigenvalues = array_clone(eigenvalue_pointer, TENSOR_DIMENSIONS);
         double* eigenvectors = array_clone(eigenvector_pointer, TENSOR_ELEMENTS);        
-        output[i]->vals = eigenvalues;
-        output[i]->vecs = create_matrix(eigenvectors, 3, 3);
+        output[i].vals = eigenvalues;
+        output[i].vecs = create_matrix(eigenvectors, 3, 3);
     }
     return;
 }
