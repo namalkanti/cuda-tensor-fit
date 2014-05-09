@@ -198,7 +198,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     double* gpu_output;
     gpu_error_check(cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns));
     const double alpha = 1;
-    const double beta = 1;
+    const double beta = 0;
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
             &alpha, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, &beta, gpu_output, matrix1->rows);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
