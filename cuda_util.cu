@@ -121,7 +121,7 @@ void extract_eigendecompositions(double const* eigendecompositions, tensor** out
         double const* eigenvector_pointer = eigendecompositions + ((i * EIGENDECOMPOSITION_ELEMENTS) + 3);
         double* eigenvalues = array_clone(eigenvalue_pointer, TENSOR_DIMENSIONS);
         double* eigenvectors = array_clone(eigenvector_pointer, TENSOR_ELEMENTS);        
-        tensor* allocated_tensor = malloc(sizeof(tensor));
+        tensor* allocated_tensor = (tensor*) malloc(sizeof(tensor));
         output[i] = allocated_tensor;
         output[i]->vals = eigenvalues;
         output[i]->vecs = create_matrix(eigenvectors, 3, 3);
