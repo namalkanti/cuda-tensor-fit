@@ -114,7 +114,7 @@ matrix* process_matrix(matrix const* design_matrix){
 }
 
 extern "C"
-void extract_eigendecompositions(double const* eigendecompositions, tensor** output, int number_of_tensors){
+void extract_eigendecompositions(double const* eigendecompositions, tensor* output, int number_of_tensors){
     int i;
     for(i = 0; i < number_of_tensors;i++){
         double const* eigenvalue_pointer = eigendecompositions + (i * EIGENDECOMPOSITION_ELEMENTS);
