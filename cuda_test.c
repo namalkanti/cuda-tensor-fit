@@ -280,8 +280,11 @@ void test_matrix_weighter (void) {
     double weights[] = {1, 2, 3, 4};
     double expected_matrix[] = {1, 4, 3, 8, 3, 8, 9, 16};
     double expected_transpose_matrix[] = {1, 2, 6, 8, 3, 6, 12, 16};
+    double* test_result = matrix_weighter(test_matrix, weights, 2, 2, 2, false);
     double* transpose_test_result = matrix_weighter(transpose_test_matrix, weights, 2, 2, 2, true);
+    CU_ASSERT(true == array_compare(expected_matrix, test_result, 8, MARGIN));
     CU_ASSERT(true == array_compare(expected_transpose_matrix, transpose_test_result, 8, MARGIN));
+    free(test_result);
     free(transpose_test_result);
 }
 
@@ -367,7 +370,6 @@ int main(){
         return CU_get_error();
     }   
  
-    //Currently this function seems uncessary.
     /*if ((NULL == CU_add_test(cuda_suite, "Dot matrices test", test_dot_matrices))){
         CU_cleanup_registry();
         return CU_get_error();
@@ -383,10 +385,10 @@ int main(){
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(cuda_suite, "Matrix weighting test", test_matrix_weighter))){
+    /*if ((NULL == CU_add_test(cuda_suite, "Matrix weighting test", test_matrix_weighter))){
         CU_cleanup_registry();
         return CU_get_error();
-    }
+    }*/
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
