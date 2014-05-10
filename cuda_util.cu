@@ -83,7 +83,6 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     if ( 0 > solver_status) {
         fputs("Batched solver failed to run correctly, program will fail\n", stderr);
     }
-    free_cuda_memory(solution_vectors);
     return solution_vectors;
 }
 
@@ -405,6 +404,7 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
         {0, 0, 0},
         {0, 0, 0}
     }; 
+    double Ab[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
     deposit_data_segment_into_array(data, matrix_offset, A);
     double Q[3][3] = {
         {0, 0, 0},
