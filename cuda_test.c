@@ -144,7 +144,7 @@ void test_cuda_fitter(void){
     matrix* test_design_matrix = create_matrix(gpu_design, 2, 2);
     double test_weights_data[] = {1, 2, 3, 4, 5, 6};
     double* gpu_weights = cuda_double_copy_to_gpu(test_weights_data, 6);
-    matrix* test_weights_matrix = create_matrix(gpu_weights, 2, 3);
+    matrix* test_weights_matrix = create_matrix(gpu_weights, 3, 2);
     double test_signal_data[] = {1, 2, 3, 4, 5, 6};
     double* gpu_signal = cuda_double_copy_to_gpu(test_signal_data, 6);
     matrix* test_signal_matrix = create_matrix(gpu_signal, 2, 3);
