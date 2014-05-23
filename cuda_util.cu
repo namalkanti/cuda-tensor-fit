@@ -76,7 +76,6 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
             design_matrix->rows, design_matrix->columns, column_major_weights->rows, false);
     double* solution_vectors;
     int signal_elements = signals->rows * signals->columns;
-    double* debug_weighted_data = cuda_double_return_from_gpu(weighted_design_data, 12);
     cuda_double_allocate(&solution_vectors, sizeof(double) *signal_elements);
     int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, 
             signals->columns, signals->rows);
@@ -95,6 +94,7 @@ double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensor
     block.x = 1;
     block.y = 1;
     assemble_tensors<<<grid, block>>>(tensors_input, tensors);
+    double* debug_tensors = cuda_double_return_from_gpu(tensors, TENSOR_ELEMENTS * number_of_tensors);
     double* gpu_eigendecomposition;
     int length_of_eigendecomposition = EIGENDECOMPOSITION_ELEMENTS * number_of_tensors;
     cuda_double_allocate(&gpu_eigendecomposition, sizeof(double) * length_of_eigendecomposition);
