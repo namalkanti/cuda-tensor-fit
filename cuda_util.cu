@@ -71,9 +71,9 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 
 extern "C"
 double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals){
-    //Need to make sure I'm weighting matrices correctly since now they are already in column major
+    //Will not transpose matrix weighting because design matrix is column major already
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
-            design_matrix->rows, design_matrix->columns, column_major_weights->rows, true);
+            design_matrix->rows, design_matrix->columns, column_major_weights->rows, false);
     double* solution_vectors;
     int signal_elements = signals->rows * signals->columns;
     double* debug_weighted_data = cuda_double_return_from_gpu(weighted_design_data, 12);
