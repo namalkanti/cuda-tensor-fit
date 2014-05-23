@@ -79,6 +79,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     cuda_double_allocate(&solution_vectors, signal_elements);
     /*int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, 
             signals->columns, signals->rows);*/
+    int solver_status = 0;
     if ( 0 > solver_status) {
         fputs("Batched solver failed to run correctly, program will fail\n", stderr);
     }
