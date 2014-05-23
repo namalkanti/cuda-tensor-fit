@@ -88,7 +88,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
 extern "C"
 double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensors){
     double* tensors;
-    cuda_double_allocate(&tensors, TENSOR_ELEMENTS * number_of_tensors);
+    cuda_double_allocate(&tensors, sizeof(double) * TENSOR_ELEMENTS * number_of_tensors);
     dim3 grid, block;
     grid.x = number_of_tensors;
     block.x = 1;
