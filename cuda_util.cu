@@ -76,7 +76,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
             design_matrix->rows, design_matrix->columns, column_major_weights->rows, true);
     double* solution_vectors;
     int signal_elements = signals->rows * signals->columns;
-    cuda_double_allocate(&solution_vectors, signal_elements);
+    cuda_double_allocate(&solution_vectors, sizeof(double) *signal_elements);
     int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, 
             signals->columns, signals->rows);
     if ( 0 > solver_status) {
