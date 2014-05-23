@@ -82,6 +82,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     if ( 0 > solver_status) {
         fputs("Batched solver failed to run correctly, program will fail\n", stderr);
     }
+    free_cuda_memory(weighted_design_data);
     return solution_vectors;
 }
 
