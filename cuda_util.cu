@@ -97,7 +97,7 @@ double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensor
     assemble_tensors<<<grid, block>>>(tensors_input, tensors);
     double* gpu_eigendecomposition;
     int length_of_eigendecomposition = EIGENDECOMPOSITION_ELEMENTS * number_of_tensors;
-    cuda_double_allocate(&gpu_eigendecomposition, length_of_eigendecomposition);
+    cuda_double_allocate(&gpu_eigendecomposition, sizeof(double) * length_of_eigendecomposition);
     eigendecomposition_kernel<<<grid, block>>>(tensors, gpu_eigendecomposition);
     double* eigendecomposition = cuda_double_return_from_gpu(gpu_eigendecomposition, length_of_eigendecomposition);
     free_cuda_memory(tensors);

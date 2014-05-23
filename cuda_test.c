@@ -164,11 +164,9 @@ void test_cuda_decompose_tensors(void){
     double test_data[] = {1, 0, 2, 0, 0, 3, 4, 0, 5, 0, 0, 6};
     double* gpu_test_data = cuda_double_copy_to_gpu(test_data, 12);
     double expected_results[] = {1, 2, 4, 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1};
-    double* gpu_eigendecomposition = cuda_decompose_tensors(gpu_test_data, 2);
-    double* eigendecomposition = cuda_double_return_from_gpu(eigendecomposition, 24);
+    double* eigendecomposition = cuda_decompose_tensors(gpu_test_data, 2);
     CU_ASSERT( true == array_compare(expected_results, eigendecomposition, 24, MARGIN));
     free(eigendecomposition);
-    free_cuda_memory(gpu_eigendecomposition);
 }
 
 //Test case for eigendecomposition extraction
