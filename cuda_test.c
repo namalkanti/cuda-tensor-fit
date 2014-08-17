@@ -302,14 +302,6 @@ void test_transpose_matrices (void) {
     free(result_matrix);
 }
 
-//Tests dotting multiple matrices on the GPU
-void test_dot_matrices (void) {
-    double test_matrices[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-    double expected_matrices[] = {7, 10, 15, 22, 67, 78, 91, 108, 191, 210, 231, 254};
-    double* results = dot_matrices(test_matrices, 2, test_matrices, 2, 2, 3);
-    CU_ASSERT(true == array_compare(expected_matrices, results, 12, MARGIN));
-}
-
 //Initalization stub for utility test suite.
 int init_opt(void){
     return 0;
@@ -386,11 +378,6 @@ int main(){
     }
 
     if ((NULL == CU_add_test(cuda_suite, "Matrix weighting test", test_matrix_weighter))){
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    if ((NULL == CU_add_test(cuda_suite, "Dot matrix test", test_dot_matrices))){
         CU_cleanup_registry();
         return CU_get_error();
     }
