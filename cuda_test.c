@@ -302,6 +302,25 @@ void test_transpose_matrices (void) {
     free(result_matrix);
 }
 
+//Tests full fit signal function
+void test_fit_signal (void) {
+    double* sig12 = array_combine(sig1, sig2, 56, 56);
+    double* sig123 = array_combine(sig12, sig3, 112, 56);
+    free(sig12);
+    double* sig1234 = array_combine(sig123, sig4, 168, 56);
+    free(sig123);
+    double* sig12345 = array_combine(sig1234, sig5, 224, 56);
+    free(sig1234);
+    matrix signal = {sig12345, 5, 56};
+    tensor* tensor_array[5];
+    fit_complete_signal(&ols_sample, &design_sample, &signal,min_signal_sample, min_diffusitivity_sample, tensor_array);
+    int i;
+    for(i = 0; i < 5; i++){
+        CU_ASSERT(true == compare_tensors(tensor_array[i], tensors[i], MARGIN));
+        free_tensor(tensor_array[i]);
+    }
+}
+
 //Initalization stub for utility test suite.
 int init_opt(void){
     return 0;
