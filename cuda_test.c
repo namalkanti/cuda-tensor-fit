@@ -163,7 +163,7 @@ void test_cuda_fitter(void){
 void test_cuda_decompose_tensors(void){
     double test_data[] = {4, 0, 5, 0, 0, 6, 1, 0, 2, 0, 0, 3};
     double* gpu_test_data = cuda_double_copy_to_gpu(test_data, 12);
-    double expected_results[] = {1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1};
+    double expected_results[] = {4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1};
     double* eigendecomposition = cuda_decompose_tensors(gpu_test_data, 2);
     CU_ASSERT( true == array_compare(expected_results, eigendecomposition, 24, MARGIN));
     free(eigendecomposition);

@@ -398,7 +398,7 @@ __global__ void assemble_tensors(double const* tensor_input, double* tensors){
 
 //kernel for calculating eigenvalues.
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition){
-    int matrix_offset = blockIdx.x * blockDim.x * TENSOR_DIMENSIONS;
+    int matrix_offset = blockIdx.x * blockDim.x * TENSOR_DIMENSIONS * TENSOR_DIMENSIONS;
     int eigen_offset = blockIdx.x * blockDim.x * EIGENDECOMPOSITION_ELEMENTS;
     double A[3][3] = {
         {0, 0, 0},
