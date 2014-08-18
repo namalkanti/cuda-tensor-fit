@@ -3,7 +3,6 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include "cuda_util.h"
-#include "fit_tensor.h"
 
 #define MARGIN .2
 
