@@ -18,7 +18,7 @@ run: structure_test opt_test
 	./structure_test
 	./opt_test
 
-cuda-test: cuda_util.o
+cuda-test: fit_cuda.o
 	gcc ${CFLAGS} -o cuda_test cuda_test.c structure_util.o opt_util.o cuda_util.o BatchedSolver/solve.o fit_cuda.o -L/usr/local/cuda/lib64 -lgsl -lgslcblas -lm -lcuda -lcudart -lcublas -lcunit 
 
 fit_cuda.o: cuda_util.o
