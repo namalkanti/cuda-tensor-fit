@@ -113,7 +113,7 @@ matrix* transpose(matrix const* mat){
             trans_data[j + i * mat->rows] = mat->data[i + j * mat->columns];
         }
     }
-    transposed = create_matrix(trans_data, mat->columns, mat->rows);
+    matrix* transposed = create_matrix(trans_data, mat->columns, mat->rows);
     return transposed;
 }
 
