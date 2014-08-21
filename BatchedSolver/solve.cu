@@ -2020,10 +2020,10 @@ int fast_solve (const T *A_d, T *b_d, T *x_d, int n, int batch, int matinv)
         gauss_solve_gpu2 <T, 1, config<T,arch>::fsPad_76, config<T,arch>::fsSrchThrd_76, arch>,
     };
 
-    if (n < config<T,arch>::fsMinDim || n > config<T,arch>::fsMaxDim || 
-        batch < 1) {
-        return -1;
-    }
+    /* if (n < config<T,arch>::fsMinDim || n > config<T,arch>::fsMaxDim || */ 
+    /*     batch < 1) { */
+    /*     return -1; */
+    /* } */
     static int dimX[77] = { 
         config<T,arch>::fsDimX_00, config<T,arch>::fsDimX_01, 
         config<T,arch>::fsDimX_02, config<T,arch>::fsDimX_03, 
