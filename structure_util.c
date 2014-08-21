@@ -106,10 +106,14 @@ matrix* matrix_dot(matrix const* a, matrix const* b){
 }
 
 matrix* transpose(matrix const* mat){
-    gsl_matrix* gsl_mat = to_gsl(mat);
-    int result = gsl_matrix_transpose(gsl_mat);
-    matrix* transposed = to_matrix(gsl_mat);
-    gsl_matrix_free(gsl_mat);
+    double* trans_data = malloc(sizeof(double) * mat->rows * mat->columns);
+    int i, j;
+    for(i = 0;i < mat->columns;i++){
+        for(j = 0;j < mat->rows;j++){
+            trans_data[j + i * mat->rows] = mat->data[i + j * mat->columns];
+        }
+    }
+    transposed = create_matrix(trans_data, mat->columns, mat->rows);
     return transposed;
 }
 
