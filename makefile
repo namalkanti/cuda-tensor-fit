@@ -25,7 +25,7 @@ fit_cuda.o: cuda_util.o
 	gcc ${CFLAGS} -o fit_cuda.o -c fit_cuda.c
 
 cuda_util.o: structure_util.o opt_util.o 
-	nvcc ${CFLAGS} -G -arch=sm_20 -c cuda_util.cu
+	nvcc ${CFLAGS} -G -arch=sm_30 -c cuda_util.cu
 
 opt_test: opt_util.o
 	gcc ${CFLAGS} -o opt_test opt_test.c opt_util.o structure_util.o -lm -lgsl -lgslcblas -lcunit

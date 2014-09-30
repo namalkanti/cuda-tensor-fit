@@ -3,3 +3,4 @@ opt_test
 *.swp
 *.o
 *_test*
+*.pem
