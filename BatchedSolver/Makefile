@@ -3,7 +3,7 @@
 #
 
 # GPU_ARCH should be sm_13, sm_20, sm_30, or sm_35
-GPU_ARCH ?= sm_35
+GPU_ARCH ?= sm_30
 ifeq ($(GPU_ARCH),sm_20)
  DEFINES   += -DFERMI
 endif
@@ -15,7 +15,7 @@ ifeq ($(GPU_ARCH),sm_35)
 endif
 
 # Set CUDA_VERBOSE to 1 if you want to see registers usage
-CUDA_VERBOSE ?=0
+CUDA_VERBOSE ?=1
 ifeq ($(GPU_ARCH),1)
  CUDAOPT=-Xptxas -v 
 endif
