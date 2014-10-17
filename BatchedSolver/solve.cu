@@ -57,7 +57,7 @@
 */
 #define GPU_ARCH        (ARCH_SM20)
 #else 
-#define GPU_ARCH        (ARCH_SM20)
+#define GPU_ARCH        (ARCH_SM13)
 #endif
 
 template <typename T, int arch>
