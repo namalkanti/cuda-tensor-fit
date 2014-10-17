@@ -76,7 +76,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
             design_matrix->rows, design_matrix->columns, column_major_weights->rows, false);
     //Hacky method of copying results to another gpu array.
     int signal_elements = signals->rows * signals->columns;
-    double* intermediate_solution = cuda_double_return_from_gpu(signals, signal_elements);
+    double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements);
     double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements);
     free(intermediate_solution);
     cublasStatus_t status;
