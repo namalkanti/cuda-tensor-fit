@@ -74,10 +74,12 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     //Will not transpose matrix weighting because design matrix is column major already
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
             design_matrix->rows, design_matrix->columns, column_major_weights->rows, false);
-    double* solution_vectors;
+    //Hacky method of copying results to another gpu array.
     int signal_elements = signals->rows * signals->columns;
-    cuda_double_allocate(&solution_vectors, sizeof(double) *signal_elements);
-    cublasState_t status;
+    double* intermediate_solution = cuda_double_return_from_gpu(signals, signal_elements);
+    double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements);
+    free(intermediate_solution);
+    cublasStatus_t status;
     cublasHandle_t handle;
     int* cublas_error_info = 0;;
     status = cublasCreate(&handle);
@@ -85,7 +87,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
         puts(cublas_get_error_string(status));
     }
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
-            design_matrix->rows, weighted_design_data, design_matrix->rows, signals, design_matrix->rows, 
+            design_matrix->rows, &weighted_design_data, design_matrix->rows, &solution_vectors, design_matrix->rows, 
             cublas_error_info, NULL, signals->columns);
     /* int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, */ 
     /*         signals->columns, signals->rows); */
