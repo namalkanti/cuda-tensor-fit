@@ -282,6 +282,7 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
     free(transposed_batch1);
     free(transposed_batch2);
     free(transposed_results);
+    cublasDestroy(handle);
     return results;
 
 }
