@@ -77,15 +77,16 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     double* solution_vectors;
     int signal_elements = signals->rows * signals->columns;
     cuda_double_allocate(&solution_vectors, sizeof(double) *signal_elements);
-    cublasState_t statue;
+    cublasState_t status;
     cublasHandle_t handle;
-    int* cublas_error_info;
+    int* cublas_error_info = 0;;
+    status = cublasCreate(&handle);
     if (status != CUBLAS_STATUS_SUCCESS) {
         puts(cublas_get_error_string(status));
     }
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
             design_matrix->rows, weighted_design_data, design_matrix->rows, signals, design_matrix->rows, 
-            cublas_error_info, NULL, signals->columsn);
+            cublas_error_info, NULL, signals->columns);
     /* int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, */ 
     /*         signals->columns, signals->rows); */
     if (status != CUBLAS_STATUS_SUCCESS) {
