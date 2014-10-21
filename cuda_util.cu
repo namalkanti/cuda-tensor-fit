@@ -87,7 +87,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
         puts(cublas_get_error_string(status));
     }
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
-            design_matrix->rows, &weighted_design_data, design_matrix->rows, &solution_vectors, design_matrix->rows, 
+            1, &weighted_design_data, design_matrix->rows, &solution_vectors, design_matrix->rows, 
             cublas_error_info, NULL, signals->columns);
     /* int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, */ 
     /*         signals->columns, signals->rows); */
