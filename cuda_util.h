@@ -51,6 +51,9 @@ double* cutoff_log_cuda(double const* input, double min_signal, int array_length
 //Kernel to take entire array and exp it
 double* exp_cuda(double const* input, int array_length);
 
+//Wrapper for CUBLAS Dgemm call
+matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2);
+
 //Function takes different weights and weights several copies of the same matrix and returns it. Expects arguments as gpu pointers.
 double* matrix_weighter (double const* matrix, double const* weights, int rows, int columns, int length, bool trans);
 
