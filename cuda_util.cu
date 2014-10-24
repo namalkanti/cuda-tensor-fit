@@ -182,7 +182,7 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
 
 extern "C"
 double** convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch){
-    double* array_of_pointers[batch];  
+    double** array_of_pointers = malloc(sizeof(double*) * batch);  
     gpu_error_check(cudaMalloc(array_of_pointers, sizeof(double*) * batch));
     dim3 grid, block;
     grid.x = batch;
@@ -412,8 +412,8 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
     assemble_eigendecomposition(eigendecomposition, eigen_offset, Q, w);
 }
 
-__global__ void create_array_of_pointers_kernel(double* arr, int m, int n, *double[] target){
-    target[blockIdx.x] = arr[blockIdx.x * m * n];
+__global__ void create_array_of_pointers_kernel(double* arr, int m, int n, double*[] target){
+    target[blockIdx.x] = arr + (blockIdx.x * m * n);
 }
 
 //device function of assembling eigendecomposition from respective blocks.
