@@ -39,7 +39,7 @@ __global__ void weighting_kernel_transposed(double const* matrices, double const
 __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
-__global__ void create_array_of_pointers_kernel(double* data, int m, int n, *double[] target);
+__global__ void create_array_of_pointers_kernel(double* data, int m, int n, double** target);
 
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, double Q[3][3], double w[3]);
@@ -412,7 +412,7 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
     assemble_eigendecomposition(eigendecomposition, eigen_offset, Q, w);
 }
 
-__global__ void create_array_of_pointers_kernel(double* arr, int m, int n, *double[] target){
+__global__ void create_array_of_pointers_kernel(double* arr, int m, int n, double** target){
     target[blockIdx.x] = arr + (blockIdx.x * m * n);
 }
 
