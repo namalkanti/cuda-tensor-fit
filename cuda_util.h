@@ -42,6 +42,9 @@ void free_cuda_memory(double* pointer);
 //Frees matrix with gpu pointer for data
 void free_matrix_with_cuda_pointer(matrix* gpu_matrix);
 
+//Takes in a contigous array of device memory and converts to array of device pointers
+*double[] convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch);
+
 //Kernel to take entire array and run cutoff log function
 double* cutoff_log_cuda(double const* input, double min_signal, int array_length);
 
