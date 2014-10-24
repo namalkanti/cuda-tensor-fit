@@ -90,8 +90,8 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
         puts(cublas_get_error_string(status));
     }
 
-    *double[] ls_weighted_design = convert_contigous_array_to_array_of_pointers(weighted_design_data, design_matrix->rows, design_matrix->columns, signals->columns);
-    *double[] ls_solution_vectors = convert_contigous_array_to_array_of_pointers(solution_vectors, design_matrix->rows, 1, signals->columns);
+    double*[] ls_weighted_design = convert_contigous_array_to_array_of_pointers(weighted_design_data, design_matrix->rows, design_matrix->columns, signals->columns);
+    double*[] ls_solution_vectors = convert_contigous_array_to_array_of_pointers(solution_vectors, design_matrix->rows, 1, signals->columns);
 
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
             1, ls_weighted_design, design_matrix->rows, ls_solution_vectors, design_matrix->rows, 
@@ -181,7 +181,7 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
 }
 
 extern "C"
-*double[] convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch){
+double*[] convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch){
     *double[] array_of_pointers;  
     gpu_error_check(cudaMalloc(array_of_pointers, sizeof(*double) * batch));
     dim3 grid, block;
