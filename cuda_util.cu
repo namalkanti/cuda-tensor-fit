@@ -39,7 +39,7 @@ __global__ void weighting_kernel_transposed(double const* matrices, double const
 __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
-__global__ void create_array_of_pointers_kernel(double* data, int m, int n);
+__global__ void create_array_of_pointers_kernel(double* data, int m, int n, double*[] target);
 
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, double Q[3][3], double w[3]);
@@ -182,7 +182,7 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
 
 extern "C"
 double** convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch){
-    double** array_of_pointers = malloc(sizeof(double*) * batch);  
+    double** array_of_pointers = (double**) malloc(sizeof(double*) * batch);  
     gpu_error_check(cudaMalloc(array_of_pointers, sizeof(double*) * batch));
     dim3 grid, block;
     grid.x = batch;
