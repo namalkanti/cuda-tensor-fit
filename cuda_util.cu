@@ -39,6 +39,7 @@ __global__ void weighting_kernel_transposed(double const* matrices, double const
 __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
+__global__ void create_array_of_pointers_kernel(double* data, int m, int n);
 
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, double Q[3][3], double w[3]);
@@ -88,8 +89,12 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     if (status != CUBLAS_STATUS_SUCCESS) {
         puts(cublas_get_error_string(status));
     }
+
+    *double[] ls_weighted_design = convert_contigous_array_to_array_of_pointers(weighted_design_data, design_matrix->rows, design_matrix->columns, signals->columns);
+    *double[] ls_solution_vectors = convert_contigous_array_to_array_of_pointers(solution_vectors, design_matrix->rows, 1, signals->columns);
+
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
-            1, &weighted_design_data, design_matrix->rows, &solution_vectors, design_matrix->rows, 
+            1, ls_weighted_design, design_matrix->rows, ls_solution_vectors, design_matrix->rows, 
             cublas_error_info, NULL, signals->columns);
     /* int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, */ 
     /*         signals->columns, signals->rows); */
