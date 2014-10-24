@@ -183,7 +183,7 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
 extern "C"
 double** convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch){
     double* array_of_pointers[batch];  
-    gpu_error_check(cudaMalloc(array_of_pointers, sizeof(*double) * batch));
+    gpu_error_check(cudaMalloc(array_of_pointers, sizeof(double*) * batch));
     dim3 grid, block;
     grid.x = batch;
     grid.y = 1;
