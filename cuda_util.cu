@@ -218,6 +218,36 @@ double* exp_cuda(double const* input, int array_length){
     free_padded_array(padded_arr);
     return output_array;
 }
+
+extern "C"
+matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
+    cublasStatus_t status;
+    cublasHandle_t handle;
+    status = cublasCreate(&handle);
+    if ( status != CUBLAS_STATUS_SUCCESS ) {
+        puts(cublas_get_error_string(status));
+    }
+    double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
+    double* gpu_array2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
+    double* gpu_output;
+    gpu_error_check(cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns));
+    const double alpha = 1;
+    const double beta = 0;
+    status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
+            &alpha, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, &beta, gpu_output, matrix1->rows);
+    if ( status != CUBLAS_STATUS_SUCCESS ) {
+        puts(cublas_get_error_string(status));
+    }
+    matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
+    double* result_matrix_data =  (double*) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
+    result_matrix->rows = matrix1->rows;
+    result_matrix->columns = matrix2->columns;
+    result_matrix->data = result_matrix_data;
+    get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
+    gpu_error_check(cudaFree(gpu_array1));
+    gpu_error_check(cudaFree(gpu_array2));
+    return result_matrix;
+}
     
 extern "C"
 double* matrix_weighter (double const* gpu_matrix, double const* gpu_weights, int rows, int columns, int length, bool trans) {
