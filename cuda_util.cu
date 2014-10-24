@@ -176,6 +176,19 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
 }
 
 extern "C"
+*double[] convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch){
+    *double[] array_of_pointers;  
+    gpu_error_check(cudaMalloc(array_of_pointers, sizeof(*double) * batch));
+    dim3 grid, block;
+    grid.x = batch;
+    grid.y = 1;
+    block.x = 1;
+    block.y = 1;
+    create_array_of_pointers_kernel<<<grid, block>>>(arr, m, n, array_of_pointers);
+    return array_of_pointers;
+}
+
+extern "C"
 double* cutoff_log_cuda(double const* input, double min_signal, int array_length){
     padded_array* padded_arr = pad_array(array_clone(input, array_length), array_length, WARP_SIZE);
     double* device_array = cuda_double_copy_to_gpu(padded_arr->values, padded_arr->current_length);
@@ -262,43 +275,6 @@ double* transpose_matrices(double const* matrices, int rows, int columns, int le
     free_cuda_memory(gpu_matrices);
     free_cuda_memory(gpu_transposed);
     return transposed;
-}
-
-extern "C"
-double* dot_matrices(double const* matrix_batch_one, int rows, double const* matrix_batch_two, int columns,
-        int k, int length){
-    cublasStatus_t status;
-    cublasHandle_t handle;
-    status = cublasCreate(&handle);
-    if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts(cublas_get_error_string(status));
-    }
-    double* transposed_batch1 = transpose_matrices(matrix_batch_one, rows, k, length);
-    double* transposed_batch2 = transpose_matrices(matrix_batch_two, k, columns, length);
-    double* gpu_array1 = cuda_double_copy_to_gpu(transposed_batch1, rows * k * length);
-    double* gpu_array2 = cuda_double_copy_to_gpu(transposed_batch2, k *  columns * length);
-    double* gpu_output;
-    cudaMalloc(&gpu_output, sizeof(double)* rows * columns * length);
-    const double alpha = 1;
-    const double beta = 0;
-    status = cublasDgemmBatched(handle, CUBLAS_OP_N, CUBLAS_OP_N, rows, columns, 
-            k, &alpha, (const double**) &gpu_array1, rows, (const double**) &gpu_array2, k, &beta, 
-            &gpu_output, rows, length);
-    if ( status != CUBLAS_STATUS_SUCCESS ) {
-        puts(cublas_get_error_string(status));
-    }
-    double *transposed_results, *results;
-    transposed_results = cuda_double_return_from_gpu(gpu_output, rows * columns * length);
-    results = transpose_matrices(transposed_results, rows, columns, length);
-    free_cuda_memory(gpu_array1);
-    free_cuda_memory(gpu_array2);
-    free_cuda_memory(gpu_output);
-    free(transposed_batch1);
-    free(transposed_batch2);
-    free(transposed_results);
-    cublasDestroy(handle);
-    return results;
-
 }
 
 //Helper functions
@@ -429,6 +405,10 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
     double w[3] = {0, 0, 0};
     dsyevj3(A, Q, w);
     assemble_eigendecomposition(eigendecomposition, eigen_offset, Q, w);
+}
+
+__global__ void create_array_of_pointers_kernel(double* arr, int m, int n, *double[] target){
+    target[blockIdx.x] = arr[blockIdx.x * m * n];
 }
 
 //device function of assembling eigendecomposition from respective blocks.
