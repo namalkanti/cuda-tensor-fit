@@ -151,8 +151,8 @@ void extract_eigendecompositions(double const* eigendecompositions, tensor** out
 extern "C"
 double* cuda_double_copy_to_gpu(double const* local_array, int array_length){
     double* cuda_array;
-    gpu_error_check((char*) cudaMalloc(&cuda_array, sizeof(double) * array_length));
-    gpu_error_check((char*) cudaMemcpy(cuda_array, local_array, sizeof(double) * array_length, cudaMemcpyHostToDevice));
+    gpu_error_check(cudaMalloc(&cuda_array, sizeof(double) * array_length));
+    gpu_error_check(cudaMemcpy(cuda_array, local_array, sizeof(double) * array_length, cudaMemcpyHostToDevice));
     return cuda_array;
 }
 
