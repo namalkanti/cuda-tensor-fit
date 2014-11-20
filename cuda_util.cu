@@ -96,7 +96,7 @@ double* cuda_test_batched_ls(matrix* ls_matrix, matrix* solutions, int batch_siz
         puts(cublas_get_error_string(status));
     }
 
-    gpu_error_check(cudaMalloc<float*>(&C_d, sizeof(C)));
+    gpu_error_check(cudaMalloc<double*>(&C_d, sizeof(C)));
     gpu_error_check(cudaMemcpy(C, C_d, sizeof(C), cudaMemcpyDeviceToHost));
     return C[0];
 }
