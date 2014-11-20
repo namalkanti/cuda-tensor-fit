@@ -73,14 +73,32 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 extern "C"
 double* cuda_test_batched_ls(matrix* ls_matrix, matrix* solutions, int batch_size){
     double *A[] = {ls_matrix->data};
-    double** A_d;
-    gpu_error_check(cudaMalloc<double*>(&A_d, sizeof(A)));
-    gpu_error_check(cudaMemcpy(A_d, A, sizeof(A), cudaMemcpyHostToDevice));
+    float **A_d, *A_dflat;
+    cudacall(cudaMalloc(&A_d,batch_size*sizeof(float *)));
+    cudacall(cudaMalloc(&A_dflat, n*n*batch_size*sizeof(float)));
+    A[0] = A_dflat;
+    for (int i = 1; i < batch_size; i++)
+    A[i] = A[i-1]+(n*n);
+    cudacall(cudaMemcpy(A_d,A,batch_size*sizeof(float *),cudaMemcpyHostToDevice));
+    for (int i = 0; i < batch_size; i++)
+    cudacall(cudaMemcpy(A_dflat+(i*n*n), src[i], n*n*sizeof(float), cudaMemcpyHostToDevice));
+    /* double** A_d; */
+    /* gpu_error_check(cudaMalloc<double*>(&A_d, sizeof(A))); */
+    /* gpu_error_check(cudaMemcpy(A_d, A, sizeof(A), cudaMemcpyHostToDevice)); */
     
     double *C[] = {solutions->data};
-    double** C_d;
-    gpu_error_check(cudaMalloc<double*>(&C_d, sizeof(C)));
-    gpu_error_check(cudaMemcpy(C_d, C, sizeof(C), cudaMemcpyHostToDevice));
+    float **C_d, *C_dflat;
+    cudacall(cudaMalloc(&C_d,batch_size*sizeof(float *)));
+    cudacall(cudaMalloc(&C_dflat, n*n*batch_size*sizeof(float)));
+    C[0] = C_dflat;
+    for (int i = 1; i < batch_size; i++)
+    C[i] = C[i-1]+(n*n);
+    cudacall(cudaMemcpy(C_d,C,batch_size*sizeof(float *),cudaMemcpyHostToDevice));
+    for (int i = 0; i < batch_size; i++)
+    cudacall(cudaMemcpy(C_dflat+(i*n*n), src[i], n*n*sizeof(float), cudaMemcpyHostToDevice));
+    /* double** C_d; */
+    /* gpu_error_check(cudaMalloc<double*>(&C_d, sizeof(C))); */
+    /* gpu_error_check(cudaMemcpy(C_d, C, sizeof(C), cudaMemcpyHostToDevice)); */
     
     cublasStatus_t status;
     cublasHandle_t handle;
