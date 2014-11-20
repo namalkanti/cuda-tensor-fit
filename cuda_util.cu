@@ -71,6 +71,37 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 }
 
 extern "C"
+double* cuda_test_batched_ls(matrix* ls_matrix, matrix* solutions, int batch_size){
+    double *A[] = {ls_matrix->data};
+    float** A_d;
+    gpu_error_check(cudaMalloc<float*>(&A_d, sizeof(A)));
+    gpu_error_check(cudaMemcpy(A_d, A, sizeof(A), cudaMemcpyHostToDevice));
+    
+    double *C[] = {solutions->data};
+    float** C_d;
+    gpu_error_check(cudaMalloc<float*>(&C_d, sizeof(C)));
+    gpu_error_check(cudaMemcpy(C_d, C, sizeof(C), cudaMemcpyHostToDevice));
+    
+    cublasStatus_t status;
+    cublasHandle_t handle;
+    int* cublas_error_info = 0;
+    status = cublasCreate_v2(&handle);
+    if (status != CUBLAS_STATUS_SUCCESS){
+        puts(cublas_get_error_string(status));
+    }
+
+    status = cublasDgelsBatched(handle, CUBLAS_OP_N, ls_matrix->rows, ls_matrix->columns, 1, A_d, 3, C_d, 3, cublas_error_info, NULL, 1);
+
+    if (status != CUBLAS_STATUS_SUCCESS){
+        puts(cublas_get_error_string(status));
+    }
+
+    gpu_error_check(cudaMalloc<float*>(&C_d, sizeof(C)));
+    gpu_error_check(cudaMemcpy(C, C_d, sizeof(C), cudaMemcpyDeviceToHost));
+    return C[0];
+}
+
+extern "C"
 double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals){
     //Will not transpose matrix weighting because design matrix is column major already
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
@@ -84,8 +115,8 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
 
     cublasStatus_t status;
     cublasHandle_t handle;
-    int* cublas_error_info = 0;;
-    status = cublasCreate(&handle);
+    int* cublas_error_info = 0;
+    status = cublasCreate_v2(&handle);
     if (status != CUBLAS_STATUS_SUCCESS) {
         puts(cublas_get_error_string(status));
     }
@@ -96,8 +127,6 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
             1, ls_weighted_design, design_matrix->rows, ls_solution_vectors, design_matrix->rows, 
             cublas_error_info, NULL, signals->columns);
-    /* int solver_status = dsolve_batch(weighted_design_data, signals->data, solution_vectors, */ 
-    /*         signals->columns, signals->rows); */
     if (status != CUBLAS_STATUS_SUCCESS) {
         puts(cublas_get_error_string(status));
     }

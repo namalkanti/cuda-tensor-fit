@@ -15,6 +15,10 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal);
 //Takes in matrix, converts to column major, pads, and loads to gpu.
 matrix* process_matrix(matrix const* design_matrix);
 
+//Takes in host matrices to does a batched least squares fit
+//Intended to test and investigate usage of ls function
+double* cuda_test_batched_ls(matrix* ls_matrix, matrix* solutions, int batch_size);
+
 //Takes in matrices with gpu pointers for data. 
 //Does a weighted least squares regression.
 //Returns six value tensor for each signal as single column major array on the gpu.

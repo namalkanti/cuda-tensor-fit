@@ -137,6 +137,19 @@ void test_process_matrix(void){
     free_matrix(results);
 }
 
+//Test case to investigate and verify least squares is working
+void test_batched_least_squares(void){
+    double test_input[] = {1, 3, 5, 2, 4, 6};
+    matrix* test_mat = create_matrix(test_input, 3, 2);
+    double test_c[] = {3, 7, 11};
+    matrix* c_mat = create_matrix(test_c, 3, 1);
+    double expected[] = {1, 1, 1};
+    double* result = cuda_test_batched_ls(test_mat, c_mat, 1);
+    CU_ASSERT(true == array_compare(expected, result, 3, MARGIN));
+    free_matrix(test_mat);
+    free_matrix(c_mat);
+}
+
 //Test case for cuda fitter function
 void test_cuda_fitter(void){
     double test_design_data[] = {1, 3, 2, 4};
