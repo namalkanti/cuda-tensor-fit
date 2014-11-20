@@ -74,12 +74,12 @@ extern "C"
 double* cuda_test_batched_ls(matrix* ls_matrix, matrix* solutions, int batch_size){
     double *A[] = {ls_matrix->data};
     double** A_d;
-    gpu_error_check(cudaMalloc<float*>(&A_d, sizeof(A)));
+    gpu_error_check(cudaMalloc<double*>(&A_d, sizeof(A)));
     gpu_error_check(cudaMemcpy(A_d, A, sizeof(A), cudaMemcpyHostToDevice));
     
     double *C[] = {solutions->data};
     double** C_d;
-    gpu_error_check(cudaMalloc<float*>(&C_d, sizeof(C)));
+    gpu_error_check(cudaMalloc<double*>(&C_d, sizeof(C)));
     gpu_error_check(cudaMemcpy(C_d, C, sizeof(C), cudaMemcpyHostToDevice));
     
     cublasStatus_t status;
