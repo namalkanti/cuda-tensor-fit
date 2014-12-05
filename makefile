@@ -11,6 +11,13 @@ leaks: test
 	${memcheck} ./structure_test
 	${memcheck} ./opt_test
 
+ext: clean-ext
+	python setup.py build_ext
+	cp build/lib.linux-x86_64-2.7/cython_opt.so .
+
+clean-ext:
+	rm -rf build
+
 run-cuda: cuda-test
 	./cuda_test
 
