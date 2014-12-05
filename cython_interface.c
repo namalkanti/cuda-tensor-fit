@@ -16,7 +16,7 @@ void python_to_c(double* ols_fit_data, int ols_rows, int ols_columns,
 
     int i;
     for (i = 0; i < signals; i++){
-        tensor_output[i] = malloc(sizeof(tensor_output));
+        tensor_output[i] = malloc(sizeof(tensor));
     }
 
     fit_complete_signal(ols_fit, design_matrix, signal, min_signal, min_diffusivity, tensor_output);
