@@ -6,3 +6,4 @@ opt_test
 *.pem
 build
 cython_opt.so
+cython_opt.c
