@@ -5,10 +5,13 @@ from numpy import get_include
 
 ext_modules = [Extension("cython_opt",
                     sources = ["cython_opt.pyx",
-                                "cython_interface.c"],
+                                "cython_interface.c",
+                                "fit_tensor_opt.c",
+                                "opt_util.c",
+                                "structure_util.c"],
                     include_dirs=[".", get_include()],
                     extra_compile_args=["-fopenmp"],
-                    extra_link_args=["-fopenmp"])]
+                    extra_link_args=["-lm", "-lgsl", "-lgslcblas", "-fopenmp"])]
 
 setup(
         name = "cython_opt",
