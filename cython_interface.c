@@ -12,7 +12,7 @@ void python_to_c(double* ols_fit_data, int ols_rows, int ols_columns,
     matrix* design_matrix = create_matrix(design_matrix_data, design_rows, design_columns);
     matrix* signal = create_matrix(signal_data, signals, signal_elements);
 
-    tensor** tensor_output = malloc(sizeof(tensor*) * signals); 
+    tensor* tensor_output[signals]; 
 
     int i;
     for (i = 0; i < signals; i++){
