@@ -4,3 +4,4 @@ opt_test
 *.o
 *_test*
 *.pem
+build
