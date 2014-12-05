@@ -7,3 +7,4 @@ opt_test
 build
 cython_opt.so
 cython_opt.c
+*pyc
