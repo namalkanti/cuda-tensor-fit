@@ -5,3 +5,4 @@ opt_test
 *_test*
 *.pem
 build
+cython_opt.so
