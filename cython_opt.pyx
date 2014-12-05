@@ -15,6 +15,7 @@ def tensor_fit(ols_fit, design_matrix, signal, float min_signal, float min_diffu
     ols_columns = ols_fit.shape[1]
     design_rows = design_matrix.shape[0]
     design_columns = design_matrix.shape[1]
+    signal = signal.astype(float)
     signals = signal.shape[0]
     signal_elements = signal.shape[1]
 
