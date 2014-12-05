@@ -23,10 +23,10 @@ void python_to_c(double* ols_fit_data, int ols_rows, int ols_columns,
 
     int j;
     for (i = 0; i < signals; i++){
-        for (j = 0; i < EIGENVALUES; i++){
+        for (j = 0; i < EIGENVALUES; j++){
             output[i * EIGENELEMENTS + j] = tensor_output[i]->vals[j];
         }
-        for ( j = 0; i < EIGENVECTORS; i++){
+        for ( j = 0; i < EIGENVECTORS; j++){
             output[i * EIGENELEMENTS + EIGENVALUES + j] = tensor_output[i]->vecs->data[j];
         }
     }
