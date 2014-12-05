@@ -12,12 +12,17 @@ void python_to_c(double* ols_fit_data, int ols_rows, int ols_columns,
     matrix* design_matrix = create_matrix(design_matrix_data, design_rows, design_columns);
     matrix* signal = create_matrix(signal_data, signals, signal_elements);
 
-    tensor* tensor_output[signals]; 
+    tensor** tensor_output = malloc(sizeof(tensor*) * signals); 
+
+    int i;
+    for ( i = 0; i < signals; i++){
+        tensor_output[i] = malloc(sizeof(tensor));
+    }
 
 
     fit_complete_signal(ols_fit, design_matrix, signal, min_signal, min_diffusivity, tensor_output);
 
-    int i, j;
+    int j;
     for (i = 0; i < signals; i++){
         for (j = 0; j < EIGENVALUES; j++){
             output[i * EIGENELEMENTS + j] = tensor_output[i]->vals[j];
