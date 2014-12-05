@@ -14,14 +14,10 @@ void python_to_c(double* ols_fit_data, int ols_rows, int ols_columns,
 
     tensor* tensor_output[signals]; 
 
-    int i;
-    for (i = 0; i < signals; i++){
-        tensor_output[i] = malloc(sizeof(tensor));
-    }
 
     fit_complete_signal(ols_fit, design_matrix, signal, min_signal, min_diffusivity, tensor_output);
 
-    int j;
+    int i, j;
     for (i = 0; i < signals; i++){
         for (j = 0; j < EIGENVALUES; j++){
             output[i * EIGENELEMENTS + j] = tensor_output[i]->vals[j];
