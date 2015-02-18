@@ -8,3 +8,4 @@ build
 cython_opt.so
 cython_opt.c
 *pyc
+paper.tex
