@@ -363,7 +363,7 @@ int main(){
         return CU_get_error();
     }
 
-    if ((NULL == CU_add_test(cuda_suite, "Process signal test", test_process_signal))){
+    /*if ((NULL == CU_add_test(cuda_suite, "Process signal test", test_process_signal))){
         CU_cleanup_registry();
         return CU_get_error();
     }
@@ -377,16 +377,6 @@ int main(){
         CU_cleanup_registry();
         return CU_get_error();
     }
-
-    /* if ((NULL == CU_add_test(cuda_suite, "Cuda batched least squares", test_batched_least_squares))){ */
-    /*     CU_cleanup_registry(); */
-    /*     return CU_get_error(); */
-    /* } */
-
-    /* if ((NULL == CU_add_test(cuda_suite, "Cuda fitter", test_cuda_fitter))){ */
-    /*     CU_cleanup_registry(); */
-    /*     return CU_get_error(); */
-    /* } */
 
     if ((NULL == CU_add_test(cuda_suite, "Decompose tensor test", test_cuda_decompose_tensors))){
         CU_cleanup_registry();
@@ -417,7 +407,19 @@ int main(){
     if ((NULL == CU_add_test(cuda_suite, "Matrix weighting test", test_matrix_weighter))){
         CU_cleanup_registry();
         return CU_get_error();
-    }
+    }*/
+
+    //Last tests
+
+    /* if ((NULL == CU_add_test(cuda_suite, "Cuda batched least squares", test_batched_least_squares))){ */
+    /*     CU_cleanup_registry(); */
+    /*     return CU_get_error(); */
+    /* } */
+
+    /* if ((NULL == CU_add_test(cuda_suite, "Cuda fitter", test_cuda_fitter))){ */
+    /*     CU_cleanup_registry(); */
+    /*     return CU_get_error(); */
+    /* } */
 
     /* if ((NULL == CU_add_test(cuda_suite, "Fit complete signal test", test_fit_signal))){ */
     /*     CU_cleanup_registry(); */
