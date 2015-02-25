@@ -196,16 +196,9 @@ double** convert_contigous_array_to_array_of_pointers(double* arr, int m, int n,
 }
 
 extern "C"
-double* cutoff_log_cuda(double const* input, double min_signal, int array_length){
-    padded_array* padded_arr = pad_array(array_clone(input, array_length), array_length, WARP_SIZE);
-    double* device_array = cuda_double_copy_to_gpu(padded_arr->values, padded_arr->current_length);
-    int blocks_in_grid = padded_arr->current_length / WARP_SIZE;
-    cutoff_log_kernel<<<blocks_in_grid, WARP_SIZE>>>(device_array, min_signal);
-    padded_arr->values = cuda_double_return_from_gpu(device_array, padded_arr->current_length);
-    double* result_array = get_array_from_padded_array(padded_arr);
-    free_cuda_memory(device_array);
-    free_padded_array(padded_arr);
-    return result_array;
+void cutoff_log_cuda(double* input, double min_signal, int array_length){
+    int blocks_in_grid = array_length / WARP_SIZE;
+    cutoff_log_kernel<<<blocks_in_grid, WARP_SIZE>>>(input, min_signal);
 }
 
 extern "C"

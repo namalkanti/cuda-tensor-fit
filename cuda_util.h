@@ -50,7 +50,7 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix);
 double** convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch);
 
 //Kernel to take entire array and run cutoff log function
-double* cutoff_log_cuda(double const* input, double min_signal, int array_length);
+void cutoff_log_cuda(double* input, double min_signal, int array_length);
 
 //Kernel to take entire array and exp it
 double* exp_cuda(double const* input, int array_length);
