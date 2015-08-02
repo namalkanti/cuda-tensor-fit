@@ -17,7 +17,7 @@ matrix* process_matrix(matrix const* design_matrix);
 
 //Takes in host matrices to does a batched least squares fit
 //Intended to test and investigate usage of ls function
-double* cuda_test_batched_ls(matrix* ls_matrix, matrix* solutions, int batch_size);
+double* cuda_test_batched_ls(double* ls_matrix, int rows1, int cols1, double* solutions, int rows2, int cols2, int batch_size);
 
 //Takes in matrices with gpu pointers for data. 
 //Does a weighted least squares regression.
