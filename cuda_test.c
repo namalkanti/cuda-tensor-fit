@@ -146,27 +146,27 @@ void test_batched_least_squares(void){
     CU_ASSERT(true == array_compare(expected, result, 4, MARGIN));
 }
 
-/* //Test case for cuda fitter function */
-/* void test_cuda_fitter(void){ */
-/*     double test_design_data[] = {1, 3, 2, 4}; */
-/*     double* gpu_design = cuda_double_copy_to_gpu(test_design_data, 4); */
-/*     matrix* test_design_matrix = create_matrix(gpu_design, 2, 2); */
-/*     double test_weights_data[] = {1, 2, 3, 4, 5, 6}; */
-/*     double* gpu_weights = cuda_double_copy_to_gpu(test_weights_data, 6); */
-/*     matrix* test_weights_matrix = create_matrix(gpu_weights, 3, 2); */
-/*     double test_signal_data[] = {1, 2, 3, 4, 5, 6}; */
-/*     double* gpu_signal = cuda_double_copy_to_gpu(test_signal_data, 6); */
-/*     matrix* test_signal_matrix = create_matrix(gpu_signal, 2, 3); */
-/*     double* gpu_result_data = cuda_fitter(test_design_matrix, test_weights_matrix, test_signal_matrix); */
-/*     double expected_results[] = {-1, 1, -1, 1, -1, 1}; */
-/*     double* result_data = cuda_double_return_from_gpu(gpu_result_data, 6); */
-/*     CU_ASSERT(true == array_compare(expected_results, result_data, 6, MARGIN)); */
-/*     free_cuda_memory(gpu_result_data); */
-/*     free_cuda_memory(gpu_design); */
-/*     free_cuda_memory(gpu_weights); */
-/*     free_cuda_memory(gpu_signal); */
-/*     free(result_data); */
-/* } */
+//Test case for cuda fitter function
+void test_cuda_fitter(void){
+    double test_design_data[] = {1, 3, 2, 4};
+    double* gpu_design = cuda_double_copy_to_gpu(test_design_data, 4);
+    matrix* test_design_matrix = create_matrix(gpu_design, 2, 2);
+    double test_weights_data[] = {1, 2, 3, 4, 5, 6};
+    double* gpu_weights = cuda_double_copy_to_gpu(test_weights_data, 6);
+    matrix* test_weights_matrix = create_matrix(gpu_weights, 3, 2);
+    double test_signal_data[] = {1, 2, 3, 4, 5, 6};
+    double* gpu_signal = cuda_double_copy_to_gpu(test_signal_data, 6);
+    matrix* test_signal_matrix = create_matrix(gpu_signal, 2, 3);
+    double* gpu_result_data = cuda_fitter(test_design_matrix, test_weights_matrix, test_signal_matrix);
+    double expected_results[] = {-1, 1, -1, 1, -1, 1};
+    double* result_data = cuda_double_return_from_gpu(gpu_result_data, 6);
+    CU_ASSERT(true == array_compare(expected_results, result_data, 6, MARGIN));
+    free_cuda_memory(gpu_result_data);
+    free_cuda_memory(gpu_design);
+    free_cuda_memory(gpu_weights);
+    free_cuda_memory(gpu_signal);
+    free(result_data);
+}
 
 //Test case for tensor decomposition function
 void test_cuda_decompose_tensors(void){
@@ -379,10 +379,10 @@ int main(){
         return CU_get_error();
     }
 
-    /* if ((NULL == CU_add_test(cuda_suite, "Cuda fitter", test_cuda_fitter))){ */
-    /*     CU_cleanup_registry(); */
-    /*     return CU_get_error(); */
-    /* } */
+    if ((NULL == CU_add_test(cuda_suite, "Cuda fitter", test_cuda_fitter))){
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     if ((NULL == CU_add_test(cuda_suite, "Decompose tensor test", test_cuda_decompose_tensors))){
         CU_cleanup_registry();
@@ -415,10 +415,10 @@ int main(){
         return CU_get_error();
     }
 
-    /* if ((NULL == CU_add_test(cuda_suite, "Fit complete signal test", test_fit_signal))){ */
-    /*     CU_cleanup_registry(); */
-    /*     return CU_get_error(); */
-    /* } */
+    if ((NULL == CU_add_test(cuda_suite, "Fit complete signal test", test_fit_signal))){
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
