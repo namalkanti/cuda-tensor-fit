@@ -73,41 +73,102 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 }
 
 extern "C"
-double* cuda_test_batched_ls(matrix* ls_matrix, matrix* solutions, int batch_size){
-}
-
-extern "C"
-double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals){
-    //Will not transpose matrix weighting because design matrix is column major already
-    double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
-            design_matrix->rows, design_matrix->columns, column_major_weights->rows, false);
-
-    //Hacky method of copying results to another gpu array.
-    int signal_elements = signals->rows * signals->columns;
-    double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements);
-    double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements);
-    free(intermediate_solution);
-
+double* cuda_test_batched_ls(double* ls_matrix, int rows1, int cols1, double* solutions, int rows2, int cols2, int batch_size){
     cublasStatus_t status;
     cublasHandle_t handle;
-    int* cublas_error_info = 0;
     status = cublasCreate_v2(&handle);
     if (status != CUBLAS_STATUS_SUCCESS) {
         puts(cublas_get_error_string(status));
     }
 
-    double** ls_weighted_design = convert_contigous_array_to_array_of_pointers(weighted_design_data, design_matrix->rows, design_matrix->columns, signals->columns);
-    double** ls_solution_vectors = convert_contigous_array_to_array_of_pointers(solution_vectors, design_matrix->rows, 1, signals->columns);
+    int A_elements = rows1 * cols1;
+    int C_elements = rows2 * cols2;
 
-    status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
-            1, ls_weighted_design, design_matrix->rows, ls_solution_vectors, design_matrix->rows, 
-            cublas_error_info, NULL, signals->columns);
+    int* info = (int*) malloc(sizeof(int));
+    int* dev_info;
+    cudaMalloc(&dev_info, sizeof(int) * batch_size);
+
+    double* ls_gpu = cuda_double_copy_to_gpu(ls_matrix, A_elements * batch_size);
+    double* sol_gpu = cuda_double_copy_to_gpu(solutions, C_elements * batch_size);
+
+    double** A_inter;
+    A_inter = (double**) malloc(sizeof(double*) * batch_size);
+    double** C_inter;
+    C_inter = (double**) malloc(sizeof(double*) * batch_size);
+
+    double** A_gpu = convert_contigous_gpu_array_to_gpu_array_of_pointers(ls_gpu, rows1, cols1, batch_size, A_inter);
+    double** C_gpu = convert_contigous_gpu_array_to_gpu_array_of_pointers(sol_gpu, rows2, cols2, batch_size, C_inter);
+
+    status = cublasDgelsBatched(handle, CUBLAS_OP_N, rows1, cols1, cols2, A_gpu, rows1,
+            C_gpu, rows2, info, dev_info, batch_size);
     if (status != CUBLAS_STATUS_SUCCESS) {
         puts(cublas_get_error_string(status));
     }
-    free_cuda_memory(weighted_design_data);
-    return solution_vectors;
+
+    double** sol_array;
+    sol_array = (double**) malloc(sizeof(double*) * batch_size);
+    gpu_error_check(cudaMemcpy(sol_array, C_gpu, sizeof(double*) * batch_size, cudaMemcpyDeviceToHost));
+    double* result;
+    double* results = (double*) malloc(sizeof(double) * cols1 * batch_size);
+    int i, j, C_offset;
+    for(i = 0;i < batch_size;i++){
+        C_offset = i * cols1 * cols2 ;
+        result = cuda_double_return_from_gpu(sol_array[i], C_elements);
+        for(j = 0;j < cols1;j++){
+            results[C_offset + j] = result[j];
+        }
+        free(result);
+    }
+
+    status = cublasDestroy_v2(handle);
+    if (status != CUBLAS_STATUS_SUCCESS) {
+        puts(cublas_get_error_string(status));
+    }
+
+    free_cuda_memory(ls_gpu);
+    free_cuda_memory(sol_gpu);
+    gpu_error_check(cudaFree(A_gpu));
+    gpu_error_check(cudaFree(C_gpu));
+    gpu_error_check(cudaFree(dev_info));
+    free_array_of_gpu_pointers(A_inter, batch_size);
+    free_array_of_gpu_pointers(C_inter, batch_size);
+    free(info);
+    free(sol_array);
+    return results;
 }
+
+/* extern "C" */
+/* double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals){ */
+/*     //Will not transpose matrix weighting because design matrix is column major already */
+/*     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, */ 
+/*             design_matrix->rows, design_matrix->columns, column_major_weights->rows, false); */
+
+/*     //Hacky method of copying results to another gpu array. */
+/*     int signal_elements = signals->rows * signals->columns; */
+/*     double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements); */
+/*     double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements); */
+/*     free(intermediate_solution); */
+
+/*     cublasStatus_t status; */
+/*     cublasHandle_t handle; */
+/*     int* cublas_error_info = 0; */
+/*     status = cublasCreate_v2(&handle); */
+/*     if (status != CUBLAS_STATUS_SUCCESS) { */
+/*         puts(cublas_get_error_string(status)); */
+/*     } */
+
+/*     double** ls_weighted_design = convert_contigous_array_to_array_of_pointers(weighted_design_data, design_matrix->rows, design_matrix->columns, signals->columns); */
+/*     double** ls_solution_vectors = convert_contigous_array_to_array_of_pointers(solution_vectors, design_matrix->rows, 1, signals->columns); */
+
+/*     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns, */
+/*             1, ls_weighted_design, design_matrix->rows, ls_solution_vectors, design_matrix->rows, */ 
+/*             cublas_error_info, NULL, signals->columns); */
+/*     if (status != CUBLAS_STATUS_SUCCESS) { */
+/*         puts(cublas_get_error_string(status)); */
+/*     } */
+/*     free_cuda_memory(weighted_design_data); */
+/*     return solution_vectors; */
+/* } */
 
 extern "C"
 double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensors){
@@ -182,19 +243,6 @@ extern "C"
 void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
     free_cuda_memory(gpu_matrix->data);
     free(gpu_matrix);
-}
-
-extern "C"
-double** convert_contigous_array_to_array_of_pointers(double* arr, int m, int n, int batch){
-    double** array_of_pointers;;  
-    gpu_error_check(cudaMalloc(&array_of_pointers, sizeof(double*) * batch));
-    dim3 grid, block;
-    grid.x = batch;
-    grid.y = 1;
-    block.x = 1;
-    block.y = 1;
-    create_array_of_pointers_kernel<<<grid, block>>>(arr, m, n, array_of_pointers);
-    return array_of_pointers;
 }
 
 extern "C"
