@@ -29,6 +29,8 @@ inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=false)
 //Helper function declarations
 double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat);
 void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat);
+double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m, int n, int batch, double** intermediate_array);
+void free_array_of_gpu_pointers(double** array, int batch);
 const char* cublas_get_error_string(cublasStatus_t status);
 
 //Kernel declarations
@@ -317,6 +319,32 @@ void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, mat
     }
     free(intermediate_matrix);
 }
+
+/*Converts contigous array in gpu memory into array of pointers in gpu memory. Intermediate array must be an array of 
+length (batch * sizeof(double*)). */
+double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m, int n, int batch, double** intermediate_array){
+    int elements = m * n;
+    int i, offset;
+    for (i = 0; i < batch; i++){
+        offset = i * elements;
+        gpu_error_check(cudaMalloc(&intermediate_array[i], sizeof(double) * elements));
+        gpu_error_check(cudaMemcpy(intermediate_array[i], arr + offset, sizeof(double) * elements, cudaMemcpyDeviceToDevice ));
+    }
+    double** gpu_array;
+    gpu_error_check(cudaMalloc(&gpu_array, sizeof(double*) * batch));
+    gpu_error_check(cudaMemcpy(gpu_array, intermediate_array, sizeof(double*) * batch, cudaMemcpyHostToDevice));
+    return gpu_array;
+}
+
+//Frees array of pointers where array is on host and pointers are on the device.
+void free_array_of_gpu_pointers(double** array, int batch){
+    int i;
+    for(i = 0;i < batch; i++){
+        free_cuda_memory(array[i]);
+    }
+    free(array);
+}
+
 
 //Gets error and returns string based on it by the error returned.
 const char* cublas_get_error_string(cublasStatus_t status){
