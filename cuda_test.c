@@ -311,6 +311,19 @@ void test_transpose_matrices (void) {
     free(result_matrix);
 }
 
+//Test signal to weight generation
+void test_signal_to_weighted (void) {
+    matrix signal = {sig1, 1, 56};
+    int number_of_signals = signal.rows;
+    int signal_elements = signal.columns;
+    matrix* processed_signal_gpu = process_signal(&signal, min_signal_sample);
+    signal.data = cuda_double_return_from_gpu(processed_signal_gpu->data, number_of_signals * signal_elements);
+    matrix* trans_signal = transpose(&signal);
+    matrix* column_major_weights_gpu = generate_weights(&ols_sample, trans_signal);
+    double* weights = cuda_double_return_from_gpu(column_major_weights_gpu->data, signal_elements);
+    CU_ASSERT(true == array_compare(expected_weights, weights, signal_elements, signal_elements, MARGIN));
+}
+
 //Tests full fit signal function
 void test_fit_signal (void) {
     double* sig12 = array_combine(sig1, sig2, 56, 56);
@@ -322,7 +335,7 @@ void test_fit_signal (void) {
     free(sig1234);
     matrix signal = {sig12345, 5, 56};
     tensor* tensor_array[5];
-    fit_complete_signal(&ols_sample, &design_sample, &signal,min_signal_sample, min_diffusitivity_sample, tensor_array);
+    fit_complete_signal(&ols_sample, &design_sample, &signal, min_signal_sample, min_diffusitivity_sample, tensor_array);
     int i;
     for(i = 0; i < 5; i++){
         CU_ASSERT(true == compare_tensors(tensor_array[i], tensors[i], MARGIN));
