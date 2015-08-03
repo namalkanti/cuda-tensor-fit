@@ -69,6 +69,7 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
     double* gpu_weights_data = cuda_double_copy_to_gpu(weights->data, weights->rows * weights->columns);
     matrix* gpu_weights= create_matrix(gpu_weights_data, weights->rows, weights->columns);
     free_matrix(weights);
+    cudaDeviceSynchronize();
     return gpu_weights;
 }
 
@@ -221,6 +222,7 @@ extern "C"
 matrix* process_matrix(matrix const* design_matrix){
     double* gpu_matrix_data = convert_matrix_to_fortran_and_load_to_gpu(design_matrix);
     matrix* processed_matrix = create_matrix(gpu_matrix_data, design_matrix->rows, design_matrix->columns);
+    cudaDeviceSynchronize();
     return processed_matrix;
 }
 
