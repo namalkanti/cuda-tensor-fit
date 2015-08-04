@@ -72,7 +72,7 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
     cudaDeviceSynchronize();
     return gpu_weights;
 }
-
+;
 extern "C"
 double* cuda_test_batched_ls(double* ls_matrix, int rows1, int cols1, double* solutions, int rows2, int cols2, int batch_size){
     cublasStatus_t status;
