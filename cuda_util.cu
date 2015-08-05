@@ -142,7 +142,7 @@ extern "C"
 double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals){
     //Will not transpose matrix weighting because design matrix is column major already
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
-            design_matrix->rows, design_matrix->columns, column_major_weights->rows, false);
+            design_matrix->rows, design_matrix->columns, column_major_weights->columns, false);
 
     int signal_elements = signals->rows * signals->columns;
     int batch_size = signals->columns;
