@@ -147,7 +147,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     double* weighed_host = cuda_double_return_from_gpu(weighted_design_data, design_matrix->rows * design_matrix->columns * column_major_weights->columns);
 
     int signal_elements = signals->rows * signals->columns;
-    int batch_size = signals->columns;
+    int batch_size = signals->rows;
     double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements);
     double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements);
     free(intermediate_solution);
