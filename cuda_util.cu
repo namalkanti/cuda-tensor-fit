@@ -168,9 +168,9 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     sol_inter = (double**) malloc(sizeof(double*) * batch_size);
 
     double** ls_weighted_design = convert_contigous_gpu_array_to_gpu_array_of_pointers(weighted_design_data, 
-            design_matrix->rows, design_matrix->columns, signals->columns, design_inter);
+            design_matrix->rows, design_matrix->columns, batch_size, design_inter);
     double** ls_solution_vectors = convert_contigous_gpu_array_to_gpu_array_of_pointers(solution_vectors, 
-            design_matrix->rows, 1, signals->rows, sol_inter);
+            design_matrix->rows, 1, batch_size, sol_inter);
 
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
             1, ls_weighted_design, design_matrix->rows, ls_solution_vectors, design_matrix->rows, 
