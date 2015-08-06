@@ -211,9 +211,6 @@ extern "C"
 double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensors){
     double* tensors;
     cuda_double_allocate(&tensors, sizeof(double) * TENSOR_ELEMENTS * number_of_tensors);
-   
-    double* debug_tensor_input = cuda_double_return_from_gpu(tensors_input, 7 * number_of_tensors);
-
     dim3 grid, block;
     grid.x = number_of_tensors;
     block.x = 1;
