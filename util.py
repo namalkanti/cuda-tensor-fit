@@ -77,6 +77,11 @@ def calculate_weights():
     fix +="}"
     print fix
 
+def weighting():
+    """
+    Calculates weighting results.
+    """
+
 def main():
     calculate_weights()
 
