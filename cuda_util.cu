@@ -151,7 +151,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     int batch_size = signals->rows;
 
     double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements);
-    double* weights = cuda_double_return_from_gpu(column_major_weights, signal_elements);
+    double* weights = cuda_double_return_from_gpu(column_major_weights->data, signal_elements);
     int i;
     for(i = 0; i < signal_elements;i++){
         intermediate_solution[i] *= weights[i];
