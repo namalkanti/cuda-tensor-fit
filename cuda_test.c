@@ -350,7 +350,6 @@ void test_fit_signal (void) {
         free_tensor(tensor_array[i]);
     }
     free(sig12345);
-    free(tensor_array);
 }
 
 //Initalization stub for utility test suite.
