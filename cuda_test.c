@@ -341,13 +341,15 @@ void test_fit_signal (void) {
     double* sig12345 = array_combine(sig1234, sig5, 224, 56);
     free(sig1234);
     matrix signal = {sig12345, 5, 56};
-    tensor* tensor_array[5];
+    tensor** tensor_array;
+    tensor_array = (tensor**)  malloc(sizeof(tensor*) * 5);
     fit_complete_signal(&ols_sample, &design_sample, &signal, min_signal_sample, min_diffusitivity_sample, tensor_array);
     int i;
     for(i = 0; i < 5; i++){
         CU_ASSERT(true == compare_tensors(tensor_array[i], tensors[i], MARGIN));
         free_tensor(tensor_array[i]);
     }
+    free(sig12345);
 }
 
 //Initalization stub for utility test suite.
