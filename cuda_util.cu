@@ -41,6 +41,7 @@ __global__ void weighting_kernel_transposed(double const* matrices, double const
 __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
+__global__ void multiply_arrays(double* signals, double const* weights);
 __global__ void create_array_of_pointers_kernel(double* data, int m, int n, double** target);
 
 //device functions
@@ -148,6 +149,13 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
 
     int signal_elements = signals->rows * signals->columns;
     int batch_size = signals->rows;
+
+    dim3 grid, block;
+    grid.x = batch_size;
+    grid.y = 1;    
+    block.x = signal_elements;
+    multiply_arrays<<<grid, block>>>(double* signals->data, double const* column_major_weights);
+
     double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements);
     double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements);
     free(intermediate_solution);
@@ -519,6 +527,11 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
     double w[3] = {0, 0, 0};
     dsyevj3(A, Q, w);
     assemble_eigendecomposition(eigendecomposition, eigen_offset, Q, w);
+}
+
+//kernel to multiply two gpu arrays
+__global__ void multiply_arrays(double* signals, double const* weights){
+    signals[blockIdx * blockDim.x + threadIdx.x] *= weights[blockIdx * blockDim.x + threadIdx];
 }
 
 __global__ void create_array_of_pointers_kernel(double* arr, int m, int n, double** target){

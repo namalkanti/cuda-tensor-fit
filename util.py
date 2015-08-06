@@ -81,6 +81,8 @@ def weighting():
     """
     Calculates weighting results.
     """
+    pass
+    
 
 def main():
     calculate_weights()
