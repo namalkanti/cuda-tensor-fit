@@ -31,7 +31,7 @@ cuda-test: fit_cuda.o
 fit_cuda.o: cuda_util.o
 	gcc ${CFLAGS} -o fit_cuda.o -c fit_cuda.c
 
-cuda_util.lib: structure_util.o opt_util.o
+cuda_util.a: structure_util.o opt_util.o
 	nvcc ${CFLAGS} -lib -o cuda_util.lib cuda_util.cu
 
 cuda_util.o: structure_util.o opt_util.o 
