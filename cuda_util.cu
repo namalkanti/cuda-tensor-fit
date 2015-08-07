@@ -316,7 +316,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
         puts(cublas_get_error_string(status));
     }
     double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
-    double* gpu_array2 = cuda_double_copy_to_gpu(matrix2->data);
+    double* gpu_array2 = cuda_double_copy_to_gpu(matrix2->data, matrix2->rows * matrix2->columns);
     double* gpu_output;
     gpu_error_check(cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns));
     const double alpha = 1;
