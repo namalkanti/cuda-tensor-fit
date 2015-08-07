@@ -32,7 +32,7 @@ fit_cuda.o: cuda_util.o
 	gcc ${CFLAGS} -o fit_cuda.o -c fit_cuda.c
 
 cuda_util.a: structure_util.o opt_util.o
-	nvcc ${CFLAGS} -lib -o cuda_util.a cuda_util.cu
+	nvcc ${CFLAGS} -lib -o libcuda_util.a cuda_util.cu
 
 cuda_util.o: structure_util.o opt_util.o 
 	nvcc ${CFLAGS} -G -arch=sm_30 -c cuda_util.cu
