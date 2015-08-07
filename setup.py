@@ -13,7 +13,7 @@ ext_modules = [Extension("cython_opt",
                                 "opt_util.c",
                                 "structure_util.c"],
                     include_dirs=[".", get_include()],
-                    extra_compile_args=[ "-fopenmp"],
+                    extra_compile_args=[ "-fopenmp", "-O3"],
                     extra_link_args=["-fopenmp", "-lm", "-lgsl", "-lgslcblas"])]
 
 setup(
