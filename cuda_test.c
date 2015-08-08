@@ -228,8 +228,8 @@ void test_cutoff_log(void){
      1.0986122886681098,
      3.713572066704308,
      2.1972245773362196};
-    double* return1 = cutoff_log_cuda(test1, min_value, len1);
-    double* return2 = cutoff_log_cuda(test2, min_value, len2);
+    double* return1 = cutoff_log_cuda(test1, min_value, 1, len1);
+    double* return2 = cutoff_log_cuda(test2, min_value, 1, len2);
     CU_ASSERT(array_compare(return1, result1, len1, MARGIN) == true);
     CU_ASSERT(array_compare(return2, result2, len2, MARGIN) == true);
     free(return1);

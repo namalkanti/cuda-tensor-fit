@@ -52,9 +52,9 @@ __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 extern "C"
 matrix* process_signal(matrix const* signal, double min_signal){
     double* signal_data = array_clone(signal->data, signal->rows * signal->columns);
-    int signal_length = signal->rows * signal->columns;
-    double* kernel_results = cutoff_log_cuda(signal_data, min_signal, signal_length);
-    double* processed_signal_data = cuda_double_copy_to_gpu(kernel_results, signal_length);
+    int total_elements = signal->rows * signal->columns;
+    double* kernel_results = cutoff_log_cuda(signal_data, min_signal, signal->rows, signal->columns);
+    double* processed_signal_data = cuda_double_copy_to_gpu(kernel_results, total_elements);
     matrix* processed_signal = create_matrix(processed_signal_data, signal->rows, signal->columns);
     free(signal_data);
     free(kernel_results);
@@ -282,15 +282,12 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
 }
 
 extern "C"
-double* cutoff_log_cuda(double const* input, double min_signal, int array_length){
-    padded_array* padded_arr = pad_array(array_clone(input, array_length), array_length, WARP_SIZE);
-    double* device_array = cuda_double_copy_to_gpu(padded_arr->values, padded_arr->current_length);
-    int blocks_in_grid = padded_arr->current_length / WARP_SIZE;
-    cutoff_log_kernel<<<blocks_in_grid, WARP_SIZE>>>(device_array, min_signal);
-    padded_arr->values = cuda_double_return_from_gpu(device_array, padded_arr->current_length);
-    double* result_array = get_array_from_padded_array(padded_arr);
+double* cutoff_log_cuda(double const* input, double min_signal, int number_of_signals, int signal_length){
+    int total_elements = number_of_signals * signal_length;
+    double* device_array = cuda_double_copy_to_gpu(input, total_elements);
+    cutoff_log_kernel<<<number_of_signals, signal_length>>>(device_array, min_signal);
+    double* result_array = cuda_double_return_from_gpu(device_array, total_elements);
     free_cuda_memory(device_array);
-    free_padded_array(padded_arr);
     return result_array;
 }
 

@@ -47,7 +47,7 @@ void free_cuda_memory(double* pointer);
 void free_matrix_with_cuda_pointer(matrix* gpu_matrix);
 
 //Kernel to take entire array and run cutoff log function
-double* cutoff_log_cuda(double const* input, double min_signal, int array_length);
+double* cutoff_log_cuda(double const* input, double min_signal, int number_of_signals, int signal_length);
 
 //Kernel to take entire array and exp it
 double* exp_cuda(double const* input, int array_length);
