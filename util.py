@@ -97,12 +97,11 @@ def fit(signal):
     print "Weighted matrix: {0}".format(np.transpose(weighted).flatten())
     print "Weights: {0}".format(weights.flatten())
     print "Tensor: {0}".format(tensor[0])
-    pdb.set_trace()
     
 
 def main():
     # signals = [SIGNAL3, SIGNAL4, SIGNAL5]
-    signals = [SIGNAL]
+    signals = [SIGNAL5]
     i = 3
     for signal in signals:
         print "For signal {0}".format(i)
