@@ -244,8 +244,8 @@ void extract_eigendecompositions(double const* eigendecompositions, tensor** out
         tensor* allocated_tensor = (tensor*) malloc(sizeof(tensor));
         output[i] = allocated_tensor;
         for(j = 0; j < TENSOR_DIMENSIONS; j++){
-            if (eigenvalues[i] < min_diffusivity){
-                eigenvalues[i] = min_diffusivity;
+            if (eigenvalues[j] < min_diffusivity){
+                eigenvalues[j] = min_diffusivity;
             }
         }
         output[i]->vals = eigenvalues;
