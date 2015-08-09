@@ -95,8 +95,8 @@ void test_generate_weights(void){
     matrix* expected_weights = malloc(sizeof(matrix));
     double ols_data[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
     double signal_data[] = {1, 4, 2, 5, 3, 6};
-    double expected_data[] = {4.03428793e+02, 3.26901737e+06, 4.03428793e+02,
-         3.26901737e+06, 4.03428793e+02, 3.26901737e+06} ;
+    double expected_data[] = {4.03428793e+02, 4.03428793e+02, 4.03428793e+02, 
+         3.26901737e+06, 3.26901737e+06, 3.26901737e+06} ;
     test_ols->data = ols_data;
     test_ols->rows = 3;
     test_ols->columns = 3;
@@ -173,7 +173,7 @@ void test_cuda_decompose_tensors(void){
     double test_data[] = {4, 0, 5, 0, 0, 6, 1, 0, 2, 0, 0, 3};
     double* gpu_test_data = cuda_double_copy_to_gpu(test_data, 12);
     double expected_results[] = {4, 5, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 2, 3, 1, 0, 0, 0, 1, 0, 0, 0, 1};
-    double* eigendecomposition = cuda_decompose_tensors(gpu_test_data, 2);
+    double* eigendecomposition = cuda_decompose_tensors(gpu_test_data, 6, 2);
     CU_ASSERT( true == array_compare(expected_results, eigendecomposition, 24, MARGIN));
     free(eigendecomposition);
 }

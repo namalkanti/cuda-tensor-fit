@@ -11,6 +11,6 @@ void fit_complete_signal(matrix* ols_fit, matrix* design_matrix, matrix* signal,
     matrix* column_major_design_matrix_gpu = process_matrix(design_matrix);
     double* tensors_gpu = cuda_fitter(column_major_design_matrix_gpu, column_major_weights_gpu, 
             processed_signal_gpu);
-    double* padded_eigendecompositions_gpu = cuda_decompose_tensors(tensors_gpu, number_of_signals);
+    double* padded_eigendecompositions_gpu = cuda_decompose_tensors(tensors_gpu, column_major_design_matrix_gpu->columns , number_of_signals);
     extract_eigendecompositions(padded_eigendecompositions_gpu, tensor_output, signal_elements);
 }

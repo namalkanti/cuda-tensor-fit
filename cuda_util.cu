@@ -39,7 +39,7 @@ __global__ void exp_kernel(double* cuda_array);
 __global__ void weighting_kernel (double const* matrices, double const* weights, double* results); 
 __global__ void weighting_kernel_transposed(double const* matrices, double const* weights, double* results); 
 __global__ void transpose_kernel(double const* matrices, double* transposed);
-__global__ void assemble_tensors(double const* tensor_input, double* tensors);
+__global__ void assemble_tensors(double const* tensor_input, double* tensors, int tensor_input_elements);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
 /* __global__ void multiply_arrays(double* signals, double const* weights); */
 __global__ void create_array_of_pointers_kernel(double* data, int m, int n, double** target);
@@ -207,14 +207,14 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
 }
 
 extern "C"
-double* cuda_decompose_tensors(double const* tensors_input, int number_of_tensors){
+double* cuda_decompose_tensors(double const* tensors_input, int tensor_input_elements, int number_of_tensors){
     double* tensors;
     cuda_double_allocate(&tensors, sizeof(double) * TENSOR_ELEMENTS * number_of_tensors);
     dim3 grid, block;
     grid.x = number_of_tensors;
     block.x = 1;
     block.y = 1;
-    assemble_tensors<<<grid, block>>>(tensors_input, tensors);
+    assemble_tensors<<<grid, block>>>(tensors_input, tensors, tensor_input_elements);
     double* debug_tensors = cuda_double_return_from_gpu(tensors, TENSOR_ELEMENTS * number_of_tensors);
     double* gpu_eigendecomposition;
     int length_of_eigendecomposition = EIGENDECOMPOSITION_ELEMENTS * number_of_tensors;
@@ -485,9 +485,9 @@ __global__ void transpose_kernel(double const* matrices, double* transposed) {
 }
 
 //kernel for arranging tensors into symmetric matrix
-__global__ void assemble_tensors(double const* tensor_input, double* tensors){
+__global__ void assemble_tensors(double const* tensor_input, double* tensors, int tensor_input_elements){
     int tensor_matrix_offset = blockIdx.x * TENSOR_DIMENSIONS * TENSOR_DIMENSIONS;
-    int input_matrix_offset = blockIdx.x * TENSOR_INPUT_ELEMENTS;
+    int input_matrix_offset = blockIdx.x * tensor_input_elements;
     tensors[tensor_matrix_offset + 0] = tensor_input[input_matrix_offset + 0];
     tensors[tensor_matrix_offset + 1] = tensor_input[input_matrix_offset + 1];
     tensors[tensor_matrix_offset + 2] = tensor_input[input_matrix_offset + 3];
