@@ -212,9 +212,6 @@ matrix* to_matrix(gsl_matrix const* gsl_mat){
 bool compare_tensors(tensor const* a, tensor const* b, double err){
     if (!array_compare(a->vals, b->vals, 3, err))
         return false;
-    if (!compare_eigenvalues_by_column(a->vecs, b->vecs, err)){
-        return false;
-    }
     return true; 
 }
 
