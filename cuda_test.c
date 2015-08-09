@@ -192,7 +192,7 @@ void test_extract_eigendecompositions(void){
     matrix* second_tensor_vecs = create_matrix(second_vecs, 3, 3);
     second_tensor->vals = (double[]) {4, 5, 6};
     second_tensor->vecs = second_tensor_vecs;
-    extract_eigendecompositions(eigendecomposition, result_tensors, 2);
+    extract_eigendecompositions(eigendecomposition, result_tensors, 2, .0000000005);
     CU_ASSERT(compare_tensors(first_tensor, result_tensors[0], MARGIN));
     CU_ASSERT(compare_tensors(second_tensor, result_tensors[1], MARGIN));
     free_tensor(result_tensors[0]);

@@ -234,8 +234,8 @@ matrix* process_matrix(matrix const* design_matrix){
 }
 
 extern "C"
-void extract_eigendecompositions(double const* eigendecompositions, tensor** output, int number_of_tensors){
-    int i;
+void extract_eigendecompositions(double const* eigendecompositions, tensor** output, int number_of_tensors, int min_diffusivity){
+    int i, j;
     for(i = 0; i < number_of_tensors;i++){
         double const* eigenvalue_pointer = eigendecompositions + (i * EIGENDECOMPOSITION_ELEMENTS);
         double const* eigenvector_pointer = eigendecompositions + ((i * EIGENDECOMPOSITION_ELEMENTS) + 3);
@@ -243,6 +243,11 @@ void extract_eigendecompositions(double const* eigendecompositions, tensor** out
         double* eigenvectors = array_clone(eigenvector_pointer, TENSOR_ELEMENTS);        
         tensor* allocated_tensor = (tensor*) malloc(sizeof(tensor));
         output[i] = allocated_tensor;
+        for(j = 0; j < TENSOR_DIMENSIONS; j++){
+            if (eigenvalues[i] < min_diffusivity){
+                eigenvalues[i] = min_diffusivity;
+            }
+        }
         output[i]->vals = eigenvalues;
         output[i]->vecs = create_matrix(eigenvectors, 3, 3);
     }

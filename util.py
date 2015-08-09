@@ -101,7 +101,7 @@ def fit(signal):
 
 def main():
     # signals = [SIGNAL3, SIGNAL4, SIGNAL5]
-    signals = [SIGNAL5]
+    signals = [SIGNAL4]
     i = 3
     for signal in signals:
         print "For signal {0}".format(i)
