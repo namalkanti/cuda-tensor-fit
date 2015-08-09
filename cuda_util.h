@@ -50,7 +50,7 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix);
 double* cutoff_log_cuda(double const* input, double min_signal, int number_of_signals, int signal_length);
 
 //Kernel to take entire array and exp it
-double* exp_cuda(double const* input, int array_length);
+double* exp_cuda(double const* input, int number_of_signals, int signal_length);
 
 //Wrapper for CUBLAS Dgemm call
 matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2);
