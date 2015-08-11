@@ -144,8 +144,6 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
             design_matrix->rows, design_matrix->columns, column_major_weights->columns, false);
 
-    double* weighed_host = cuda_double_return_from_gpu(weighted_design_data, design_matrix->rows * design_matrix->columns * column_major_weights->columns);
-
     int signal_elements = signals->rows * signals->columns;
     int batch_size = signals->rows;
 
@@ -215,7 +213,6 @@ double* cuda_decompose_tensors(double const* tensors_input, int tensor_input_ele
     block.x = 1;
     block.y = 1;
     assemble_tensors<<<grid, block>>>(tensors_input, tensors, tensor_input_elements);
-    double* debug_tensors = cuda_double_return_from_gpu(tensors, TENSOR_ELEMENTS * number_of_tensors);
     double* gpu_eigendecomposition;
     int length_of_eigendecomposition = EIGENDECOMPOSITION_ELEMENTS * number_of_tensors;
     cuda_double_allocate(&gpu_eigendecomposition, sizeof(double) * length_of_eigendecomposition);
