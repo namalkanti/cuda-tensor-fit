@@ -67,6 +67,10 @@ double* dot_matrices(double const* matrix_batch_one, int rows, double const* mat
 //Wrapper function to weight and fit the data
 double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signal);
 
+/*Converts matrix to the data format fortran uses for CUBLAS and loads to GPU
+  Returns pointer to array on GPU.*/
+double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat);
+
 /*Converts matrix from the format fortran uses for CUBLAS after retrieving from GPU
   Will free gpu_pointer.
   Populates a matrix object passed in.*/
