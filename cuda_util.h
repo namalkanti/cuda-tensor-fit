@@ -10,7 +10,7 @@ matrix* process_signal(matrix const* signal, double min_signal);
 //Takes in an ols_fit matrix and signal matrix in row major.
 //Converts signal to column major,multiplies, and exponentiates.
 //Then loads to gpu(padding) and returns pointer in column major. 
-matrix* generate_weights(matrix* ols_fit_matrix, matrix* signal);
+matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal);
 
 //Takes in matrix, converts to column major, pads, and loads to gpu.
 matrix* process_matrix(matrix const* design_matrix);
