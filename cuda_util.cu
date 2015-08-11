@@ -68,7 +68,6 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
     double* exp_weights = exp_cuda(weights->data, weights->rows,  weights->columns);
     free(weights->data);
     matrix* gpu_weights= create_matrix(exp_weights, weights->rows, weights->columns);
-    free_matrix(weights);
     return gpu_weights;
 }
 
