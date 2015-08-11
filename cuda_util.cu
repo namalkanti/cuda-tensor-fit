@@ -40,14 +40,13 @@ __global__ void weighting_kernel_transposed(double const* matrices, double const
 __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors, int tensor_input_elements);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
-/* __global__ void multiply_arrays(double* signals, double const* weights); */
 __global__ void create_array_of_pointers_kernel(double* data, int m, int n, double** target);
+__global__ void convert_to_fortran_major(double const* input, int rows, int columns, double* output);
+__global__ void convert_to_c_major(double const* input, int rows, int columns, double* output);
 
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, double Q[3][3], double w[3]);
 __device__ void deposit_data_segment_into_array(double const* data, int offset, double A[3][3]);
-__device__ void convert_to_fortran_major(double const* input, int rows, int columns, double* output);
-__device__ void convert_to_c_major(double const* input, int rows, int columns, double* output);
 __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
 extern "C"
@@ -540,6 +539,31 @@ __global__ void create_array_of_pointers_kernel(double* arr, int m, int n, doubl
     target[blockIdx.x] = arr + (blockIdx.x * m * n);
 }
 
+//Converts a gpu matrix to fortran major
+__global__ void convert_to_fortran_major(double const* input, int rows, int columns, double* output){
+    int i, j;
+    int column_major_index;
+    for(i = 0; i < rows; i++){
+        for(j = 0; j < columns; j++){
+            column_major_index = IDX2C(i, j, rows);
+            output[column_major_index] = input[i * columns + j];
+        }
+    }
+}
+
+//Converts a gpu matrix from fortran major to c major
+__global__ void convert_to_c_major(double const* input, int rows, int columns, double* output){
+    int i, j;
+    int column_major_index;
+    for(i = 0; i < rows; i++){
+        for(j = 0; j < columns; j++){
+            column_major_index = IDX2C(i, j, rows);
+            output[i * columns + j] = input[column_major_index];
+        }
+    }
+}
+
+
 //device function of assembling eigendecomposition from respective blocks.
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, 
         double Q[3][3], double w[3]){
@@ -568,30 +592,6 @@ __device__ void deposit_data_segment_into_array(double const* data, int matrix_o
     A[2][0] = data[matrix_offset + 6];
     A[2][1] = data[matrix_offset + 7];
     A[2][2] = data[matrix_offset + 8];
-}
-
-//Converts a gpu matrix to fortran major
-__device__ void convert_to_fortran_major(double const* input, int rows, int columns, double* output){
-    int i, j;
-    int column_major_index;
-    for(i = 0; i < rows; i++){
-        for(j = 0; j < columns; j++){
-            column_major_index = IDX2C(i, j, rows);
-            output[column_major_index] = input[i * columns + j];
-        }
-    }
-}
-
-//Converts a gpu matrix from fortran major to c major
-__device__ void convert_to_c_major(double const* input, int rows, int columns, double* output){
-    int i, j;
-    int column_major_index;
-    for(i = 0; i < rows; i++){
-        for(j = 0; j < columns; j++){
-            column_major_index = IDX2C(i, j, rows);
-            output[i * columns + j] = input[column_major_index];
-        }
-    }
 }
 
 // Jacobi algorithm for eigen decomposition. Implemented by Joachlm Kopp for his paper
