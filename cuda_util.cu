@@ -142,15 +142,19 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
 
     int signal_elements = signals->rows * signals->columns;
     int batch_size = signals->rows;
+    int signal_size = signals->columns;
 
-    double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements);
-    double* weights = cuda_double_return_from_gpu(column_major_weights->data, signal_elements);
-    int i;
-    for(i = 0; i < signal_elements;i++){
-        intermediate_solution[i] *= weights[i];
-    }
-    double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements);
-    free(intermediate_solution);
+    multiply_arrays<<<batch_size, signal_size>>>(signals->data, column_major_weights->data);
+    double* solution_vectors = signals->data;
+
+    /* double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements); */
+    /* double* weights = cuda_double_return_from_gpu(column_major_weights->data, signal_elements); */
+    /* int i; */
+    /* for(i = 0; i < signal_elements;i++){ */
+    /*     intermediate_solution[i] *= weights[i]; */
+    /* } */
+    /* double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements); */
+    /* free(intermediate_solution); */
 
     cublasStatus_t status;
     cublasHandle_t handle;
@@ -510,9 +514,9 @@ __global__ void eigendecomposition_kernel(double const* data, double* eigendecom
 }
 
 //kernel to multiply two gpu arrays
-/* __global__ void multiply_arrays(double* signals, double const* weights){ */
-/*     signals[blockIdx * blockDim.x + threadIdx.x] *= weights[blockIdx * blockDim.x + threadIdx]; */
-/* } */
+__global__ void multiply_arrays(double* signals, double const* weights){
+    signals[blockIdx.x * blockDim.x + threadIdx.x] *= weights[blockIdx.x * blockDim.x + threadIdx.x];
+}
 
 __global__ void create_array_of_pointers_kernel(double* arr, int m, int n, double** target){
     target[blockIdx.x] = arr + (blockIdx.x * m * n);
