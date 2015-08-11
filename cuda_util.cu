@@ -316,10 +316,10 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
 
     double* gpu_array1; 
     gpu_error_check(cudaMalloc(&gpu_array1, sizeof(double)* matrix1->rows * matrix1->columns));
-    convert_to_fortran_major(matrix1->data, matrix1->rows, matrix1->columns, gpu_array1);
+    convert_to_fortran_major<<<1, 1>>>(matrix1->data, matrix1->rows, matrix1->columns, gpu_array1);
     double* gpu_array2;
     gpu_error_check(cudaMalloc(&gpu_array2, sizeof(double)* matrix2->rows * matrix2->columns));
-    convert_to_fortran_major(matrix2->data, matrix2->rows, matrix2->columns, gpu_array2);
+    convert_to_fortran_major<<<1, 1>>>(matrix2->data, matrix2->rows, matrix2->columns, gpu_array2);
     double* gpu_output;
     gpu_error_check(cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns));
 
@@ -338,7 +338,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     result_matrix->data = result_matrix_data;
-    convert_to_c_major(gpu_output, result_matrix->rows, result_matrix->columns, result_matrix->data);
+    convert_to_c_major<<<1, 1>>>(gpu_output, result_matrix->rows, result_matrix->columns, result_matrix->data);
     gpu_error_check(cudaFree(gpu_array1));
     gpu_error_check(cudaFree(gpu_array2));
     return result_matrix;
