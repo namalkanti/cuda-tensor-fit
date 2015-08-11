@@ -11,3 +11,5 @@ cython_opt.c
 paper.tex
 .metadata
 *.lib
+*.so
+*.a
