@@ -63,11 +63,11 @@ matrix* process_signal(matrix const* signal, double min_signal){
 }
 
 extern "C"
-matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
-    ols_fit_matrix->data = cuda_double_copy_to_gpu(ols_fit_matrix->data, ols_fit_matrix->rows, ols_fit_matrix->columns);
+matrix* generate_weights(matrix* ols_fit_matrix, matrix* signal){
+    ols_fit_matrix->data = cuda_double_copy_to_gpu(ols_fit_matrix->data, ols_fit_matrix->rows * ols_fit_matrix->columns);
     signal->data = cuda_double_copy_to_gpu(signal->data, signal->rows * signal->columns);
     matrix* weights = cuda_matrix_dot(ols_fit_matrix, signal);
-    weights->data = cuda_double_return_from_gpu(weights->data, weights->rows, weights->columns);
+    weights->data = cuda_double_return_from_gpu(weights->data, weights->rows * weights->columns);
     double* exp_weights = exp_cuda(weights->data, weights->rows,  weights->columns);
     free(weights->data);
     weights->data = exp_weights;
@@ -573,6 +573,7 @@ __device__ void deposit_data_segment_into_array(double const* data, int matrix_o
 //Converts a gpu matrix to fortran major
 __device__ void convert_to_fortran_major(double const* input, int rows, int columns, double* output){
     int i, j;
+    int column_major_index;
     for(i = 0; i < rows; i++){
         for(j = 0; j < columns; j++){
             column_major_index = IDX2C(i, j, mat->rows);
@@ -584,6 +585,7 @@ __device__ void convert_to_fortran_major(double const* input, int rows, int colu
 //Converts a gpu matrix from fortran major to c major
 __device__ void convert_to_c_major(double const* input, int rows, int columns, double* output){
     int i, j;
+    int column_major_index;
     for(i = 0; i < rows; i++){
         for(j = 0; j < columns; j++){
             column_major_index = IDX2C(i, j, rows);
