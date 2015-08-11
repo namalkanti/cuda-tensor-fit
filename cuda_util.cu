@@ -322,8 +322,6 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     result_matrix->data = gpu_output;
-    gpu_error_check(cudaFree(gpu_array1));
-    gpu_error_check(cudaFree(gpu_array2));
     return result_matrix;
 }
     
