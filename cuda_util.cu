@@ -294,6 +294,7 @@ double* exp_cuda(double const* input, int number_of_signals, int signal_length){
     int total_elements = number_of_signals * signal_length;
     double* device_array;
     gpu_error_check(cudaMalloc(&device_array, sizeof(double) * total_elements));
+    gpu_error_check(cudaMemcpy(device_array, input, sizeof(double) * total_elements, cudaMemcpyDeviceToDevice))
     exp_kernel<<<number_of_signals, signal_length>>>(device_array);
     return device_array;
 }
