@@ -28,7 +28,6 @@ inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=false)
 
 //Helper function declarations
 double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat);
-void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat);
 double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m, int n, int batch, double** intermediate_array);
 void free_array_of_gpu_pointers(double** array, int batch);
 const char* cublas_get_error_string(cublasStatus_t status);
@@ -47,6 +46,8 @@ __global__ void create_array_of_pointers_kernel(double* data, int m, int n, doub
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, double Q[3][3], double w[3]);
 __device__ void deposit_data_segment_into_array(double const* data, int offset, double A[3][3]);
+__device__ void convert_to_fortran_major(double const* input, int rows, int columns, double* output);
+__device__ void convert_to_c_major(double const* input, int rows, int columns, double* output);
 __device__ int dsyevj3(double A[3][3], double Q[3][3], double w[3]);
 
 extern "C"
@@ -63,7 +64,10 @@ matrix* process_signal(matrix const* signal, double min_signal){
 
 extern "C"
 matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
+    ols_fit_matrix->data = cuda_double_copy_to_gpu(ols_fit_matrix->data, ols_fit_matrix->rows, ols_fit_matrix->columns);
+    signal->data = cuda_double_copy_to_gpu(signal->data, signal->rows * signal->columns);
     matrix* weights = cuda_matrix_dot(ols_fit_matrix, signal);
+    weights->data = cuda_double_return_from_gpu(weights->data, weights->rows, weights->columns);
     double* exp_weights = exp_cuda(weights->data, weights->rows,  weights->columns);
     free(weights->data);
     weights->data = exp_weights;
@@ -310,23 +314,32 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts(cublas_get_error_string(status));
     }
-    double* gpu_array1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
-    double* gpu_array2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
+
+    double* gpu_array1; 
+    gpu_error_check(cudaMalloc(&gpu_array1, sizeof(double)* matrix1->rows * matrix1->columns));
+    convert_to_fortran_major(matrix1->data, matrix1->rows, matrix1->columns, gpu_array1);
+    double* gpu_array2;
+    gpu_error_check(cudaMalloc(&gpu_array2, sizeof(double)* matrix2->rows * matrix2->columns));
+    convert_to_fortran_major(matrix2->data, matrix2->rows, matrix2->columns, gpu_array2);
     double* gpu_output;
     gpu_error_check(cudaMalloc(&gpu_output, sizeof(double)* matrix1->rows * matrix2->columns));
+
     const double alpha = 1;
     const double beta = 0;
+
     status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, matrix1->rows, matrix2->columns, matrix1->columns, 
             &alpha, gpu_array1, matrix1->rows, gpu_array2, matrix2->rows, &beta, gpu_output, matrix1->rows);
     if ( status != CUBLAS_STATUS_SUCCESS ) {
         puts(cublas_get_error_string(status));
     }
+
     matrix* result_matrix = (matrix*) malloc(sizeof(matrix));
-    double* result_matrix_data =  (double*) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
+    double* result_matrix_data; 
+    gpu_error_check(cudaMalloc(&result_matrix_data, matrix1->rows * matrix2->columns));
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
     result_matrix->data = result_matrix_data;
-    get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
+    convert_to_c_major(gpu_output, result_matrix->rows, result_matrix->columns, result_matrix->data);
     gpu_error_check(cudaFree(gpu_array1));
     gpu_error_check(cudaFree(gpu_array2));
     return result_matrix;
@@ -365,6 +378,18 @@ double* transpose_matrices(double const* matrices, int rows, int columns, int le
     return transposed;
 }
 
+void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat){
+    int length = mat->rows * mat->columns;
+    double* intermediate_matrix = cuda_double_return_from_gpu(gpu_pointer, length);
+    int i, j;
+    for (i = 0; i < mat->rows; i++ ) {
+        for (j = 0; j < mat->columns; j++) {
+            mat->data[i * mat->columns + j] = intermediate_matrix[IDX2C(i, j, mat->rows)];
+        }
+    }
+    free(intermediate_matrix);
+}
+
 //Helper functions
 
 /*Converts matrix to the data format fortran uses for CUBLAS and loads to GPU
@@ -382,21 +407,6 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     double* gpu_array = cuda_double_copy_to_gpu(intermediate_matrix, length);
     free(intermediate_matrix);
     return gpu_array;
-}
-
-/*Converts matrix from the format fortran uses for CUBLAS after retrieving from GPU
-  Will free gpu_pointer.
-  Populates a matrix object passed in.*/
-void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat){
-    int length = mat->rows * mat->columns;
-    double* intermediate_matrix = cuda_double_return_from_gpu(gpu_pointer, length);
-    int i, j;
-    for (i = 0; i < mat->rows; i++ ) {
-        for (j = 0; j < mat->columns; j++) {
-            mat->data[i * mat->columns + j] = intermediate_matrix[IDX2C(i, j, mat->rows)];
-        }
-    }
-    free(intermediate_matrix);
 }
 
 /*Converts contigous array in gpu memory into array of pointers in gpu memory. Intermediate array must be an array of 
@@ -558,6 +568,28 @@ __device__ void deposit_data_segment_into_array(double const* data, int matrix_o
     A[2][0] = data[matrix_offset + 6];
     A[2][1] = data[matrix_offset + 7];
     A[2][2] = data[matrix_offset + 8];
+}
+
+//Converts a gpu matrix to fortran major
+__device__ void convert_to_fortran_major(double const* input, int rows, int columns, double* output){
+    int i, j;
+    for(i = 0; i < rows; i++){
+        for(j = 0; j < columns; j++){
+            column_major_index = IDX2C(i, j, mat->rows);
+            output[column_major_index] = input[i * columns + j];
+        }
+    }
+}
+
+//Converts a gpu matrix from fortran major to c major
+__device__ void convert_to_c_major(double const* input, int rows, int columns, double* output){
+    int i, j;
+    for(i = 0; i < rows; i++){
+        for(j = 0; j < columns; j++){
+            column_major_index = IDX2C(i, j, rows);
+            output[i * columns + j] = input[column_major_index];
+        }
+    }
 }
 
 // Jacobi algorithm for eigen decomposition. Implemented by Joachlm Kopp for his paper
