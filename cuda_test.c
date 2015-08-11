@@ -94,7 +94,7 @@ void test_generate_weights(void){
     matrix* test_signal = malloc(sizeof(matrix));
     matrix* expected_weights = malloc(sizeof(matrix));
     double ols_data[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-    double signal_data[] = {1, 4, 2, 5, 3, 6};
+    double signal_data[] = {1, 2, 3, 4, 5, 6};
     double expected_data[] = {4.03428793e+02, 4.03428793e+02, 4.03428793e+02, 
          3.26901737e+06, 3.26901737e+06, 3.26901737e+06} ;
     test_ols->data = ols_data;
@@ -106,11 +106,13 @@ void test_generate_weights(void){
     expected_weights->data = expected_data;
     expected_weights->rows = 3;
     expected_weights->columns = 2;
+    test_signal->data = cuda_double_copy_to_gpu(signal_data, 6);
     matrix* results = generate_weights(test_ols, test_signal);
     double* gpu_data = results->data;
     results->data = cuda_double_return_from_gpu(gpu_data, results->rows * results->columns);
     CU_ASSERT(true == matrix_compare(expected_weights, results, MARGIN));
     free_cuda_memory(gpu_data);
+    free_cuda_memory(test_signal->data);
     free(test_ols);
     free(test_signal);
     free(expected_weights);
@@ -253,8 +255,12 @@ void test_exp_array(void){
         162754.79141900392, 
         442413.3920089205};
     int size2 = sizeof(test2)/sizeof(test2[0]);
-    double* return1 = exp_cuda(test1, 1, size1);
-    double* return2 = exp_cuda(test2, 1, size2);
+    double* gpu1 = cuda_double_copy_to_gpu(test1, size1);
+    double* gpu2 = cuda_double_copy_to_gpu(test2, size1);
+    double* greturn1 = exp_cuda(gpu1, 1, size1);
+    double* greturn2 = exp_cuda(gpu2, 1, size2);
+    double* return1 = cuda_double_return_from_gpu(greturn1, size1);
+    double* return2 = cuda_double_return_from_gpu(greturn2, size2);
     CU_ASSERT(array_compare(results1, return1, size1, 1) == true);
     CU_ASSERT(array_compare(results2, return2, size2, 1) == true);
 }
@@ -276,7 +282,13 @@ void test_cuda_matrix_dot(void) {
     expected->data = result_array;
     expected->rows = 2;
     expected->columns = 2;
-    matrix* result = cuda_matrix_dot(matrix1, matrix2);
+    matrix* gpu1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
+    matrix* gpu2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
+    matrix* result = cuda_matrix_dot(gpu1, gpu2);
+    double* gpu_out = result->data;
+    double* result_data = malloc(sizeof(double) * result->rows * result->columns);
+    result->data = result_data;
+    get_matrix_from_gpu_and_convert_from_fortran(gpu_out, result);
     CU_ASSERT(true == matrix_compare(expected, result, MARGIN));
 }
 

@@ -27,7 +27,6 @@ inline void gpu_assert(cudaError_t code, char* file, int line, bool abort=false)
 
 
 //Helper function declarations
-double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat);
 void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat);
 double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m, int n, int batch, double** intermediate_array);
 void free_array_of_gpu_pointers(double** array, int batch);
@@ -63,12 +62,11 @@ matrix* process_signal(matrix const* signal, double min_signal){
 
 extern "C"
 matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
+    matrix* gpu_ols = convert_matrix_to_fortran_and_load_to_gpu(ols_fit_matrix);
     matrix* weights = cuda_matrix_dot(ols_fit_matrix, signal);
     double* exp_weights = exp_cuda(weights->data, weights->rows,  weights->columns);
     free(weights->data);
-    weights->data = exp_weights;
-    double* gpu_weights_data = convert_matrix_to_fortran_and_load_to_gpu(weights);
-    matrix* gpu_weights= create_matrix(gpu_weights_data, weights->rows, weights->columns);
+    matrix* gpu_weights= create_matrix(exp_weights, weights->rows, weights->columns);
     free_matrix(weights);
     return gpu_weights;
 }
@@ -295,11 +293,10 @@ double* cutoff_log_cuda(double const* input, double min_signal, int number_of_si
 extern "C"
 double* exp_cuda(double const* input, int number_of_signals, int signal_length){
     int total_elements = number_of_signals * signal_length;
-    double* device_array = cuda_double_copy_to_gpu(input, total_elements);
+    double* device_array;
+    gpu_error_check(cudaMalloc(&device_array, sizeof(double) * total_elements);
     exp_kernel<<<number_of_signals, signal_length>>>(device_array);
-    double* output_array = cuda_double_return_from_gpu(device_array, total_elements);
-    free_cuda_memory(device_array);
-    return output_array;
+    return device_array;
 }
 
 extern "C"
@@ -325,8 +322,7 @@ matrix* cuda_matrix_dot(matrix const* matrix1, matrix const* matrix2){
     double* result_matrix_data =  (double*) malloc(sizeof(double) * matrix1->rows * matrix2->columns);
     result_matrix->rows = matrix1->rows;
     result_matrix->columns = matrix2->columns;
-    result_matrix->data = result_matrix_data;
-    get_matrix_from_gpu_and_convert_from_fortran(gpu_output, result_matrix);
+    result_matrix->data = gpu_output;
     gpu_error_check(cudaFree(gpu_array1));
     gpu_error_check(cudaFree(gpu_array2));
     return result_matrix;
@@ -384,9 +380,6 @@ double* convert_matrix_to_fortran_and_load_to_gpu(matrix const* mat){
     return gpu_array;
 }
 
-/*Converts matrix from the format fortran uses for CUBLAS after retrieving from GPU
-  Will free gpu_pointer.
-  Populates a matrix object passed in.*/
 void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat){
     int length = mat->rows * mat->columns;
     double* intermediate_matrix = cuda_double_return_from_gpu(gpu_pointer, length);
