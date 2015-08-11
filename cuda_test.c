@@ -282,9 +282,11 @@ void test_cuda_matrix_dot(void) {
     expected->data = result_array;
     expected->rows = 2;
     expected->columns = 2;
-    matrix* gpu1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
-    matrix* gpu2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
-    matrix* result = cuda_matrix_dot(gpu1, gpu2);
+    double* gpu1 = convert_matrix_to_fortran_and_load_to_gpu(matrix1);
+    double* gpu2 = convert_matrix_to_fortran_and_load_to_gpu(matrix2);
+    matrix gmatrix1 = {gpu1, matrix1->rows, matrix1->columns};
+    matrix gmatrix2 = {gpu2, matrix2->rows, matrix2->columns};
+    matrix* result = cuda_matrix_dot(&gmatrix1, &gmatrix2);
     double* gpu_out = result->data;
     double* result_data = malloc(sizeof(double) * result->rows * result->columns);
     result->data = result_data;
