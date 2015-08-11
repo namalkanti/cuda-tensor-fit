@@ -40,7 +40,7 @@ __global__ void weighting_kernel_transposed(double const* matrices, double const
 __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors, int tensor_input_elements);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
-/* __global__ void multiply_arrays(double* signals, double const* weights); */
+__global__ void multiply_arrays(double* signals, double const* weights);
 __global__ void create_array_of_pointers_kernel(double* data, int m, int n, double** target);
 
 //device functions
@@ -188,7 +188,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     gpu_error_check(cudaMemcpy(sol_array, ls_solution_vectors, sizeof(double*) * batch_size, cudaMemcpyDeviceToHost));
     double* results;
     gpu_error_check(cudaMalloc(&results, sizeof(double) * design_matrix->columns * batch_size));
-    int j, sol_offset;
+    int i, j, sol_offset;
     for(i = 0;i < batch_size;i++){
         sol_offset = i * design_matrix->columns ;
         for(j = 0;j < design_matrix->columns;j++){
