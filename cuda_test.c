@@ -256,7 +256,7 @@ void test_exp_array(void){
         442413.3920089205};
     int size2 = sizeof(test2)/sizeof(test2[0]);
     double* gpu1 = cuda_double_copy_to_gpu(test1, size1);
-    double* gpu2 = cuda_double_copy_to_gpu(test2, size1);
+    double* gpu2 = cuda_double_copy_to_gpu(test2, size2);
     double* greturn1 = exp_cuda(gpu1, 1, size1);
     double* greturn2 = exp_cuda(gpu2, 1, size2);
     double* return1 = cuda_double_return_from_gpu(greturn1, size1);
