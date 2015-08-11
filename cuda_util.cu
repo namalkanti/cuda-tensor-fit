@@ -576,7 +576,7 @@ __device__ void convert_to_fortran_major(double const* input, int rows, int colu
     int column_major_index;
     for(i = 0; i < rows; i++){
         for(j = 0; j < columns; j++){
-            column_major_index = IDX2C(i, j, mat->rows);
+            column_major_index = IDX2C(i, j, rows);
             output[column_major_index] = input[i * columns + j];
         }
     }
