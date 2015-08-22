@@ -42,14 +42,10 @@ def tensor_fit(ols_fit, design_matrix, signal, float min_signal, float min_diffu
 
     output = np.zeros((signals, 4, 3))
 
-    indices, sizes = generate_indices(signals, GPU_CHUNKS)
-    for i in range(len(indices)):
-        start = indices[i][0]
-        stop = indices[i][1]
-        python_to_c(<double*> np.PyArray_DATA(ols_fit), <int> ols_rows, <int> ols_columns,
-                    <double*>np.PyArray_DATA(design_matrix), <int> design_rows, <int> design_columns,
-                    <double*>np.PyArray_DATA(signal[start:stop]), <int> sizes[i], <int> signal_elements,
-                    min_signal, min_diffusivity, <double*> np.PyArray_DATA(output[start:stop]))
+    python_to_c(<double*> np.PyArray_DATA(ols_fit), <int> ols_rows, <int> ols_columns,
+                <double*>np.PyArray_DATA(design_matrix), <int> design_rows, <int> design_columns,
+                <double*>np.PyArray_DATA(signal), <int> signals, <int> signal_elements,
+                min_signal, min_diffusivity, <double*> np.PyArray_DATA(output))
 
     return output
 
