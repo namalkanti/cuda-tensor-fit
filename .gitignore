@@ -13,3 +13,4 @@ paper.tex
 *.lib
 *.so
 *.a
+*.npy
