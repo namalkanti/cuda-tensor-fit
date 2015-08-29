@@ -35,8 +35,8 @@ class CythonOptTest(unittest.TestCase):
         min_signal = self._mins[0]
         min_diffusivity = self._mins[1]
         result = tensor_fit(self._ols, self._design, self._signals, min_signal, min_diffusivity)
-        expected_eigs = np.array([np.array(arr[0]) for arr in self._expected])
-        result_eigs = np.array([np.array(arr[0]) for arr in result])
+        expected_eigs = np.array([np.sort(arr[0]) for arr in self._expected])
+        result_eigs = np.array([np.sort(arr[0]) for arr in result])
         self.assertTrue(np.allclose(expected_eigs, result_eigs))
 
 if __name__ == "__main__":
