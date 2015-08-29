@@ -220,7 +220,7 @@ double* cuda_decompose_tensors(double const* tensors_input, int tensor_input_ele
     double* eigendecomposition = cuda_double_return_from_gpu(gpu_eigendecomposition, length_of_eigendecomposition);
     free_cuda_memory(tensors);
     free_cuda_memory(gpu_eigendecomposition);
-    gpu_assert(cudaDeviceSynchronize());
+    gpu_error_check(cudaDeviceSynchronize());
     return eigendecomposition;
 }
 
