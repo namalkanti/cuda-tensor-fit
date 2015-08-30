@@ -37,7 +37,7 @@ class CythonOptTest(unittest.TestCase):
         result = tensor_fit(self._ols, self._design, self._signals, min_signal, min_diffusivity)
         expected_eigs = np.array([np.sort(arr[0]) for arr in self._expected])
         result_eigs = np.array([np.sort(arr[0]) for arr in result])
-        self.asserttrue(np.allclose(expected_eigs, result_eigs))
+        self.assertTrue(np.allclose(expected_eigs, result_eigs))
 
     def test_full_tensor(self):
         """
@@ -50,7 +50,7 @@ class CythonOptTest(unittest.TestCase):
         result = tensor_fit(self._ols, self._design, full_signals, min_signal, min_diffusivity)
         expected_eigs = np.array([np.sort(arr[0]) for arr in full_tensors])
         result_eigs = np.array([np.sort(arr[0]) for arr in result])
-        self.asserttrue(np.allclose(expected_eigs, result_eigs))
+        self.assertTrue(np.allclose(expected_eigs, result_eigs))
 
 if __name__ == "__main__":
     unittest.main()
