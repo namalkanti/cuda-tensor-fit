@@ -29,7 +29,7 @@ class CythonOptTest(unittest.TestCase):
 
     def test_tensor_fit(self):
         """
-        Tests tensor fit function.
+        tests tensor fit function.
         """
 
         min_signal = self._mins[0]
@@ -37,7 +37,20 @@ class CythonOptTest(unittest.TestCase):
         result = tensor_fit(self._ols, self._design, self._signals, min_signal, min_diffusivity)
         expected_eigs = np.array([np.sort(arr[0]) for arr in self._expected])
         result_eigs = np.array([np.sort(arr[0]) for arr in result])
-        self.assertTrue(np.allclose(expected_eigs, result_eigs))
+        self.asserttrue(np.allclose(expected_eigs, result_eigs))
+
+    def test_full_tensor(self):
+        """
+        Tests full signal results.
+        """
+        min_signal = self._mins[0]
+        min_diffusivity = self._mins[1]
+        full_signals = np.load("signal_full.npy")
+        full_tensors = np.load("expected_full.npy")
+        result = tensor_fit(self._ols, self._design, full_signals, min_signal, min_diffusivity)
+        expected_eigs = np.array([np.sort(arr[0]) for arr in full_tensors])
+        result_eigs = np.array([np.sort(arr[0]) for arr in result])
+        self.asserttrue(np.allclose(expected_eigs, result_eigs))
 
 if __name__ == "__main__":
     unittest.main()
