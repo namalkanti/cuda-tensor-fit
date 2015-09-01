@@ -56,6 +56,7 @@ matrix* process_signal(matrix const* signal, double min_signal){
     double* kernel_results = cutoff_log_cuda(gpu_signal, min_signal, signal->rows, signal->columns);
     matrix* processed_signal = create_matrix(kernel_results, signal->rows, signal->columns);
     free(signal_data);
+    free_cuda_memory(gpu_signal);
     return processed_signal;
 }
 
