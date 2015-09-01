@@ -31,4 +31,12 @@ void python_to_c(double* ols_fit_data, int ols_rows, int ols_columns,
             output[i * EIGENELEMENTS + EIGENVALUES + j] = tensor_output[i]->vecs->data[j];
         }
     }
+
+    free(ols_fit);
+    free(design_matrix);
+    free(signal);
+    for ( i = 0; i < signals; i++){
+        free(tensor_output[i]);
+    }
+    free(tensor_output);
 }
