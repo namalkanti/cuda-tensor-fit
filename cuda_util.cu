@@ -241,7 +241,7 @@ matrix* process_matrix(matrix const* design_matrix){
 }
 
 extern "C"
-void extract_eigendecompositions(double const* eigendecompositions, tensor** output, int number_of_tensors, double min_diffusivity){
+void extract_eigendecompositions(double* eigendecompositions, tensor** output, int number_of_tensors, double min_diffusivity){
     int i, j;
     for(i = 0; i < number_of_tensors;i++){
         double const* eigenvalue_pointer = eigendecompositions + (i * EIGENDECOMPOSITION_ELEMENTS);
@@ -258,6 +258,7 @@ void extract_eigendecompositions(double const* eigendecompositions, tensor** out
         output[i]->vals = eigenvalues;
         output[i]->vecs = create_matrix(eigenvectors, 3, 3);
     }
+    free_cuda_memory(eigendecompositions);
     return;
 }
 
