@@ -150,15 +150,6 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     multiply_arrays<<<batch_size, signal_size>>>(signals->data, column_major_weights->data);
     double* solution_vectors = signals->data;
 
-    /* double* intermediate_solution = cuda_double_return_from_gpu(signals->data, signal_elements); */
-    /* double* weights = cuda_double_return_from_gpu(column_major_weights->data, signal_elements); */
-    /* int i; */
-    /* for(i = 0; i < signal_elements;i++){ */
-    /*     intermediate_solution[i] *= weights[i]; */
-    /* } */
-    /* double* solution_vectors = cuda_double_copy_to_gpu(intermediate_solution, signal_elements); */
-    /* free(intermediate_solution); */
-
     cublasStatus_t status;
     cublasHandle_t handle;
     int* cublas_error_info = (int*) malloc(sizeof(int));
