@@ -204,6 +204,12 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
         puts(cublas_get_error_string(status));
     }
 
+    free(cublas_error_info);
+    free(design_inter);
+    free(sol_inter);
+    free_cuda_memory(weighted_design_data);
+    gpu_error_check(cudaFree(dev_info));
+
     return results;
 }
 
