@@ -143,7 +143,6 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
             design_matrix->rows, design_matrix->columns, column_major_weights->columns, false);
 
-    int signal_elements = signals->rows * signals->columns;
     int batch_size = signals->rows;
     int signal_size = signals->columns;
 
@@ -182,7 +181,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     gpu_error_check(cudaMemcpy(sol_array, ls_solution_vectors, sizeof(double*) * batch_size, cudaMemcpyDeviceToHost));
     double* results;
     gpu_error_check(cudaMalloc(&results, sizeof(double) * design_matrix->columns * batch_size));
-    int i, j, sol_offset;
+    int i, sol_offset;
     for(i = 0;i < batch_size;i++){
         sol_offset = i * design_matrix->columns ;
         gpu_error_check(cudaMemcpy(results + sol_offset, sol_array[i], sizeof(double) * design_matrix->columns, cudaMemcpyDeviceToDevice));
