@@ -188,7 +188,6 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
         gpu_error_check(cudaMemcpy(results + sol_offset, sol_array[i], sizeof(double) * design_matrix->columns, cudaMemcpyDeviceToDevice));
         free_cuda_memory(design_inter[i]);
         free_cuda_memory(sol_inter[i]);
-        free_cuda_memory(ls_weighted_design[i]);
     }
 
     status = cublasDestroy_v2(handle);
