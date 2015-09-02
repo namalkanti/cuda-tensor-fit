@@ -187,6 +187,11 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
         sol_offset = i * design_matrix->columns ;
         for(j = 0;j < design_matrix->columns;j++){
             gpu_error_check(cudaMemcpy(results + sol_offset, sol_array[i], sizeof(double) * design_matrix->columns, cudaMemcpyDeviceToDevice));
+            free_cuda_memory(sol_array[i]);
+            free_cuda_memory(design_inter[i])
+            free_cuda_memory(sol_inter[i])
+            free_cuda_memory(ls_solution_vectors[i]);
+            free_cuda_memory(ls_weighted_design[i]);
         }
     }
 
@@ -200,6 +205,8 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     free(sol_inter);
     free_cuda_memory(weighted_design_data);
     gpu_error_check(cudaFree(dev_info));
+    gpu_error_check(cudaFree(ls_solution_vectors));
+    gpu_error_check(cudaFree(ls_weighted_design));
 
     return results;
 }
