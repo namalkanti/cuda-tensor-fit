@@ -408,6 +408,22 @@ double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m
     return gpu_array;
 }
 
+double** convert_contingous_gpu_array_to_gpu_array_of_pointers_with_kernel(double* arr, int m, int n, int batch, double** intermediate_array){
+    int elements = m * n;
+    int i, offset;
+    for (i = 0; i < batch; i++){
+        offset = i * elements;
+        gpu_error_check(cudaMalloc(&intermediate_array[i], sizeof(double) * elements));
+    }
+    dim3 grid, block;
+    grid.x = batch;
+    create_array_of_pointers_kernel<<<grid, block>>>(arr, m, n, intermediate_array);
+    double** gpu_array;
+    gpu_error_check(cudaMalloc(&gpu_array, sizeof(double*) * batch));
+    gpu_error_check(cudaMemcpy(gpu_array, intermediate_array, sizeof(double*) * batch, cudaMemcpyHostToDevice));
+    return gpu_array;
+}
+
 //Frees array of pointers where array is on host and pointers are on the device.
 void free_array_of_gpu_pointers(double** array, int batch){
     int i;
@@ -520,7 +536,12 @@ __global__ void multiply_arrays(double* signals, double const* weights){
 }
 
 __global__ void create_array_of_pointers_kernel(double* arr, int m, int n, double** target){
-    target[blockIdx.x] = arr + (blockIdx.x * m * n);
+    double* pointer = target[blockIdx.x];
+    int i, elements;
+    elements =  m * n;
+    for(i = 0; i < elements; i++){
+        pointer[i] = arr[blockIdx.x * m * n + i]
+    }
 }
 
 //device function of assembling eigendecomposition from respective blocks.
