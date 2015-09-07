@@ -410,9 +410,8 @@ double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m
 
 double** convert_contingous_gpu_array_to_gpu_array_of_pointers_with_kernel(double* arr, int m, int n, int batch, double** intermediate_array){
     int elements = m * n;
-    int i, offset = 0;
+    int i;
     for (i = 0; i < batch; i++){
-        offset = i * elements;
         gpu_error_check(cudaMalloc(&intermediate_array[i], sizeof(double) * elements));
     }
     dim3 grid, block;
