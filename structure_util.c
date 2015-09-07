@@ -232,6 +232,8 @@ bool compare_tensors(tensor const* a, tensor const* b, double err){
     if (!array_compare(a_clone, b_clone, 3, err))
         return false;
     return true; 
+    free(a_clone);
+    free(b_clone);
 }
 
 void free_tensor(tensor* tens){
