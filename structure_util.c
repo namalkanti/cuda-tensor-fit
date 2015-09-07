@@ -229,7 +229,7 @@ bool compare_tensors(tensor const* a, tensor const* b, double err){
     double* b_clone = array_clone(b->vals, 3);
     qsort(a_clone, 3, sizeof(double), double_cmp);
     qsort(b_clone, 3, sizeof(double), double_cmp);
-    if (!array_compare(a->vals, b->vals, 3, err))
+    if (!array_compare(a_clone, b_clone, 3, err))
         return false;
     return true; 
 }
