@@ -540,7 +540,7 @@ __global__ void create_array_of_pointers_kernel(double* arr, int m, int n, doubl
     int i, elements;
     elements =  m * n;
     for(i = 0; i < elements; i++){
-        pointer[i] = arr[blockIdx.x * m * n + i]
+        pointer[i] = arr[blockIdx.x * m * n + i];
     }
 }
 
