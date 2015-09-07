@@ -209,7 +209,26 @@ matrix* to_matrix(gsl_matrix const* gsl_mat){
 
 //Definitions of tensor functions
 
+int double_cmp(const void* a, const void* b){
+    double dx, dy;
+
+    dx = *((double*) a);
+    dy = *((double*) b);
+
+    if ( dx < dy ){
+        return -1;
+    }
+    else if (dx > dy ){
+        return +1;
+    }
+    return 0;
+}
+
 bool compare_tensors(tensor const* a, tensor const* b, double err){
+    double* a_clone = array_clone(a->vals, 3);
+    double* b_clone = array_clone(b->vals, 3);
+    qsort(a_clone, 3, sizeof(double), double_cmp);
+    qsort(b_clone, 3, sizeof(double), double_cmp);
     if (!array_compare(a->vals, b->vals, 3, err))
         return false;
     return true; 

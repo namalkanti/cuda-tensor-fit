@@ -31,7 +31,6 @@ void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, mat
 double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m, int n, int batch, double** intermediate_array);
 void free_array_of_gpu_pointers(double** array, int batch);
 const char* cublas_get_error_string(cublasStatus_t status);
-int double_cmp(const void *a, const void *b);
 
 //Kernel declarations
 __global__ void cutoff_log_kernel(double* device_array, double min_signal);
@@ -249,7 +248,6 @@ void extract_eigendecompositions(double* eigendecompositions, tensor** output, i
         }
         output[i]->vals = eigenvalues;
         output[i]->vecs = create_matrix(eigenvectors, 3, 3);
-        qsort(output[i]->vals, 3, sizeof(double), double_cmp);
     }
     return;
 }
@@ -449,22 +447,6 @@ const char* cublas_get_error_string(cublasStatus_t status){
         case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR"; 
     }
     return "unknown error";
-}
-
-//Comparison function for qsort
-int double_cmp(const void *a, const void *b){
-    double dx, dy;
-
-    dx = *((double*)a);
-    dy = *((double*)b);
-
-    if (dx < dy){
-        return -1;
-    }
-    else if (dx > dy){
-        return +1;
-    }
-    return 0;
 }
 
 //Kernels
