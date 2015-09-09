@@ -201,7 +201,7 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     gpu_error_check(cudaFree(dev_info));
     gpu_error_check(cudaFree(ls_solution_vectors));
     gpu_error_check(cudaFree(ls_weighted_design));
-    double* debug_tensors = cuda_double_return_from_gpu(results, 6 * batch_szie);
+    double* debug_tensors = cuda_double_return_from_gpu(results, 6 * batch_size);
     return results;
 }
 
