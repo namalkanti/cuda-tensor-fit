@@ -29,6 +29,7 @@ inline void gpu_assert(cudaError_t code, const char* file, int line, bool abort=
 //Helper function declarations
 void get_matrix_from_gpu_and_convert_from_fortran(double const* gpu_pointer, matrix* mat);
 double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m, int n, int batch, double** intermediate_array);
+void convert_contigous_gpu_array_to_gpu_array_of_pointers_with_kernel(double* arr, int m, int batch, double** intermediate_array);
 void free_array_of_gpu_pointers(double** array, int batch);
 const char* cublas_get_error_string(cublasStatus_t status);
 
@@ -41,7 +42,7 @@ __global__ void transpose_kernel(double const* matrices, double* transposed);
 __global__ void assemble_tensors(double const* tensor_input, double* tensors, int tensor_input_elements);
 __global__ void eigendecomposition_kernel(double const* data, double* eigendecomposition);
 __global__ void multiply_arrays(double* signals, double const* weights);
-__global__ void create_array_of_pointers_kernel(double* data, int m, int n, double** target);
+__global__ void create_array_of_pointers_kernel(double* data, int m, double** target);
 
 //device functions
 __device__ void assemble_eigendecomposition(double* eigendecomposition, int offset, double Q[3][3], double w[3]);
@@ -91,13 +92,13 @@ double* cuda_test_batched_ls(double* ls_matrix, int rows1, int cols1, double* so
     double* ls_gpu = cuda_double_copy_to_gpu(ls_matrix, A_elements * batch_size);
     double* sol_gpu = cuda_double_copy_to_gpu(solutions, C_elements * batch_size);
 
-    double** A_inter;
-    A_inter = (double**) malloc(sizeof(double*) * batch_size);
-    double** C_inter;
-    C_inter = (double**) malloc(sizeof(double*) * batch_size);
+    double** A_gpu;  
+    gpu_error_check(cudaMalloc(&A_gpu, sizeof(double*) * batch_size));
+    double** C_gpu;  
+    gpu_error_check(cudaMalloc(&C_gpu, sizeof(double*) * batch_size));
 
-    double** A_gpu = convert_contigous_gpu_array_to_gpu_array_of_pointers(ls_gpu, rows1, cols1, batch_size, A_inter);
-    double** C_gpu = convert_contigous_gpu_array_to_gpu_array_of_pointers(sol_gpu, rows2, cols2, batch_size, C_inter);
+    convert_contigous_gpu_array_to_gpu_array_of_pointers_with_kernel(ls_gpu, rows1 * cols1, batch_size, A_gpu);
+    convert_contigous_gpu_array_to_gpu_array_of_pointers_with_kernel(sol_gpu, rows2 * cols2, batch_size, C_gpu);
 
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, rows1, cols1, cols2, A_gpu, rows1,
             C_gpu, rows2, info, dev_info, batch_size);
@@ -130,8 +131,6 @@ double* cuda_test_batched_ls(double* ls_matrix, int rows1, int cols1, double* so
     gpu_error_check(cudaFree(A_gpu));
     gpu_error_check(cudaFree(C_gpu));
     gpu_error_check(cudaFree(dev_info));
-    free_array_of_gpu_pointers(A_inter, batch_size);
-    free_array_of_gpu_pointers(C_inter, batch_size);
     free(info);
     free(sol_array);
     return results;
@@ -201,7 +200,6 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     gpu_error_check(cudaFree(dev_info));
     gpu_error_check(cudaFree(ls_solution_vectors));
     gpu_error_check(cudaFree(ls_weighted_design));
-    double* debug_tensors = cuda_double_return_from_gpu(results, 6 * batch_size);
     return results;
 }
 
@@ -408,19 +406,10 @@ double** convert_contigous_gpu_array_to_gpu_array_of_pointers(double* arr, int m
     return gpu_array;
 }
 
-double** convert_contingous_gpu_array_to_gpu_array_of_pointers_with_kernel(double* arr, int m, int n, int batch, double** intermediate_array){
-    int elements = m * n;
-    int i;
-    for (i = 0; i < batch; i++){
-        gpu_error_check(cudaMalloc(&intermediate_array[i], sizeof(double) * elements));
-    }
+void convert_contigous_gpu_array_to_gpu_array_of_pointers_with_kernel(double* arr, int m, int batch, double** intermediate_array){
     dim3 grid, block;
     grid.x = batch;
-    create_array_of_pointers_kernel<<<grid, block>>>(arr, m, n, intermediate_array);
-    double** gpu_array;
-    gpu_error_check(cudaMalloc(&gpu_array, sizeof(double*) * batch));
-    gpu_error_check(cudaMemcpy(gpu_array, intermediate_array, sizeof(double*) * batch, cudaMemcpyHostToDevice));
-    return gpu_array;
+    create_array_of_pointers_kernel<<<grid, block>>>(arr, m, intermediate_array);
 }
 
 //Frees array of pointers where array is on host and pointers are on the device.
@@ -534,13 +523,8 @@ __global__ void multiply_arrays(double* signals, double const* weights){
     signals[blockIdx.x * blockDim.x + threadIdx.x] *= weights[blockIdx.x * blockDim.x + threadIdx.x];
 }
 
-__global__ void create_array_of_pointers_kernel(double* arr, int m, int n, double** target){
-    double* pointer = target[blockIdx.x];
-    int i, elements;
-    elements =  m * n;
-    for(i = 0; i < elements; i++){
-        pointer[i] = arr[blockIdx.x * m * n + i];
-    }
+__global__ void create_array_of_pointers_kernel(double* arr, int m, double** target){
+    target[blockIdx.x] = arr + (blockIdx.x * m);
 }
 
 //device function of assembling eigendecomposition from respective blocks.
