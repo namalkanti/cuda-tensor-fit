@@ -149,32 +149,25 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     cudaMalloc(&dev_info, sizeof(int) * batch_size);
 
     double** ls_weighted_design;
-    ls_weighted_design = (double**) malloc(sizeof(double*) * batch_size);
+    gpu_error_check(cudaMalloc(&ls_weighted_design, sizeof(double*) * batch_size));
     double** ls_solution_vectors;
-    ls_solution_vectors = (double**) malloc(sizeof(double*) * batch_size);
+    gpu_error_check(cudaMalloc(&ls_solution_vectors, sizeof(double*) * batch_size));
 
-    double** gpu_weighted = convert_contigous_gpu_array_to_gpu_array_of_pointers(weighted_design_data, 
-            design_matrix->rows, design_matrix->columns, batch_size, ls_weighted_design);
-    double** gpu_solution = convert_contigous_gpu_array_to_gpu_array_of_pointers(solution_vectors, 
-            design_matrix->rows, 1, batch_size, ls_solution_vectors);
+    convert_contigous_gpu_array_to_gpu_array_of_pointers_with_kernel(weighted_design_data, 
+            design_matrix->rows * design_matrix->columns, batch_size, ls_weighted_design);
+    convert_contigous_gpu_array_to_gpu_array_of_pointers_with_kernel(solution_vectors, 
+            design_matrix->rows * 1, batch_size, ls_solution_vectors);
 
     status = cublasDgelsBatched(handle, CUBLAS_OP_N, design_matrix->rows, design_matrix->columns,
-            1, gpu_weighted, design_matrix->rows, gpu_solution, design_matrix->rows, 
+            1, ls_weighted_design, design_matrix->rows, ls_solution_vectors, design_matrix->rows, 
             cublas_error_info, dev_info, signals->rows);
     if (status != CUBLAS_STATUS_SUCCESS) {
         puts(cublas_get_error_string(status));
     }
 
-    double** sol_array;
-    sol_array = (double**) malloc(sizeof(double*) * batch_size);
-    gpu_error_check(cudaMemcpy(sol_array, gpu_solution, sizeof(double*) * batch_size, cudaMemcpyDeviceToHost));
     double* results;
     gpu_error_check(cudaMalloc(&results, sizeof(double) * design_matrix->columns * batch_size));
-    int i, sol_offset;
-    for(i = 0;i < batch_size;i++){
-        sol_offset = i * design_matrix->columns ;
-        gpu_error_check(cudaMemcpy(results + sol_offset, sol_array[i], sizeof(double) * design_matrix->columns, cudaMemcpyDeviceToDevice));
-    }
+    convert_array_of_pointers_to_contigous_array(ls_solution_vectors, design_matrix->columns, batch_size, results);
 
     status = cublasDestroy_v2(handle);
     if (status != CUBLAS_STATUS_SUCCESS) {
@@ -182,11 +175,9 @@ double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weig
     }
 
     free(cublas_error_info);
-    free(ls_solution_vectors);
-    free(ls_weighted_design);
     free_cuda_memory(weighted_design_data);
-    gpu_error_check(cudaFree(gpu_weighted));
-    gpu_error_check(cudaFree(gpu_solution));
+    gpu_error_check(cudaFree(ls_weighted_design));
+    gpu_error_check(cudaFree(ls_solution_vectors));
     gpu_error_check(cudaFree(dev_info));
     return results;
 }
