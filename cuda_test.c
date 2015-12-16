@@ -234,10 +234,10 @@ void test_cutoff_log(void){
      2.1972245773362196};
     double* gtest1 = cuda_double_copy_to_gpu(test1, len1);
     double* gtest2 = cuda_double_copy_to_gpu(test2, len2);
-    double* gpu1 = cutoff_log_cuda(gtest1, min_value, 1, len1);
-    double* gpu2 = cutoff_log_cuda(gtest2, min_value, 1, len2);
-    double* return1 = cuda_double_return_from_gpu(gpu1, len1);
-    double* return2 = cuda_double_return_from_gpu(gpu2, len2);
+    cutoff_log_cuda(gtest1, min_value, 1, len1);
+    cutoff_log_cuda(gtest2, min_value, 1, len2);
+    double* return1 = cuda_double_return_from_gpu(gtest1, len1);
+    double* return2 = cuda_double_return_from_gpu(gtest2, len2);
     CU_ASSERT(array_compare(return1, result1, len1, MARGIN) == true);
     CU_ASSERT(array_compare(return2, result2, len2, MARGIN) == true);
     free(return1);
@@ -263,10 +263,10 @@ void test_exp_array(void){
     int size2 = sizeof(test2)/sizeof(test2[0]);
     double* gpu1 = cuda_double_copy_to_gpu(test1, size1);
     double* gpu2 = cuda_double_copy_to_gpu(test2, size2);
-    double* greturn1 = exp_cuda(gpu1, 1, size1);
-    double* greturn2 = exp_cuda(gpu2, 1, size2);
-    double* return1 = cuda_double_return_from_gpu(greturn1, size1);
-    double* return2 = cuda_double_return_from_gpu(greturn2, size2);
+    exp_cuda(gpu1, 1, size1);
+    exp_cuda(gpu2, 1, size2);
+    double* return1 = cuda_double_return_from_gpu(gpu1, size1);
+    double* return2 = cuda_double_return_from_gpu(gpu2, size2);
     CU_ASSERT(array_compare(results1, return1, size1, 1) == true);
     CU_ASSERT(array_compare(results2, return2, size2, 1) == true);
 }

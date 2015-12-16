@@ -56,10 +56,9 @@ matrix* process_signal(matrix const* signal, double min_signal){
     double* signal_data = array_clone(signal->data, signal->rows * signal->columns);
     int total_elements = signal->rows * signal->columns;
     double* gpu_signal = cuda_double_copy_to_gpu(signal_data, total_elements);
-    double* kernel_results = cutoff_log_cuda(gpu_signal, min_signal, signal->rows, signal->columns);
-    matrix* processed_signal = create_matrix(kernel_results, signal->rows, signal->columns);
+    cutoff_log_cuda(gpu_signal, min_signal, signal->rows, signal->columns);
+    matrix* processed_signal = create_matrix(gpu_signal, signal->rows, signal->columns);
     free(signal_data);
-    free_cuda_memory(gpu_signal);
     return processed_signal;
 }
 
@@ -68,11 +67,9 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
     double* gpu_ols_data = convert_matrix_to_fortran_and_load_to_gpu(ols_fit_matrix);
     matrix gpu_ols = {gpu_ols_data, ols_fit_matrix->rows, ols_fit_matrix->columns};
     matrix* weights = cuda_matrix_dot(&gpu_ols, signal);
-    double* exp_weights = exp_cuda(weights->data, weights->columns, weights->rows);
-    matrix* gpu_weights= create_matrix(exp_weights, weights->rows, weights->columns);
+    exp_cuda(weights->data, weights->columns, weights->rows);
     free_cuda_memory(gpu_ols_data);
-    free_cuda_memory(weights->data);
-    return gpu_weights;
+    return weights;
 }
 
 extern "C"
@@ -261,23 +258,13 @@ void free_matrix_with_cuda_pointer(matrix* gpu_matrix){
 }
 
 extern "C"
-double* cutoff_log_cuda(double const* input, double min_signal, int number_of_signals, int signal_length){
-    int total_elements = number_of_signals * signal_length;
-    double* device_array;
-    gpu_error_check(cudaMalloc(&device_array, sizeof(double) * total_elements));
-    gpu_error_check(cudaMemcpy(device_array, input, sizeof(double) * total_elements, cudaMemcpyDeviceToDevice))
-    cutoff_log_kernel<<<number_of_signals, signal_length>>>(device_array, min_signal);
-    return device_array;
+void cutoff_log_cuda(double* input, double min_signal, int number_of_signals, int signal_length){
+    cutoff_log_kernel<<<number_of_signals, signal_length>>>(input, min_signal);
 }
 
 extern "C"
-double* exp_cuda(double const* input, int number_of_signals, int signal_length){
-    int total_elements = number_of_signals * signal_length;
-    double* device_array;
-    gpu_error_check(cudaMalloc(&device_array, sizeof(double) * total_elements));
-    gpu_error_check(cudaMemcpy(device_array, input, sizeof(double) * total_elements, cudaMemcpyDeviceToDevice))
-    exp_kernel<<<number_of_signals, signal_length>>>(device_array);
-    return device_array;
+void exp_cuda(double* input, int number_of_signals, int signal_length){
+    exp_kernel<<<number_of_signals, signal_length>>>(input);
 }
 
 extern "C"
