@@ -140,16 +140,6 @@ void test_process_matrix(void){
     free_matrix(results);
 }
 
-//Test case to investigate and verify least squares is working
-void test_batched_least_squares(void){
-    double test_input[] = {1, 3, 5, 2, 4, 6, 5, 7, 9, 6, 8, 10};
-    double test_c[] = {3, 7, 11, 3, 7, 11};
-    double expected[] = {1, 1, 9, -7};
-    double* gpu_result = cuda_test_batched_ls(test_input, 3, 2, test_c, 3, 1, 2);
-    double* result = cuda_double_return_from_gpu(gpu_result, 4);
-    CU_ASSERT(true == array_compare(expected, result, 4, MARGIN));
-}
-
 //Test case for cuda fitter function
 void test_cuda_fitter(void){
     double test_design_data[] = {1, 3, 2, 4};
@@ -412,11 +402,6 @@ int main(){
     }
 
     if ((NULL == CU_add_test(cuda_suite, "Process matrix test", test_process_matrix))){
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    if ((NULL == CU_add_test(cuda_suite, "Cuda batched least squares", test_batched_least_squares))){
         CU_cleanup_registry();
         return CU_get_error();
     }

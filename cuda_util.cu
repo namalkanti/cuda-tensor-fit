@@ -73,57 +73,6 @@ matrix* generate_weights(matrix const* ols_fit_matrix, matrix const* signal){
 }
 
 extern "C"
-double* cuda_test_batched_ls(double* ls_matrix, int rows1, int cols1, double* solutions, int rows2, int cols2, int batch_size){
-    cublasStatus_t status;
-    cublasHandle_t handle;
-    status = cublasCreate_v2(&handle);
-    if (status != CUBLAS_STATUS_SUCCESS) {
-        puts(cublas_get_error_string(status));
-    }
-
-    int A_elements = rows1 * cols1;
-    int C_elements = rows2 * cols2;
-
-    int* info = (int*) malloc(sizeof(int));
-    int* dev_info;
-    cudaMalloc(&dev_info, sizeof(int) * batch_size);
-
-    double* ls_gpu = cuda_double_copy_to_gpu(ls_matrix, A_elements * batch_size);
-    double* sol_gpu = cuda_double_copy_to_gpu(solutions, C_elements * batch_size);
-
-    double** A_gpu;  
-    gpu_error_check(cudaMalloc(&A_gpu, sizeof(double*) * batch_size));
-    double** C_gpu;  
-    gpu_error_check(cudaMalloc(&C_gpu, sizeof(double*) * batch_size));
-
-    convert_contigous_gpu_array_to_gpu_array_of_pointers_with_kernel(ls_gpu, rows1 * cols1, batch_size, A_gpu);
-    convert_contigous_gpu_array_to_gpu_array_of_pointers_with_kernel(sol_gpu, rows2 * cols2, batch_size, C_gpu);
-
-    status = cublasDgelsBatched(handle, CUBLAS_OP_N, rows1, cols1, cols2, A_gpu, rows1,
-            C_gpu, rows2, info, dev_info, batch_size);
-    if (status != CUBLAS_STATUS_SUCCESS) {
-        puts(cublas_get_error_string(status));
-    }
-
-    double* results;
-    gpu_error_check(cudaMalloc(&results, sizeof(double) * cols1 * batch_size));
-    convert_array_of_pointers_to_contigous_array(C_gpu, cols1, batch_size, results);
-
-    status = cublasDestroy_v2(handle);
-    if (status != CUBLAS_STATUS_SUCCESS) {
-        puts(cublas_get_error_string(status));
-    }
-
-    free_cuda_memory(ls_gpu);
-    free_cuda_memory(sol_gpu);
-    gpu_error_check(cudaFree(A_gpu));
-    gpu_error_check(cudaFree(C_gpu));
-    gpu_error_check(cudaFree(dev_info));
-    free(info);
-    return results;
-}
-
-extern "C"
 double* cuda_fitter(matrix const* design_matrix, matrix const* column_major_weights, matrix const* signals){
     //Will not transpose matrix weighting because design matrix is column major already
     double* weighted_design_data = matrix_weighter(design_matrix->data, column_major_weights->data, 
