@@ -104,32 +104,3 @@ bool compare_tensors(tensor const* a, tensor const* b, double err);
  * Frees tensor structure a.
  */
 void free_tensor(tensor* tens);
-
-//Padded array operations.
-
-/*
- * Pads array to closest multiple and returns.
- */
-padded_array* pad_array(double const* arr, int length, int multiple);
-
-/*
- * Retrieves array from padded array.
- */
-double* get_array_from_padded_array(padded_array const* padded_arr);
-
-/*
- * Frees padded array.
- */
-void free_padded_array(padded_array* padded_arr);
-
-//Padded matrix function.
-
-/*
- * Pads matrix to multiple.
- */
-padded_matrix* pad_matrix(matrix const* matrix_to_pad, int m_multiple, int n_nultiple);
-
-/*
- * Frees padded matrix.
- */
-void free_padded_matrix(padded_matrix* padded_mat);

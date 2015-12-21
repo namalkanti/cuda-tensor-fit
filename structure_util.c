@@ -243,67 +243,6 @@ void free_tensor(tensor* tens){
 
 }
 
-//Defintions of padded array functions.
-
-padded_array* pad_array(double const* arr, int length,  int multiple) {
-    padded_array* padded_arr = malloc(sizeof(padded_array));
-    padded_arr->original_length = length;
-    int pad_length = multiple - (length % multiple);
-    int new_length = length + pad_length;
-    padded_arr->current_length = new_length;
-    double* padded_values = malloc(sizeof(double) * new_length);
-    int i; 
-    for(i = 0;i < length;i++){
-        padded_values[i] = arr[i];
-    }
-    for(i;i < new_length;i++){
-        padded_values[i] = 0;
-    }
-    padded_arr->values = padded_values;
-    return padded_arr;
-}
-
-double* get_array_from_padded_array(padded_array const* padded_arr) {
-    int original_length = padded_arr->original_length;
-    int i;
-    double* extracted_array = malloc(sizeof(double) * original_length);
-    for(i = 0; i < original_length; i++){
-        extracted_array[i] = padded_arr->values[i];
-    }
-    return extracted_array;
-}
-
-void free_padded_array(padded_array* pointer){
-    free(pointer->values);
-    free(pointer);
-}
-
-//Definitions of padded matrix functions
-
-padded_matrix* pad_matrix(matrix const* matrix_to_pad, int m_multiple, int n_multiple) {
-    padded_matrix* padded_output = malloc(sizeof(padded_matrix));
-    matrix* new_matrix = malloc(sizeof(matrix));
-    int additional_rows = m_multiple - (matrix_to_pad->rows % m_multiple);
-    int additional_columns = n_multiple - (matrix_to_pad->columns % n_multiple);
-    int new_m = matrix_to_pad->rows + additional_rows;
-    int new_n = matrix_to_pad->columns + additional_columns;
-    double* padded_matrix_values = malloc(sizeof(double) * new_m * new_n);
-    pad_rows(matrix_to_pad->data, padded_matrix_values, matrix_to_pad->columns, new_n, matrix_to_pad->rows);
-    pad_columns(padded_matrix_values, matrix_to_pad->rows * matrix_to_pad->columns, new_m * new_n);
-    new_matrix->data = padded_matrix_values;
-    new_matrix->rows = new_m;
-    new_matrix->columns = new_n;
-    padded_output->matrix = new_matrix;
-    padded_output->original_m = matrix_to_pad->rows;
-    padded_output->original_n = matrix_to_pad->columns;
-    return padded_output;
-}
-
-void free_padded_matrix(padded_matrix* matrix_pointer){
-    free_matrix(matrix_pointer->matrix);
-    free(matrix_pointer);
-}
-
 /*
  * Helper function to negate an array.
  */
@@ -313,37 +252,4 @@ void static negate(double* arr){
         arr[i] = arr[i] * -1;
     }
 }
-
-/*
- * Function called to pad rows a row major matrix.
- * Should be called before pad_columns.
- */
-void static pad_rows(double* old_matrix_values, double* new_matrix_values, int original_columns, 
-        int new_columns, int original_rows) {
-    int i;
-    for(i = 0;i < original_rows; i++){
-        int j;
-        int index;
-        for(j = 0; j < original_columns;j++){
-            index = i * original_columns +j;
-            new_matrix_values[index] = old_matrix_values[index];
-        }
-        for(j;j < new_columns;j++){
-            index = i * original_columns +j;
-            new_matrix_values[index] = 0;
-        }
-    }
-}
-
-/*
- * Function called to pad columns of a row major matrix.
- * Should be called after pad_rows.
- */
-void static pad_columns(double* matrix_values, int old_value_length, int new_value_length) {
-    int i = old_value_length;
-    for(i;i < new_value_length; i++){
-        matrix_values[i] = 0;
-    }
-}
-
 

@@ -322,28 +322,6 @@ void test_compare_tensors(void){
 
 }
 
-//Tests that array padding works 
-void test_array_padding(void) {
-    double test_array[] = {3.4, 232.2, 3.45, 5.34, 3.4, 9.86};
-    padded_array* padded_array = pad_array(test_array, 6, 10);
-    CU_ASSERT(array_compare(test_array, padded_array->values, 6, MARGIN) == true);
-    CU_ASSERT((padded_array->original_length == 6) == true)
-    CU_ASSERT((padded_array->current_length == 10) == true)
-    double* returned_array = get_array_from_padded_array(padded_array);
-    CU_ASSERT(array_compare(test_array, returned_array, 6, MARGIN) == true);
-    free_padded_array(padded_array);
-    free(returned_array);
-}
-
-//Tests matrix padding
-void test_matrix_padding(void) {
-    padded_matrix* padded_design_matrix = pad_matrix(&design_sample, 64, 1);
-    matrix* comparable_design_matrix = padded_design_matrix->matrix;
-    comparable_design_matrix->rows = design_sample.rows;
-    comparable_design_matrix->columns = design_sample.columns;
-    CU_ASSERT(true == matrix_compare(&design_sample, comparable_design_matrix, MARGIN));
-    free_padded_matrix(padded_design_matrix);
-}
 //Main test function
 int main(){
     CU_pSuite utility_suite = NULL;
@@ -368,8 +346,6 @@ int main(){
             (NULL == CU_add_test(utility_suite, "Matrix scale test", test_scale_matrix)) ||
             (NULL == CU_add_test(utility_suite, "GSL conversion functions", test_gsl_matrix_convert)) ||
             (NULL == CU_add_test(utility_suite, "Matrix dot test", test_matrix_dot)) ||
-            (NULL == CU_add_test(utility_suite, "Array Padding test", test_array_padding)) ||
-            (NULL == CU_add_test(utility_suite, "Matrix Padding test", test_matrix_padding)) ||
             (NULL == CU_add_test(utility_suite, "Rounding test", test_rounding_to_2_power)) ||
             (NULL == CU_add_test(utility_suite, "Transpose test", test_matrix_transpose))){
         CU_cleanup_registry();
